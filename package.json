@@ -1,0 +1,23 @@
+{
+  "name": "intersection",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:web": "npm run dev -w @intersection/web",
+    "dev:server": "npm run dev -w @intersection/server",
+    "build": "npm run build -w @intersection/shared && npm run build -w @intersection/server && npm run build -w @intersection/web",
+    "typecheck": "npm run build -w @intersection/shared && npm run typecheck -w @intersection/server && npm run typecheck -w @intersection/web",
+    "lint": "oxlint .",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.64.1",
+    "oxlint": "^1.90.0",
+    "vitest": "^5.0.5"
+  }
+}
