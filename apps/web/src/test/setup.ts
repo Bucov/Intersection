@@ -31,4 +31,9 @@ if (typeof window !== "undefined") {
 
   // jsdom does not implement scrollTo on elements.
   Element.prototype.scrollTo ??= function scrollTo() {};
+
+  // jsdom has no canvas backend: report "no context" like a browser without WebGL.
+  HTMLCanvasElement.prototype.getContext = function getContext() {
+    return null;
+  } as typeof HTMLCanvasElement.prototype.getContext;
 }

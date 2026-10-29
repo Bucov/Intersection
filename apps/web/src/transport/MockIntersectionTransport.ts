@@ -291,12 +291,16 @@ export class MockIntersectionTransport implements IntersectionTransport {
     const chunk = () => {
       if (!this.comparisons.has(entry.response.comparisonId)) return;
       const { traditional, ai } = entry;
-      const steps = 400;
-      traditional.advance(steps);
-      ai.advance(steps);
-      traditional.drain();
-      ai.drain();
-      const done = traditional.status === "completed" && ai.status === "completed";
+      // Work in ~12 ms slices so the page (and the 3D scene) stay responsive.
+      const started = performance.now();
+      let done = false;
+      do {
+        traditional.advance(50);
+        ai.advance(50);
+        traditional.drain();
+        ai.drain();
+        done = traditional.status === "completed" && ai.status === "completed";
+      } while (!done && performance.now() - started < 12);
       entry.response = {
         ...entry.response,
         status: done ? "completed" : "running",
