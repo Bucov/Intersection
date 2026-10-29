@@ -1,0 +1,10 @@
+{
+  "protocolVersion": 1,
+  "requestId": "pause-1",
+  "error": {
+    "code": "STALE_GENERATION",
+    "message": "Reset advanced this session to generation 1. Fetch a fresh snapshot.",
+    "retryable": false,
+    "issues": []
+  }
+}

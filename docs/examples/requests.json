@@ -1,0 +1,37 @@
+{
+  "createSession": {
+    "requestId": "create-1",
+    "mode": "ai",
+    "scenarioId": "ambulance-priority",
+    "seed": 42
+  },
+  "controlSession": {
+    "requestId": "pause-1",
+    "generation": 0,
+    "action": "pause"
+  },
+  "injectEvent": {
+    "requestId": "inject-1",
+    "generation": 0,
+    "event": {
+      "type": "emergency",
+      "approach": "south",
+      "vehicleType": "ambulance",
+      "responding": true
+    }
+  },
+  "createComparison": {
+    "requestId": "compare-1",
+    "scenarioId": "normal-traffic",
+    "seed": 42,
+    "durationMs": 300000,
+    "execution": "accelerated_mock",
+    "speedMultiplier": 5
+  },
+  "requestSnapshot": {
+    "protocolVersion": 1,
+    "type": "simulation.request_snapshot",
+    "requestId": "snapshot-1",
+    "sessionId": "session-demo"
+  }
+}

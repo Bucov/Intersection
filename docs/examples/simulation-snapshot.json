@@ -1,0 +1,240 @@
+{
+  "protocolVersion": 1,
+  "sessionId": "session-demo",
+  "generation": 0,
+  "stateVersion": 120,
+  "sequence": 40,
+  "status": "running",
+  "simulationTimeMs": 12000,
+  "config": {
+    "mode": "ai",
+    "scenarioId": "ambulance-priority",
+    "seed": 42,
+    "speedMultiplier": 1,
+    "timestepMs": 100,
+    "demoMode": "mock",
+    "signalTiming": {
+      "minimumGreenMs": 8000,
+      "maximumGreenMs": 45000,
+      "yellowMs": 3000,
+      "allRedMs": 2000,
+      "fixedGreenMs": 30000
+    },
+    "scenario": {
+      "durationMs": 300000,
+      "demandPreset": "normal",
+      "arrivalRatesVehPerHour": {
+        "north": 240,
+        "south": 240,
+        "east": 180,
+        "west": 180
+      },
+      "vehicleMix": {
+        "car": 0.845,
+        "van": 0.1,
+        "bus_truck": 0.05,
+        "ambulance": 0.003,
+        "police": 0.002
+      },
+      "policeRespondingProbability": 0.2,
+      "initialQueueByApproach": {
+        "north": 0,
+        "south": 0,
+        "east": 0,
+        "west": 0
+      },
+      "randomEvents": {
+        "enabled": false,
+        "intervalMs": 600000,
+        "surgeProbability": 0.15,
+        "congestionProbability": 0.1
+      },
+      "initialGreen": "EW_GREEN",
+      "scheduledEvents": [
+        {
+          "id": "ambulance-north",
+          "atSimMs": 0,
+          "event": {
+            "type": "emergency",
+            "approach": "north",
+            "vehicleType": "ambulance",
+            "responding": true
+          }
+        }
+      ]
+    },
+    "geometry": {
+      "id": "four-way-straight-v1",
+      "laneWidthM": 3.5,
+      "laneCenterOffsetM": 1.75,
+      "spawnDistanceM": 120,
+      "stopLineDistanceM": 10,
+      "occupancyHalfExtentM": 8,
+      "despawnDistanceM": 140
+    }
+  },
+  "signal": {
+    "phase": "EW_GREEN",
+    "phaseStartedAtSimMs": 0,
+    "earliestEndAtSimMs": 8000,
+    "latestEndAtSimMs": 45000,
+    "nextGreen": "NS_GREEN",
+    "activeCommandId": null,
+    "clearanceBlockedByVehicles": false
+  },
+  "vehicles": [
+    {
+      "id": "vehicle-1",
+      "type": "ambulance",
+      "approach": "north",
+      "intendedExit": "south",
+      "travelDirection": "south",
+      "laneId": "north-inbound",
+      "position": {
+        "x": -1.75,
+        "y": 0,
+        "z": -13
+      },
+      "headingRadians": 0,
+      "velocityMps": 0,
+      "accelerationMps2": 0,
+      "desiredSpeedMps": 13.9,
+      "lengthM": 4.8,
+      "requestedAtSimMs": 0,
+      "spawnedAtSimMs": 0,
+      "waitingTimeMs": 2500,
+      "signalDelayMs": 2500,
+      "emergency": true,
+      "stopLineEtaSeconds": null,
+      "movementState": "queued"
+    },
+    {
+      "id": "vehicle-2",
+      "type": "car",
+      "approach": "east",
+      "intendedExit": "west",
+      "travelDirection": "west",
+      "laneId": "east-inbound",
+      "position": {
+        "x": 2,
+        "y": 0,
+        "z": -1.75
+      },
+      "headingRadians": -1.5707963267948966,
+      "velocityMps": 12,
+      "accelerationMps2": 0.4,
+      "desiredSpeedMps": 13.9,
+      "lengthM": 4.5,
+      "requestedAtSimMs": 1000,
+      "spawnedAtSimMs": 1000,
+      "waitingTimeMs": 0,
+      "signalDelayMs": 0,
+      "emergency": false,
+      "stopLineEtaSeconds": null,
+      "movementState": "crossing"
+    }
+  ],
+  "occupiedVehicleIds": [
+    "vehicle-2"
+  ],
+  "metrics": {
+    "requestedVehicleCount": 5,
+    "spawnedVehicleCount": 3,
+    "completedVehicleCount": 1,
+    "activeVehicleCount": 2,
+    "upstreamBacklogCount": 2,
+    "upstreamBacklogByApproach": {
+      "north": 2,
+      "south": 0,
+      "east": 0,
+      "west": 0
+    },
+    "waitingVehicleCount": 1,
+    "queueByApproach": {
+      "north": 1,
+      "south": 0,
+      "east": 0,
+      "west": 0
+    },
+    "maximumQueueLength": 2,
+    "averageCompletedWaitingTimeMs": 1000,
+    "averageCompletedTravelTimeMs": 9000,
+    "totalObservedWaitingTimeMs": 7500,
+    "activeWaitingTimeMs": 2500,
+    "upstreamWaitingTimeMs": 4000,
+    "throughputVehPerHour": 300,
+    "emergencyCompletedCount": 0,
+    "averageCompletedEmergencySignalDelayMs": null,
+    "activeEmergencySignalDelayMs": 2500,
+    "signalChangeCount": 0,
+    "geminiRequestCount": 0,
+    "jevDecisionCount": 0,
+    "jevConfidenceCounts": {
+      "high": 0,
+      "medium": 0,
+      "low": 0
+    },
+    "geminiLatency": {
+      "sampleCount": 0,
+      "meanMs": null,
+      "maxMs": null
+    },
+    "jevLatency": {
+      "sampleCount": 0,
+      "meanMs": null,
+      "maxMs": null
+    },
+    "deadlineMissCount": 0,
+    "safetyRejectionCount": 0
+  },
+  "controller": {
+    "requestedMode": "ai",
+    "activeController": "adaptive",
+    "reason": null
+  },
+  "agents": [
+    {
+      "agentId": "agent-a",
+      "group": "NS",
+      "status": "idle",
+      "provenance": "mock",
+      "model": "mock-gemini-v1",
+      "lastInference": null,
+      "latestProposalId": null,
+      "requestCount": 0,
+      "message": null
+    },
+    {
+      "agentId": "agent-b",
+      "group": "EW",
+      "status": "idle",
+      "provenance": "mock",
+      "model": "mock-gemini-v1",
+      "lastInference": null,
+      "latestProposalId": null,
+      "requestCount": 0,
+      "message": null
+    }
+  ],
+  "providers": [
+    {
+      "provider": "gemini",
+      "mode": "mock",
+      "status": "ready",
+      "model": "mock-gemini-v1",
+      "reason": null
+    },
+    {
+      "provider": "jev",
+      "mode": "mock",
+      "status": "ready",
+      "model": "mock-jev-v1",
+      "reason": null
+    }
+  ],
+  "jev": {
+    "status": "idle",
+    "pendingArbitrationId": null,
+    "lastArbitration": null
+  }
+}

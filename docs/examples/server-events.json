@@ -1,0 +1,959 @@
+[
+  {
+    "protocolVersion": 1,
+    "eventId": "event-40",
+    "correlationId": "decision-1",
+    "sessionId": "session-demo",
+    "generation": 0,
+    "stateVersion": 120,
+    "sequence": 40,
+    "simulationTimeMs": 12000,
+    "wallTime": "2026-10-29T18:00:12.000Z",
+    "source": "simulation",
+    "provenance": "simulation",
+    "summary": "Example simulation.snapshot",
+    "type": "simulation.snapshot",
+    "payload": {
+      "protocolVersion": 1,
+      "sessionId": "session-demo",
+      "generation": 0,
+      "stateVersion": 120,
+      "sequence": 40,
+      "status": "running",
+      "simulationTimeMs": 12000,
+      "config": {
+        "mode": "ai",
+        "scenarioId": "ambulance-priority",
+        "seed": 42,
+        "speedMultiplier": 1,
+        "timestepMs": 100,
+        "demoMode": "mock",
+        "signalTiming": {
+          "minimumGreenMs": 8000,
+          "maximumGreenMs": 45000,
+          "yellowMs": 3000,
+          "allRedMs": 2000,
+          "fixedGreenMs": 30000
+        },
+        "scenario": {
+          "durationMs": 300000,
+          "demandPreset": "normal",
+          "arrivalRatesVehPerHour": {
+            "north": 240,
+            "south": 240,
+            "east": 180,
+            "west": 180
+          },
+          "vehicleMix": {
+            "car": 0.845,
+            "van": 0.1,
+            "bus_truck": 0.05,
+            "ambulance": 0.003,
+            "police": 0.002
+          },
+          "policeRespondingProbability": 0.2,
+          "initialQueueByApproach": {
+            "north": 0,
+            "south": 0,
+            "east": 0,
+            "west": 0
+          },
+          "randomEvents": {
+            "enabled": false,
+            "intervalMs": 600000,
+            "surgeProbability": 0.15,
+            "congestionProbability": 0.1
+          },
+          "initialGreen": "EW_GREEN",
+          "scheduledEvents": [
+            {
+              "id": "ambulance-north",
+              "atSimMs": 0,
+              "event": {
+                "type": "emergency",
+                "approach": "north",
+                "vehicleType": "ambulance",
+                "responding": true
+              }
+            }
+          ]
+        },
+        "geometry": {
+          "id": "four-way-straight-v1",
+          "laneWidthM": 3.5,
+          "laneCenterOffsetM": 1.75,
+          "spawnDistanceM": 120,
+          "stopLineDistanceM": 10,
+          "occupancyHalfExtentM": 8,
+          "despawnDistanceM": 140
+        }
+      },
+      "signal": {
+        "phase": "EW_GREEN",
+        "phaseStartedAtSimMs": 0,
+        "earliestEndAtSimMs": 8000,
+        "latestEndAtSimMs": 45000,
+        "nextGreen": "NS_GREEN",
+        "activeCommandId": null,
+        "clearanceBlockedByVehicles": false
+      },
+      "vehicles": [
+        {
+          "id": "vehicle-1",
+          "type": "ambulance",
+          "approach": "north",
+          "intendedExit": "south",
+          "travelDirection": "south",
+          "laneId": "north-inbound",
+          "position": {
+            "x": -1.75,
+            "y": 0,
+            "z": -13
+          },
+          "headingRadians": 0,
+          "velocityMps": 0,
+          "accelerationMps2": 0,
+          "desiredSpeedMps": 13.9,
+          "lengthM": 4.8,
+          "requestedAtSimMs": 0,
+          "spawnedAtSimMs": 0,
+          "waitingTimeMs": 2500,
+          "signalDelayMs": 2500,
+          "emergency": true,
+          "stopLineEtaSeconds": null,
+          "movementState": "queued"
+        },
+        {
+          "id": "vehicle-2",
+          "type": "car",
+          "approach": "east",
+          "intendedExit": "west",
+          "travelDirection": "west",
+          "laneId": "east-inbound",
+          "position": {
+            "x": 2,
+            "y": 0,
+            "z": -1.75
+          },
+          "headingRadians": -1.5707963267948966,
+          "velocityMps": 12,
+          "accelerationMps2": 0.4,
+          "desiredSpeedMps": 13.9,
+          "lengthM": 4.5,
+          "requestedAtSimMs": 1000,
+          "spawnedAtSimMs": 1000,
+          "waitingTimeMs": 0,
+          "signalDelayMs": 0,
+          "emergency": false,
+          "stopLineEtaSeconds": null,
+          "movementState": "crossing"
+        }
+      ],
+      "occupiedVehicleIds": [
+        "vehicle-2"
+      ],
+      "metrics": {
+        "requestedVehicleCount": 5,
+        "spawnedVehicleCount": 3,
+        "completedVehicleCount": 1,
+        "activeVehicleCount": 2,
+        "upstreamBacklogCount": 2,
+        "upstreamBacklogByApproach": {
+          "north": 2,
+          "south": 0,
+          "east": 0,
+          "west": 0
+        },
+        "waitingVehicleCount": 1,
+        "queueByApproach": {
+          "north": 1,
+          "south": 0,
+          "east": 0,
+          "west": 0
+        },
+        "maximumQueueLength": 2,
+        "averageCompletedWaitingTimeMs": 1000,
+        "averageCompletedTravelTimeMs": 9000,
+        "totalObservedWaitingTimeMs": 7500,
+        "activeWaitingTimeMs": 2500,
+        "upstreamWaitingTimeMs": 4000,
+        "throughputVehPerHour": 300,
+        "emergencyCompletedCount": 0,
+        "averageCompletedEmergencySignalDelayMs": null,
+        "activeEmergencySignalDelayMs": 2500,
+        "signalChangeCount": 0,
+        "geminiRequestCount": 0,
+        "jevDecisionCount": 0,
+        "jevConfidenceCounts": {
+          "high": 0,
+          "medium": 0,
+          "low": 0
+        },
+        "geminiLatency": {
+          "sampleCount": 0,
+          "meanMs": null,
+          "maxMs": null
+        },
+        "jevLatency": {
+          "sampleCount": 0,
+          "meanMs": null,
+          "maxMs": null
+        },
+        "deadlineMissCount": 0,
+        "safetyRejectionCount": 0
+      },
+      "controller": {
+        "requestedMode": "ai",
+        "activeController": "adaptive",
+        "reason": null
+      },
+      "agents": [
+        {
+          "agentId": "agent-a",
+          "group": "NS",
+          "status": "idle",
+          "provenance": "mock",
+          "model": "mock-gemini-v1",
+          "lastInference": null,
+          "latestProposalId": null,
+          "requestCount": 0,
+          "message": null
+        },
+        {
+          "agentId": "agent-b",
+          "group": "EW",
+          "status": "idle",
+          "provenance": "mock",
+          "model": "mock-gemini-v1",
+          "lastInference": null,
+          "latestProposalId": null,
+          "requestCount": 0,
+          "message": null
+        }
+      ],
+      "providers": [
+        {
+          "provider": "gemini",
+          "mode": "mock",
+          "status": "ready",
+          "model": "mock-gemini-v1",
+          "reason": null
+        },
+        {
+          "provider": "jev",
+          "mode": "mock",
+          "status": "ready",
+          "model": "mock-jev-v1",
+          "reason": null
+        }
+      ],
+      "jev": {
+        "status": "idle",
+        "pendingArbitrationId": null,
+        "lastArbitration": null
+      }
+    }
+  },
+  {
+    "protocolVersion": 1,
+    "eventId": "event-41",
+    "correlationId": "decision-1",
+    "sessionId": "session-demo",
+    "generation": 0,
+    "stateVersion": 120,
+    "sequence": 41,
+    "simulationTimeMs": 12000,
+    "wallTime": "2026-10-29T18:00:12.000Z",
+    "source": "simulation",
+    "provenance": "simulation",
+    "summary": "Example simulation.status",
+    "type": "simulation.status",
+    "payload": {
+      "status": "running",
+      "speedMultiplier": 1,
+      "controller": {
+        "requestedMode": "ai",
+        "activeController": "adaptive",
+        "reason": null
+      }
+    }
+  },
+  {
+    "protocolVersion": 1,
+    "eventId": "event-42",
+    "correlationId": "decision-1",
+    "sessionId": "session-demo",
+    "generation": 0,
+    "stateVersion": 120,
+    "sequence": 42,
+    "simulationTimeMs": 12000,
+    "wallTime": "2026-10-29T18:00:12.000Z",
+    "source": "simulation",
+    "provenance": "simulation",
+    "summary": "Example simulation.vehicle_event",
+    "type": "simulation.vehicle_event",
+    "payload": {
+      "kind": "emergency_detected",
+      "demandId": "demand-1",
+      "vehicleId": "vehicle-1",
+      "approach": "north",
+      "stopLineEtaSeconds": null
+    }
+  },
+  {
+    "protocolVersion": 1,
+    "eventId": "event-43",
+    "correlationId": "decision-1",
+    "sessionId": "session-demo",
+    "generation": 0,
+    "stateVersion": 120,
+    "sequence": 43,
+    "simulationTimeMs": 12000,
+    "wallTime": "2026-10-29T18:00:12.000Z",
+    "source": "simulation",
+    "provenance": "simulation",
+    "summary": "Example simulation.scenario_event",
+    "type": "simulation.scenario_event",
+    "payload": {
+      "scheduleId": "ambulance-north",
+      "event": {
+        "type": "emergency",
+        "approach": "north",
+        "vehicleType": "ambulance",
+        "responding": true
+      },
+      "status": "applied"
+    }
+  },
+  {
+    "protocolVersion": 1,
+    "eventId": "event-44",
+    "correlationId": "decision-1",
+    "sessionId": "session-demo",
+    "generation": 0,
+    "stateVersion": 120,
+    "sequence": 44,
+    "simulationTimeMs": 12000,
+    "wallTime": "2026-10-29T18:00:12.000Z",
+    "source": "agent-a",
+    "provenance": "mock",
+    "summary": "Example agent.status",
+    "type": "agent.status",
+    "payload": {
+      "agentId": "agent-a",
+      "group": "NS",
+      "status": "inference",
+      "provenance": "mock",
+      "model": "mock-gemini-v1",
+      "lastInference": {
+        "inferenceId": "inference-0",
+        "correlationId": "decision-1",
+        "startedAtWallTime": "2026-10-29T18:00:12.000Z",
+        "completedAtWallTime": null,
+        "startedAtSimMs": 12000,
+        "completedAtSimMs": null,
+        "latencyMs": null,
+        "outcome": "pending"
+      },
+      "latestProposalId": null,
+      "requestCount": 1,
+      "message": null
+    }
+  },
+  {
+    "protocolVersion": 1,
+    "eventId": "event-45",
+    "correlationId": "decision-1",
+    "sessionId": "session-demo",
+    "generation": 0,
+    "stateVersion": 120,
+    "sequence": 45,
+    "simulationTimeMs": 12000,
+    "wallTime": "2026-10-29T18:00:12.010Z",
+    "source": "agent-b",
+    "provenance": "mock",
+    "summary": "Example agent.status",
+    "type": "agent.status",
+    "payload": {
+      "agentId": "agent-b",
+      "group": "EW",
+      "status": "inference",
+      "provenance": "mock",
+      "model": "mock-gemini-v1",
+      "lastInference": {
+        "inferenceId": "inference-1",
+        "correlationId": "decision-1",
+        "startedAtWallTime": "2026-10-29T18:00:12.010Z",
+        "completedAtWallTime": null,
+        "startedAtSimMs": 12000,
+        "completedAtSimMs": null,
+        "latencyMs": null,
+        "outcome": "pending"
+      },
+      "latestProposalId": null,
+      "requestCount": 1,
+      "message": null
+    }
+  },
+  {
+    "protocolVersion": 1,
+    "eventId": "event-46",
+    "correlationId": "decision-1",
+    "sessionId": "session-demo",
+    "generation": 0,
+    "stateVersion": 120,
+    "sequence": 46,
+    "simulationTimeMs": 12000,
+    "wallTime": "2026-10-29T18:00:12.300Z",
+    "source": "agent-a",
+    "provenance": "mock",
+    "summary": "Example agent.status",
+    "type": "agent.status",
+    "payload": {
+      "agentId": "agent-a",
+      "group": "NS",
+      "status": "proposal_pending",
+      "provenance": "mock",
+      "model": "mock-gemini-v1",
+      "lastInference": {
+        "inferenceId": "inference-0",
+        "correlationId": "decision-1",
+        "startedAtWallTime": "2026-10-29T18:00:12.000Z",
+        "completedAtWallTime": "2026-10-29T18:00:12.300Z",
+        "startedAtSimMs": 12000,
+        "completedAtSimMs": 12000,
+        "latencyMs": 300,
+        "outcome": "completed"
+      },
+      "latestProposalId": "proposal-a",
+      "requestCount": 1,
+      "message": null
+    }
+  },
+  {
+    "protocolVersion": 1,
+    "eventId": "event-47",
+    "correlationId": "decision-1",
+    "sessionId": "session-demo",
+    "generation": 0,
+    "stateVersion": 120,
+    "sequence": 47,
+    "simulationTimeMs": 12000,
+    "wallTime": "2026-10-29T18:00:12.300Z",
+    "source": "agent-a",
+    "provenance": "mock",
+    "summary": "Example agent.proposal",
+    "type": "agent.proposal",
+    "payload": {
+      "proposalId": "proposal-a",
+      "correlationId": "decision-1",
+      "agentId": "agent-a",
+      "sessionId": "session-demo",
+      "generation": 0,
+      "stateVersion": 120,
+      "createdAtSimMs": 12000,
+      "expiresAtSimMs": 20000,
+      "createdAtWallTime": "2026-10-29T18:00:12.000Z",
+      "deadlineWallTime": "2026-10-29T18:00:16.000Z",
+      "requestedPhase": "NS_GREEN",
+      "requestedGreenSeconds": 15,
+      "urgency": "emergency",
+      "observations": {
+        "queueLength": 1,
+        "maxWaitSeconds": 2.5,
+        "emergencyCount": 1,
+        "estimatedArrivalRateVehPerHour": 480
+      },
+      "rationale": "A responding ambulance is waiting North; request NS after required clearance.",
+      "provenance": "mock"
+    }
+  },
+  {
+    "protocolVersion": 1,
+    "eventId": "event-48",
+    "correlationId": "decision-1",
+    "sessionId": "session-demo",
+    "generation": 0,
+    "stateVersion": 120,
+    "sequence": 48,
+    "simulationTimeMs": 12000,
+    "wallTime": "2026-10-29T18:00:12.350Z",
+    "source": "agent-b",
+    "provenance": "mock",
+    "summary": "Example agent.status",
+    "type": "agent.status",
+    "payload": {
+      "agentId": "agent-b",
+      "group": "EW",
+      "status": "proposal_pending",
+      "provenance": "mock",
+      "model": "mock-gemini-v1",
+      "lastInference": {
+        "inferenceId": "inference-1",
+        "correlationId": "decision-1",
+        "startedAtWallTime": "2026-10-29T18:00:12.010Z",
+        "completedAtWallTime": "2026-10-29T18:00:12.350Z",
+        "startedAtSimMs": 12000,
+        "completedAtSimMs": 12000,
+        "latencyMs": 340,
+        "outcome": "completed"
+      },
+      "latestProposalId": "proposal-b",
+      "requestCount": 1,
+      "message": null
+    }
+  },
+  {
+    "protocolVersion": 1,
+    "eventId": "event-49",
+    "correlationId": "decision-1",
+    "sessionId": "session-demo",
+    "generation": 0,
+    "stateVersion": 120,
+    "sequence": 49,
+    "simulationTimeMs": 12000,
+    "wallTime": "2026-10-29T18:00:12.350Z",
+    "source": "agent-b",
+    "provenance": "mock",
+    "summary": "Example agent.proposal",
+    "type": "agent.proposal",
+    "payload": {
+      "proposalId": "proposal-b",
+      "correlationId": "decision-1",
+      "agentId": "agent-b",
+      "sessionId": "session-demo",
+      "generation": 0,
+      "stateVersion": 120,
+      "createdAtSimMs": 12000,
+      "expiresAtSimMs": 20000,
+      "createdAtWallTime": "2026-10-29T18:00:12.000Z",
+      "deadlineWallTime": "2026-10-29T18:00:16.000Z",
+      "requestedPhase": "EW_GREEN",
+      "requestedGreenSeconds": 15,
+      "urgency": "normal",
+      "observations": {
+        "queueLength": 0,
+        "maxWaitSeconds": 0,
+        "emergencyCount": 0,
+        "estimatedArrivalRateVehPerHour": 360
+      },
+      "rationale": "An eastbound group vehicle is clearing; retain EW service while arrivals approach.",
+      "provenance": "mock"
+    }
+  },
+  {
+    "protocolVersion": 1,
+    "eventId": "event-50",
+    "correlationId": "decision-1",
+    "sessionId": "session-demo",
+    "generation": 0,
+    "stateVersion": 120,
+    "sequence": 50,
+    "simulationTimeMs": 12000,
+    "wallTime": "2026-10-29T18:00:12.400Z",
+    "source": "controller",
+    "provenance": "deterministic",
+    "summary": "Example arbitration.conflict",
+    "type": "arbitration.conflict",
+    "payload": {
+      "proposalIds": [
+        "proposal-a",
+        "proposal-b"
+      ],
+      "reason": "mutually_exclusive_phases"
+    }
+  },
+  {
+    "protocolVersion": 1,
+    "eventId": "event-51",
+    "correlationId": "decision-1",
+    "sessionId": "session-demo",
+    "generation": 0,
+    "stateVersion": 120,
+    "sequence": 51,
+    "simulationTimeMs": 12000,
+    "wallTime": "2026-10-29T18:00:12.400Z",
+    "source": "jev",
+    "provenance": "mock",
+    "summary": "Example jev.arbitration",
+    "type": "jev.arbitration",
+    "payload": {
+      "arbitrationId": "arbitration-1",
+      "correlationId": "decision-1",
+      "sessionId": "session-demo",
+      "generation": 0,
+      "stateVersion": 120,
+      "proposalA": {
+        "proposalId": "proposal-a",
+        "correlationId": "decision-1",
+        "agentId": "agent-a",
+        "sessionId": "session-demo",
+        "generation": 0,
+        "stateVersion": 120,
+        "createdAtSimMs": 12000,
+        "expiresAtSimMs": 20000,
+        "createdAtWallTime": "2026-10-29T18:00:12.000Z",
+        "deadlineWallTime": "2026-10-29T18:00:16.000Z",
+        "requestedPhase": "NS_GREEN",
+        "requestedGreenSeconds": 15,
+        "urgency": "emergency",
+        "observations": {
+          "queueLength": 1,
+          "maxWaitSeconds": 2.5,
+          "emergencyCount": 1,
+          "estimatedArrivalRateVehPerHour": 480
+        },
+        "rationale": "A responding ambulance is waiting North; request NS after required clearance.",
+        "provenance": "mock"
+      },
+      "proposalB": {
+        "proposalId": "proposal-b",
+        "correlationId": "decision-1",
+        "agentId": "agent-b",
+        "sessionId": "session-demo",
+        "generation": 0,
+        "stateVersion": 120,
+        "createdAtSimMs": 12000,
+        "expiresAtSimMs": 20000,
+        "createdAtWallTime": "2026-10-29T18:00:12.000Z",
+        "deadlineWallTime": "2026-10-29T18:00:16.000Z",
+        "requestedPhase": "EW_GREEN",
+        "requestedGreenSeconds": 15,
+        "urgency": "normal",
+        "observations": {
+          "queueLength": 0,
+          "maxWaitSeconds": 0,
+          "emergencyCount": 0,
+          "estimatedArrivalRateVehPerHour": 360
+        },
+        "rationale": "An eastbound group vehicle is clearing; retain EW service while arrivals approach.",
+        "provenance": "mock"
+      },
+      "eligibleChoices": [
+        "GRANT_A",
+        "GRANT_B",
+        "DEFER"
+      ],
+      "context": {
+        "currentPhase": "EW_GREEN",
+        "ns": {
+          "queueLength": 1,
+          "maxWaitSeconds": 2.5,
+          "emergencyCount": 1,
+          "nearestEmergencyEtaSeconds": null,
+          "lastServedAtSimMs": null,
+          "totalGreenMs": 0
+        },
+        "ew": {
+          "queueLength": 0,
+          "maxWaitSeconds": 0,
+          "emergencyCount": 0,
+          "nearestEmergencyEtaSeconds": null,
+          "lastServedAtSimMs": 12000,
+          "totalGreenMs": 12000
+        },
+        "minimumGreenRemainingMs": 0,
+        "maximumGreenRemainingMs": 33000
+      },
+      "requestedAtSimMs": 12000,
+      "requestedAtWallTime": "2026-10-29T18:00:12.400Z",
+      "deadlineWallTime": "2026-10-29T18:00:16.000Z",
+      "completedAtWallTime": null,
+      "status": "pending",
+      "result": null,
+      "fallbackReason": null
+    }
+  },
+  {
+    "protocolVersion": 1,
+    "eventId": "event-52",
+    "correlationId": "decision-1",
+    "sessionId": "session-demo",
+    "generation": 0,
+    "stateVersion": 120,
+    "sequence": 52,
+    "simulationTimeMs": 12000,
+    "wallTime": "2026-10-29T18:00:12.480Z",
+    "source": "jev",
+    "provenance": "mock",
+    "summary": "Example jev.arbitration",
+    "type": "jev.arbitration",
+    "payload": {
+      "arbitrationId": "arbitration-1",
+      "correlationId": "decision-1",
+      "sessionId": "session-demo",
+      "generation": 0,
+      "stateVersion": 120,
+      "proposalA": {
+        "proposalId": "proposal-a",
+        "correlationId": "decision-1",
+        "agentId": "agent-a",
+        "sessionId": "session-demo",
+        "generation": 0,
+        "stateVersion": 120,
+        "createdAtSimMs": 12000,
+        "expiresAtSimMs": 20000,
+        "createdAtWallTime": "2026-10-29T18:00:12.000Z",
+        "deadlineWallTime": "2026-10-29T18:00:16.000Z",
+        "requestedPhase": "NS_GREEN",
+        "requestedGreenSeconds": 15,
+        "urgency": "emergency",
+        "observations": {
+          "queueLength": 1,
+          "maxWaitSeconds": 2.5,
+          "emergencyCount": 1,
+          "estimatedArrivalRateVehPerHour": 480
+        },
+        "rationale": "A responding ambulance is waiting North; request NS after required clearance.",
+        "provenance": "mock"
+      },
+      "proposalB": {
+        "proposalId": "proposal-b",
+        "correlationId": "decision-1",
+        "agentId": "agent-b",
+        "sessionId": "session-demo",
+        "generation": 0,
+        "stateVersion": 120,
+        "createdAtSimMs": 12000,
+        "expiresAtSimMs": 20000,
+        "createdAtWallTime": "2026-10-29T18:00:12.000Z",
+        "deadlineWallTime": "2026-10-29T18:00:16.000Z",
+        "requestedPhase": "EW_GREEN",
+        "requestedGreenSeconds": 15,
+        "urgency": "normal",
+        "observations": {
+          "queueLength": 0,
+          "maxWaitSeconds": 0,
+          "emergencyCount": 0,
+          "estimatedArrivalRateVehPerHour": 360
+        },
+        "rationale": "An eastbound group vehicle is clearing; retain EW service while arrivals approach.",
+        "provenance": "mock"
+      },
+      "eligibleChoices": [
+        "GRANT_A",
+        "GRANT_B",
+        "DEFER"
+      ],
+      "context": {
+        "currentPhase": "EW_GREEN",
+        "ns": {
+          "queueLength": 1,
+          "maxWaitSeconds": 2.5,
+          "emergencyCount": 1,
+          "nearestEmergencyEtaSeconds": null,
+          "lastServedAtSimMs": null,
+          "totalGreenMs": 0
+        },
+        "ew": {
+          "queueLength": 0,
+          "maxWaitSeconds": 0,
+          "emergencyCount": 0,
+          "nearestEmergencyEtaSeconds": null,
+          "lastServedAtSimMs": 12000,
+          "totalGreenMs": 12000
+        },
+        "minimumGreenRemainingMs": 0,
+        "maximumGreenRemainingMs": 33000
+      },
+      "requestedAtSimMs": 12000,
+      "requestedAtWallTime": "2026-10-29T18:00:12.400Z",
+      "deadlineWallTime": "2026-10-29T18:00:16.000Z",
+      "completedAtWallTime": "2026-10-29T18:00:12.480Z",
+      "status": "completed",
+      "result": {
+        "choice": "GRANT_A",
+        "probabilities": [
+          {
+            "choice": "GRANT_A",
+            "probability": 0.9
+          },
+          {
+            "choice": "GRANT_B",
+            "probability": 0.06
+          },
+          {
+            "choice": "DEFER",
+            "probability": 0.04
+          }
+        ],
+        "confidence": 0.9,
+        "confidenceBand": "high",
+        "confidencePolicy": {
+          "highThreshold": 0.85,
+          "mediumThreshold": 0.6
+        },
+        "model": "mock-jev-v1",
+        "modelVersion": null,
+        "latencyMs": 80,
+        "provenance": "mock"
+      },
+      "fallbackReason": null
+    }
+  },
+  {
+    "protocolVersion": 1,
+    "eventId": "event-53",
+    "correlationId": "decision-1",
+    "sessionId": "session-demo",
+    "generation": 0,
+    "stateVersion": 121,
+    "sequence": 53,
+    "simulationTimeMs": 12000,
+    "wallTime": "2026-10-29T18:00:12.500Z",
+    "source": "safety",
+    "provenance": "deterministic",
+    "summary": "Example decision.outcome",
+    "type": "decision.outcome",
+    "payload": {
+      "commandId": "command-1",
+      "correlationId": "decision-1",
+      "proposalIds": [
+        "proposal-a",
+        "proposal-b"
+      ],
+      "arbitrationId": "arbitration-1",
+      "status": "accepted",
+      "requestedPhase": "NS_GREEN",
+      "reason": "authorized",
+      "committedStateVersion": 121,
+      "scheduledAfterSimMs": 17000,
+      "summary": "NS authorized after EW yellow and all-red; occupancy can extend clearance."
+    }
+  },
+  {
+    "protocolVersion": 1,
+    "eventId": "event-54",
+    "correlationId": "decision-1",
+    "sessionId": "session-demo",
+    "generation": 0,
+    "stateVersion": 121,
+    "sequence": 54,
+    "simulationTimeMs": 12000,
+    "wallTime": "2026-10-29T18:00:12.500Z",
+    "source": "safety",
+    "provenance": "deterministic",
+    "summary": "Example signal.phase_changed",
+    "type": "signal.phase_changed",
+    "payload": {
+      "previousPhase": "EW_GREEN",
+      "signal": {
+        "phase": "EW_YELLOW",
+        "phaseStartedAtSimMs": 12000,
+        "earliestEndAtSimMs": 15000,
+        "latestEndAtSimMs": null,
+        "nextGreen": "NS_GREEN",
+        "activeCommandId": "command-1",
+        "clearanceBlockedByVehicles": false
+      },
+      "reason": "adaptive_command"
+    }
+  },
+  {
+    "protocolVersion": 1,
+    "eventId": "event-55",
+    "correlationId": "decision-1",
+    "sessionId": "session-demo",
+    "generation": 0,
+    "stateVersion": 121,
+    "sequence": 55,
+    "simulationTimeMs": 12000,
+    "wallTime": "2026-10-29T18:00:12.500Z",
+    "source": "controller",
+    "provenance": "deterministic",
+    "summary": "Example arbitration.fallback",
+    "type": "arbitration.fallback",
+    "payload": {
+      "arbitrationId": null,
+      "reason": "timeout",
+      "selectedPhase": "HOLD",
+      "policy": "emergency-fairness-v1"
+    }
+  },
+  {
+    "protocolVersion": 1,
+    "eventId": "event-56",
+    "correlationId": "decision-1",
+    "sessionId": "session-demo",
+    "generation": 0,
+    "stateVersion": 121,
+    "sequence": 56,
+    "simulationTimeMs": 12000,
+    "wallTime": "2026-10-29T18:00:12.500Z",
+    "source": "simulation",
+    "provenance": "simulation",
+    "summary": "Example simulation.metrics",
+    "type": "simulation.metrics",
+    "payload": {
+      "requestedVehicleCount": 5,
+      "spawnedVehicleCount": 3,
+      "completedVehicleCount": 1,
+      "activeVehicleCount": 2,
+      "upstreamBacklogCount": 2,
+      "upstreamBacklogByApproach": {
+        "north": 2,
+        "south": 0,
+        "east": 0,
+        "west": 0
+      },
+      "waitingVehicleCount": 1,
+      "queueByApproach": {
+        "north": 1,
+        "south": 0,
+        "east": 0,
+        "west": 0
+      },
+      "maximumQueueLength": 2,
+      "averageCompletedWaitingTimeMs": 1000,
+      "averageCompletedTravelTimeMs": 9000,
+      "totalObservedWaitingTimeMs": 7500,
+      "activeWaitingTimeMs": 2500,
+      "upstreamWaitingTimeMs": 4000,
+      "throughputVehPerHour": 300,
+      "emergencyCompletedCount": 0,
+      "averageCompletedEmergencySignalDelayMs": null,
+      "activeEmergencySignalDelayMs": 2500,
+      "signalChangeCount": 0,
+      "geminiRequestCount": 0,
+      "jevDecisionCount": 0,
+      "jevConfidenceCounts": {
+        "high": 0,
+        "medium": 0,
+        "low": 0
+      },
+      "geminiLatency": {
+        "sampleCount": 0,
+        "meanMs": null,
+        "maxMs": null
+      },
+      "jevLatency": {
+        "sampleCount": 0,
+        "meanMs": null,
+        "maxMs": null
+      },
+      "deadlineMissCount": 0,
+      "safetyRejectionCount": 0
+    }
+  },
+  {
+    "protocolVersion": 1,
+    "eventId": "event-57",
+    "correlationId": "decision-1",
+    "sessionId": "session-demo",
+    "generation": 0,
+    "stateVersion": 121,
+    "sequence": 57,
+    "simulationTimeMs": 12000,
+    "wallTime": "2026-10-29T18:00:12.500Z",
+    "source": "jev",
+    "provenance": "mock",
+    "summary": "Example simulation.error",
+    "type": "simulation.error",
+    "payload": {
+      "code": "PROVIDER_UNAVAILABLE",
+      "message": "Illustrative provider timeout; safe control continues.",
+      "retryable": true,
+      "issues": []
+    }
+  }
+]
