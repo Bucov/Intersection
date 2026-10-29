@@ -1,7 +1,7 @@
 import type { CreateSessionRequest, InjectedEvent, InjectEventResponse, ServerEvent } from "@intersection/shared";
 import { createRequestId } from "@/lib/ids";
 import { isTransportError, type ConnectionStatus, type IntersectionTransport } from "@/transport/IntersectionTransport";
-import { applySnapshot, createSessionState, reduceEvent, type SessionState } from "./session";
+import { applySnapshot, createSessionState, markHistoryBoundary, mergeHistory, reduceEvent, type SessionState } from "./session";
 import { createStore, type Store } from "./store";
 
 export type ControlAction = "start" | "pause" | "resume" | "reset";
@@ -29,6 +29,8 @@ export class SessionController {
   private unsubscribeStatus: (() => void) | null = null;
   private openToken = 0;
   private closeTimer: ReturnType<typeof setTimeout> | null = null;
+  /** Cursor before the latest sequence gap; history after it is backfilled once live again. */
+  private gapFrom: number | null = null;
 
   get activeTransport(): IntersectionTransport | null {
     return this.transport;
@@ -137,9 +139,37 @@ export class SessionController {
   }
 
   private handle(event: ServerEvent) {
-    const result = reduceEvent(this.store.getState(), event);
+    const previous = this.store.getState();
+    const result = reduceEvent(previous, event);
+    if (result.resync && this.gapFrom === null) this.gapFrom = previous.cursor;
+    if (event.type === "simulation.snapshot" && previous.cursor >= 0 && event.sequence > previous.cursor + 1 && this.gapFrom === null) {
+      this.gapFrom = previous.cursor;
+    }
     this.store.setState(result.state);
     if (result.resync) this.transport?.requestSnapshot();
+    if (this.gapFrom !== null && result.state.sync === "live") void this.backfill(this.gapFrom, result.state.cursor);
+  }
+
+  /** Contract step 6: restore the visible transcript from REST history after a gap. */
+  private async backfill(from: number, to: number) {
+    this.gapFrom = null;
+    const transport = this.transport;
+    const sessionId = this.store.getState().sessionId;
+    if (!transport || !sessionId || to <= from) return;
+    try {
+      let after = from;
+      for (let page = 0; page < 5 && after < to; page++) {
+        const history = await transport.getEvents(sessionId, { afterSequence: String(after), limit: "500" });
+        const relevant = history.events.filter(e => e.sequence <= to);
+        this.store.setState(s => (s.sessionId === sessionId ? mergeHistory(s, relevant) : s));
+        if (!history.hasMore || !history.events.length) break;
+        after = history.nextAfterSequence;
+      }
+    } catch (error) {
+      if (isTransportError(error) && error.code === "EVENT_HISTORY_EXPIRED") {
+        this.store.setState(s => (s.sessionId === sessionId ? markHistoryBoundary(s, from) : s));
+      }
+    }
   }
 }
 

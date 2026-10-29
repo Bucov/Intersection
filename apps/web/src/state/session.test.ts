@@ -2,7 +2,8 @@
 import { describe, expect, it } from "vitest";
 import { DEFAULT_SIGNAL_TIMING, SCENARIO_CATALOG, type ServerEvent, type SimulationSnapshot } from "@intersection/shared";
 import { MockSimulation } from "@/transport/mock/engine";
-import { agentVerdict, applySnapshot, createSessionState, latestCycle, reduceEvent, type SessionState } from "./session";
+import { describeEvent } from "./transcript";
+import { agentVerdict, applySnapshot, createSessionState, latestCycle, markHistoryBoundary, mergeHistory, reduceEvent, type SessionState } from "./session";
 
 function engine(scenarioId: "simultaneous-proposals" | "normal-traffic" = "simultaneous-proposals") {
   let wall = Date.parse("2026-10-29T18:00:00Z");
@@ -159,5 +160,25 @@ describe("session reducer", () => {
     const later = e.sim.snapshot();
     const state = applySnapshot(baseline(first), later);
     expect(applySnapshot(state, first)).toBe(state);
+  });
+
+  it("restores missed transcript entries from REST history without re-applying state", () => {
+    const e = engine();
+    let state = baseline(e.sim.snapshot());
+    e.sim.control("start", 0);
+    const events = [...e.sim.drain(), ...e.run(15, false)];
+    const half = Math.floor(events.length / 2);
+    ({ state } = feed(state, events.slice(0, half)));
+    const gapped = feed(state, events.slice(half + 3)).state;
+    const recovered = reduceEvent(gapped, e.sim.checkpointEvent()).state;
+    const missed = events.slice(half, half + 3);
+    const merged = mergeHistory(recovered, events);
+    const keys = merged.transcript.map(t => t.key);
+    const expected = missed.filter(event => describeEvent(event) !== null);
+    for (const event of expected) expect(keys).toContain(event.eventId);
+    expect(merged.transcript.map(t => t.sequence)).toEqual([...merged.transcript.map(t => t.sequence)].sort((a, b) => a - b));
+    expect(new Set(keys).size).toBe(keys.length);
+    expect(merged.signal).toBe(recovered.signal);
+    expect(markHistoryBoundary(merged, 10).transcript.some(t => t.title === "History unavailable")).toBe(true);
   });
 });

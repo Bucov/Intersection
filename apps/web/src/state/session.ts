@@ -316,6 +316,40 @@ function applyIncremental(state: SessionState, event: ServerEvent): SessionState
   }
 }
 
+/**
+ * Merge missed events from REST history into the transcript after a gap.
+ * History restores explanations only; it never re-applies past state.
+ */
+export function mergeHistory(state: SessionState, events: ServerEvent[]): SessionState {
+  const known = new Set(state.transcript.map(entry => entry.key));
+  const added = events
+    .filter(event => event.sessionId === state.sessionId && !known.has(event.eventId))
+    .map(event => describeEvent(event, event.generation < state.generation))
+    .filter((entry): entry is TranscriptEntry => entry !== null);
+  if (!added.length) return state;
+  const transcript = [...state.transcript, ...added].sort((a, b) => a.sequence - b.sequence).slice(-MAX_TRANSCRIPT);
+  return { ...state, transcript };
+}
+
+/** Mark where retained history ends (410 EVENT_HISTORY_EXPIRED). */
+export function markHistoryBoundary(state: SessionState, afterSequence: number): SessionState {
+  const entry: TranscriptEntry = {
+    key: `history-boundary-${afterSequence}`,
+    sequence: afterSequence + 0.5,
+    generation: state.generation,
+    simulationTimeMs: state.simulationTimeMs,
+    participant: "simulation",
+    provenance: "simulation",
+    kind: "session",
+    title: "History unavailable",
+    summary: "Some earlier events are no longer retained by the server, so this part of the transcript cannot be restored.",
+    tone: "warning",
+    details: [],
+    previousGeneration: false,
+  };
+  return { ...state, transcript: [...state.transcript, entry].sort((a, b) => a.sequence - b.sequence) };
+}
+
 // -----------------------------------------------------------------------------
 // Helpers
 
