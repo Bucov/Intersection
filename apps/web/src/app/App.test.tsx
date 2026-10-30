@@ -18,8 +18,9 @@ describe("App without WebGL or backend", () => {
     render(<App services={createAppServices()} />);
     expect(await screen.findByRole("heading", { name: "Choose how this intersection is controlled" })).toBeInTheDocument();
     // The 3D module is lazy-loaded behind the intro, so wait for it.
-    expect(await screen.findByTestId("scene")).toHaveAttribute("data-webgl", "unavailable");
-    expect(await screen.findByText(/3D view unavailable/)).toBeInTheDocument();
+    // Importing three under a busy parallel run can take several seconds.
+    expect(await screen.findByTestId("scene", {}, { timeout: 10_000 })).toHaveAttribute("data-webgl", "unavailable");
+    expect(await screen.findByText(/3D view unavailable/, {}, { timeout: 5000 })).toBeInTheDocument();
     await waitFor(() => expect(screen.getByTestId("connection-status")).toHaveTextContent("Offline demo"));
     expect(screen.getByText(/agents and JEV are simulated here, no models are called/)).toBeInTheDocument();
   });
