@@ -3,6 +3,7 @@ import { signalLights, type VehicleType } from "@intersection/shared";
 import { useServices } from "@/app/services";
 import { sameInsets } from "@/state/scene";
 import { useStore } from "@/state/store";
+import { cn } from "@/lib/utils";
 import type { RenderVehicle } from "./interpolation";
 
 const WIDTH: Record<VehicleType, number> = { car: 1.8, van: 1.95, bus_truck: 2.5, ambulance: 2.1, police: 1.85 };
@@ -84,8 +85,13 @@ export function SceneFallback({ reason, overlay = false }: { reason: "unsupporte
       className={overlay ? "absolute inset-0 bg-background" : "absolute inset-0"}
       data-testid="scene-fallback"
     >
-      <div className="absolute flex items-center justify-center" style={{ top: insets.top, right: insets.right, bottom: insets.bottom, left: insets.left }}>
-        <svg viewBox="-80 -80 160 160" className="aspect-square h-full max-h-full max-w-full" role="img" aria-label="Top-down schematic of the intersection">
+      {/* The notice never sits on the schematic. On Home it follows the headline; in the simulation the
+          HUD and view controls own the top corners, so it goes underneath, above the dock. */}
+      <div className={cn("absolute flex items-center gap-3 py-4 sm:py-6", view === "simulation" ? "flex-col-reverse" : "flex-col")} style={{ top: insets.top, right: insets.right, bottom: insets.bottom, left: insets.left }}>
+        <p className="max-w-[min(34rem,calc(100%-1rem))] shrink-0 rounded-md border bg-card px-3 py-2 text-center text-sm text-muted-foreground">
+          3D view unavailable. {REASON[reason]} Showing a 2D schematic of the same simulation.
+        </p>
+        <svg viewBox="-80 -80 160 160" overflow="hidden" className="aspect-square min-h-0 max-w-full flex-1" role="img" aria-label="Top-down schematic of the intersection">
           <rect x={-80} y={-80} width={160} height={160} fill="var(--scene-base)" />
           <rect x={-3.5} y={-80} width={7} height={160} fill="var(--scene-asphalt)" />
           <rect x={-80} y={-3.5} width={160} height={7} fill="var(--scene-asphalt)" />
@@ -101,9 +107,6 @@ export function SceneFallback({ reason, overlay = false }: { reason: "unsupporte
           <g ref={vehiclesRef} />
         </svg>
       </div>
-      <p className="absolute bottom-4 left-1/2 max-w-[min(36rem,90vw)] -translate-x-1/2 rounded-md border bg-card px-3 py-2 text-center text-sm text-muted-foreground">
-        3D view unavailable. {REASON[reason]} Showing a 2D schematic of the same simulation.
-      </p>
     </div>
   );
 }

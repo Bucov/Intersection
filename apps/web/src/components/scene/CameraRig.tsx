@@ -52,6 +52,7 @@ export function CameraRig() {
   const offset = useRef({ x: 0, y: 0, ready: false });
   const posed = useRef(false);
   const pose = useRef<Pose | null>(null);
+  const fog = useRef({ near: -5, far: 150 });
 
   useEffect(() => {
     const c = controls.current;
@@ -100,11 +101,16 @@ export function CameraRig() {
     camera.setViewOffset(size.width, size.height, -o.x, -o.y, size.width, size.height);
     camera.updateProjectionMatrix();
 
-    // Fog follows the camera so the model fades into the room at every zoom level.
+    // Fog follows the camera so the model fades into the room at every zoom level;
+    // it closes in on Home so the miniature floats in black.
     if (c && scene.fog instanceof Fog) {
-      const distance = c.distance;
-      scene.fog.near = distance + 35;
-      scene.fog.far = distance + 240;
+      const target = view === "preview" ? { near: -5, far: 150 } : { near: 35, far: 240 };
+      const f = fog.current;
+      const fk = reduced ? 1 : 1 - Math.exp(-delta * 2.2);
+      f.near += (target.near - f.near) * fk;
+      f.far += (target.far - f.far) * fk;
+      scene.fog.near = c.distance + f.near;
+      scene.fog.far = c.distance + f.far;
     }
   });
 

@@ -24,9 +24,9 @@ function GroupLight({ label, state }: { label: string; state: "red" | "yellow" |
 
 const STATUS_LABEL = { ready: "Ready", running: "Running", paused: "Paused", completed: "Finished" } as const;
 
-function Stat({ label, value, note, dot, muted, testId }: { label: string; value: string; note?: string | null; dot?: string; muted?: boolean; testId?: string }) {
+function Stat({ label, value, note, dot, muted, testId, className }: { label: string; value: string; note?: string | null; dot?: string; muted?: boolean; testId?: string; className?: string }) {
   return (
-    <div className="flex min-w-0 flex-col gap-0.5">
+    <div className={cn("flex min-w-0 flex-col gap-0.5", className)}>
       <dt className="flex items-center gap-1.5 text-xs text-muted-foreground">
         {dot ? <span className={cn("size-2 rounded-full", dot)} aria-hidden="true" /> : null}
         {label}
@@ -37,7 +37,11 @@ function Stat({ label, value, note, dot, muted, testId }: { label: string; value
   );
 }
 
-export function SignalHud({ mode, scenarioName }: { mode: ControllerMode; scenarioName: string }) {
+/**
+ * `compact` is for the HUD floating over the scene: below xl it keeps only the signal block so the
+ * scene stays visible. The counts it drops are in the Metrics tab.
+ */
+export function SignalHud({ mode, scenarioName, compact = false }: { mode: ControllerMode; scenarioName: string; compact?: boolean }) {
   const { session } = useServices();
   const view = useStore(session.store, s => ({
     signal: s.signal,
@@ -72,8 +76,8 @@ export function SignalHud({ mode, scenarioName }: { mode: ControllerMode; scenar
         </div>
       </div>
 
-      <div className="mt-3" aria-live="polite">
-        <p className="text-lg font-semibold leading-tight tracking-[-0.01em]" data-testid="signal-phase">{view.signal ? phaseName(view.signal.phase) : "—"}</p>
+      <div className="mt-3">
+        <p className="text-lg font-semibold leading-tight tracking-[-0.01em]" aria-live="polite" data-testid="signal-phase">{view.signal ? phaseName(view.signal.phase) : "—"}</p>
         {countdown ? (
           <p className="mt-1 text-sm text-muted-foreground">
             <span className="tabular text-foreground">{countdown.primary}</span>
@@ -86,15 +90,35 @@ export function SignalHud({ mode, scenarioName }: { mode: ControllerMode; scenar
         {controllerLabel} ⋅ {scenarioName} ⋅ {formatSpeed(view.speed)}
       </p>
 
-      <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-3 border-t pt-3">
+      <dl className={cn("mt-3 grid grid-cols-2 gap-x-4 gap-y-3 border-t pt-3", compact && "max-xl:hidden")}>
         <Stat label="Queue N/S" dot="bg-group-ns" testId="queue-ns" value={m ? String(m.queueByApproach.north + m.queueByApproach.south) : "—"} note={m && m.upstreamBacklogByApproach.north + m.upstreamBacklogByApproach.south > 0 ? `+${m.upstreamBacklogByApproach.north + m.upstreamBacklogByApproach.south} upstream` : null} />
         <Stat label="Queue E/W" dot="bg-group-ew" testId="queue-ew" value={m ? String(m.queueByApproach.east + m.queueByApproach.west) : "—"} note={m && m.upstreamBacklogByApproach.east + m.upstreamBacklogByApproach.west > 0 ? `+${m.upstreamBacklogByApproach.east + m.upstreamBacklogByApproach.west} upstream` : null} />
-        <Stat label="Average wait" value={m ? (m.averageCompletedWaitingTimeMs === null ? "None yet" : formatSeconds(m.averageCompletedWaitingTimeMs)) : "—"} note="Completed trips" muted={!m || m.averageCompletedWaitingTimeMs === null} />
-        <Stat label="Completed ⋅ on road" testId="vehicle-counts" value={m ? `${m.completedVehicleCount} ⋅ ${m.activeVehicleCount}` : "—"} />
+        <Stat label="Completed trips" testId="completed-count" value={m ? String(m.completedVehicleCount) : "—"} />
+        <Stat label="On the road" testId="active-count" value={m ? String(m.activeVehicleCount) : "—"} />
+        <Stat className="col-span-2" label="Average wait (completed trips)" value={m ? (m.averageCompletedWaitingTimeMs === null ? "No completed trips yet" : formatSeconds(m.averageCompletedWaitingTimeMs)) : "—"} muted={!m || m.averageCompletedWaitingTimeMs === null} />
       </dl>
       {view.status === "completed" && view.duration !== null ? (
         <p className="mt-3 rounded-md bg-muted px-3 py-2 text-[0.8125rem] text-muted-foreground">The {formatClock(view.duration)} scenario has finished. Reset to run it again.</p>
       ) : null}
     </section>
+  );
+}
+
+/** One-line signal readout for small screens, where the full HUD sits below the dock. */
+export function SignalStrip() {
+  const { session } = useServices();
+  const view = useStore(session.store, s => ({ signal: s.signal, controller: s.controller, timing: s.snapshot?.config.signalTiming ?? null, time: s.simulationTimeMs }), shallowEqual);
+  const clock = useSimClock();
+  const now = Math.max(clock, view.signal?.phaseStartedAtSimMs ?? 0);
+  const lights = view.signal ? signalLights(view.signal.phase) : null;
+  const countdown = view.signal && view.timing ? describeCountdown(view.signal, view.timing, view.controller, now) : null;
+  return (
+    <div className="flex items-center gap-2 text-sm" data-testid="signal-strip">
+      <GroupLight label="N/S" state={lights?.north ?? null} />
+      <GroupLight label="E/W" state={lights?.east ?? null} />
+      {/* The phase name gets the rest of the row and wraps rather than truncating. */}
+      <span className="min-w-0 flex-1 font-medium" aria-live="polite">{view.signal ? phaseName(view.signal.phase) : "—"}</span>
+      {countdown ? <span className="shrink-0 text-xs tabular text-muted-foreground">{countdown.short}</span> : null}
+    </div>
   );
 }

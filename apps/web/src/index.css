@@ -146,7 +146,7 @@
     --sidebar-border: var(--border);
     --sidebar-ring: var(--ring);
 
-    /* Layout */
+    /* Layout (the header stacks into two rows on phones) */
     --header-height: 3.5rem;
     --rail-width: clamp(22rem, 30vw, 30rem);
 }
@@ -210,6 +210,13 @@
         font-weight: 640;
         letter-spacing: -0.02em;
         line-height: 1;
+    }
+}
+
+@media (max-width: 639px) {
+    :root,
+    .dark {
+        --header-height: 5.75rem;
     }
 }
 

@@ -17,10 +17,11 @@ describe("App without WebGL or backend", () => {
   it("loads the home page with the 2D fallback and an honest status", async () => {
     render(<App services={createAppServices()} />);
     expect(await screen.findByRole("heading", { name: "Choose how this intersection is controlled" })).toBeInTheDocument();
-    expect(screen.getByTestId("scene")).toHaveAttribute("data-webgl", "unavailable");
-    expect(screen.getByText(/3D view unavailable/)).toBeInTheDocument();
+    // The 3D module is lazy-loaded behind the intro, so wait for it.
+    expect(await screen.findByTestId("scene")).toHaveAttribute("data-webgl", "unavailable");
+    expect(await screen.findByText(/3D view unavailable/)).toBeInTheDocument();
     await waitFor(() => expect(screen.getByTestId("connection-status")).toHaveTextContent("Offline demo"));
-    expect(screen.getByText(/the agents and JEV are simulated in your browser/)).toBeInTheDocument();
+    expect(screen.getByText(/agents and JEV are simulated here, no models are called/)).toBeInTheDocument();
   });
 
   it("navigates between Home, Settings and About", async () => {

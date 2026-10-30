@@ -18,10 +18,11 @@ export function Header() {
 
   return (
     <header className="fixed inset-x-0 top-0 z-40 h-(--header-height) bg-background">
-      <div className="grid h-full grid-cols-[1fr_auto_1fr] items-center gap-3 px-3 sm:px-5">
+      {/* Phones: wordmark and status on the first row, navigation centred below, so the title stays centred. */}
+      <div className="grid h-full grid-cols-[1fr_auto_1fr] grid-rows-[auto_auto] content-center items-center gap-x-3 gap-y-1.5 px-3 sm:grid-rows-1 sm:px-5">
         <motion.nav
           aria-label="Primary"
-          className="justify-self-start"
+          className="col-span-3 row-start-2 justify-self-center sm:col-span-1 sm:col-start-1 sm:row-start-1 sm:justify-self-start"
           initial={false}
           animate={{ opacity: revealed ? 1 : 0, y: revealed ? 0 : -4 }}
           transition={{ duration: 0.6, delay: phase === "handoff" ? 0.5 : 0, ease: [0.16, 1, 0.3, 1] }}
@@ -51,13 +52,13 @@ export function Header() {
           to="/"
           data-wordmark-slot
           aria-label="Intersection, home"
-          className={cn("wordmark rounded-sm px-1 text-[1.3125rem] text-foreground", phase !== "done" && "invisible")}
+          className={cn("wordmark col-start-2 row-start-1 rounded-sm px-1 text-[1.3125rem] text-foreground", phase !== "done" && "invisible")}
         >
           Intersection
         </Link>
 
         <motion.div
-          className="justify-self-end"
+          className="col-start-3 row-start-1 justify-self-end"
           initial={false}
           animate={{ opacity: revealed ? 1 : 0, y: revealed ? 0 : -4 }}
           transition={{ duration: 0.6, delay: phase === "handoff" ? 0.6 : 0, ease: [0.16, 1, 0.3, 1] }}

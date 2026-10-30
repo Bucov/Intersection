@@ -92,9 +92,11 @@ export function IntroOverlay() {
 
           <motion.div
             aria-hidden="true"
-            className="fixed left-0 top-0 -translate-x-1/2 -translate-y-1/2 whitespace-nowrap"
-            initial={{ left: centerX, top: centerY, fontSize: introSize }}
-            animate={travelling ? { left: target.x, top: target.y, fontSize: target.fontSize } : { left: centerX, top: centerY, fontSize: introSize, opacity: phase === "handoff" && reduced ? 0 : 1 }}
+            className="fixed -translate-x-1/2 -translate-y-1/2 whitespace-nowrap will-change-transform"
+            style={{ left: centerX, top: centerY, fontSize: introSize }}
+            initial={{ x: 0, y: 0, scale: 1 }}
+            // FLIP: the title keeps its layout and travels by transform only, landing exactly on the header slot.
+            animate={travelling ? { x: target.x - centerX, y: target.y - centerY, scale: target.fontSize / introSize } : { x: 0, y: 0, scale: 1, opacity: phase === "handoff" && reduced ? 0 : 1 }}
             transition={travelling ? { duration: 1.0, ease: EASE_TRAVEL } : { duration: reduced ? 0.4 : 0 }}
           >
             <motion.span

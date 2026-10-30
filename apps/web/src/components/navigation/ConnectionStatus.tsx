@@ -44,7 +44,7 @@ export function ConnectionStatus() {
         }
       >
         <StatusDot tone={summary.tone} pulsing={summary.pulsing} />
-        <span className="max-sm:sr-only">{summary.label}</span>
+        <span className="max-sm:max-w-28 max-sm:truncate max-sm:text-xs">{summary.label}</span>
       </PopoverTrigger>
       <PopoverContent align="end" className="w-80 gap-3">
         <div className="flex flex-col gap-1">

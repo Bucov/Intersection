@@ -9,7 +9,7 @@ import type { SceneTheme } from "./sceneTheme";
 const APPROACHES: readonly Approach[] = ["north", "south", "east", "west"];
 const LAMPS = ["red", "yellow", "green"] as const;
 type Lamp = (typeof LAMPS)[number];
-const HEAD_SCALE = 1.7;
+const HEAD_SCALE = 2.2;
 
 function glowTexture(): Texture {
   const size = 64;

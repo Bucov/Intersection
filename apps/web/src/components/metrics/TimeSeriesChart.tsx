@@ -96,7 +96,7 @@ export function TimeSeriesChart<T extends { t: number }>({ title, description, d
                 domain={[first, last]}
                 ticks={ticksFor(first, last)}
                 tickFormatter={value => formatClock(Number(value))}
-                tick={{ fill: "var(--subtle-foreground)", fontSize: 10, fontFamily: "var(--font-mono)" }}
+                tick={{ fill: "var(--subtle-foreground)", fontSize: 11, fontFamily: "var(--font-mono)" }}
                 tickLine={false}
                 axisLine={{ stroke: "var(--chart-grid)" }}
                 height={20}
@@ -104,7 +104,7 @@ export function TimeSeriesChart<T extends { t: number }>({ title, description, d
               <YAxis
                 width={38}
                 tickFormatter={value => format(Number(value))}
-                tick={{ fill: "var(--subtle-foreground)", fontSize: 10, fontFamily: "var(--font-mono)" }}
+                tick={{ fill: "var(--subtle-foreground)", fontSize: 11, fontFamily: "var(--font-mono)" }}
                 tickLine={false}
                 axisLine={false}
                 allowDecimals={false}

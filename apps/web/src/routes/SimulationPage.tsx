@@ -4,7 +4,7 @@ import { motion, useReducedMotion, type TargetAndTransition } from "motion/react
 import { SCENARIO_CATALOG, type ControllerMode } from "@intersection/shared";
 import { useServices } from "@/app/services";
 import { ConnectionBanner } from "@/components/simulation/ConnectionBanner";
-import { SignalHud } from "@/components/simulation/SignalHud";
+import { SignalHud, SignalStrip } from "@/components/simulation/SignalHud";
 import { SimulationRail } from "@/components/simulation/SimulationRail";
 import { ViewControls } from "@/components/simulation/ViewControls";
 import { ControlBar } from "@/components/simulation-controls/ControlBar";
@@ -59,11 +59,11 @@ export function SimulationPage() {
   return (
     <motion.main className="pointer-events-none fixed inset-0 z-10 flex flex-col pt-(--header-height) max-lg:overflow-y-auto lg:flex-row" exit={{ opacity: 1 }} transition={{ duration: 0.4 }} data-testid="simulation">
       <h1 className="sr-only">{mode === "ai" ? "AI intersection" : "Traditional intersection"} simulation</h1>
-      <section aria-label="Intersection" className="relative flex min-h-0 flex-col max-lg:shrink-0 lg:flex-1">
+      <section aria-label="Intersection" className="relative flex min-h-0 flex-col max-lg:shrink-0 lg:min-w-0 lg:flex-1">
         <div ref={stage} className="relative min-h-0 max-lg:h-[58vh] lg:flex-1" aria-hidden="true" />
 
         <motion.div {...enter("x", -24)} className="pointer-events-none absolute left-4 top-4 z-10 max-lg:hidden">
-          <SignalHud mode={mode} scenarioName={scenario.name} />
+          <SignalHud mode={mode} scenarioName={scenario.name} compact />
         </motion.div>
         <motion.div {...enter("y", -12, 0.05)} className="absolute right-4 top-4 z-10 flex flex-col items-end gap-3">
           <ViewControls />
@@ -74,6 +74,9 @@ export function SimulationPage() {
 
         <motion.div {...enter("y", 24, 0.1)} className="pointer-events-auto z-10 px-4 pb-4">
           <div className="flex flex-col gap-3 rounded-xl border bg-panel p-3 shadow-[0_18px_40px_-24px_rgb(0_0_0/0.9)]" data-testid="dock">
+            <div className="lg:hidden">
+              <SignalStrip />
+            </div>
             <ControlBar mode={mode} scenarioId={scenario.id} seed={seed} scenarios={scenarios} />
             <ConcurrencyTimeline mode={mode} />
           </div>
@@ -87,7 +90,7 @@ export function SimulationPage() {
       <motion.aside
         {...enter("x", 40, 0.05)}
         aria-label={mode === "ai" ? "AI coordination" : "Fixed-time controller"}
-        className="pointer-events-auto flex min-h-[32rem] flex-col border-t bg-panel lg:min-h-0 lg:w-(--rail-width) lg:border-l lg:border-t-0"
+        className="pointer-events-auto flex min-h-[32rem] flex-col border-t bg-panel lg:min-h-0 lg:w-(--rail-width) lg:shrink-0 lg:border-l lg:border-t-0"
       >
         <SimulationRail mode={mode} scenarioId={scenario.id} seed={seed} scenarios={scenarios} />
       </motion.aside>

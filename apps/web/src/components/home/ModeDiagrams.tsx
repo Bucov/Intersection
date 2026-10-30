@@ -35,7 +35,7 @@ export function FixedCycleDiagram({ timing, marker }: { timing: SignalTiming; /*
       ))}
       <figcaption className="grid grid-cols-[2.25rem_1fr] gap-2 text-xs text-subtle-foreground">
         <span />
-        <span className="flex justify-between font-mono tabular">
+        <span className="flex justify-between tabular">
           <span>0 s</span>
           <span>{cycle / 1000} s cycle, repeating</span>
         </span>

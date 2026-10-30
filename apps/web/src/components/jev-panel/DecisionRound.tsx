@@ -92,7 +92,7 @@ export function DecisionRound({ cycle, agents, timing }: { cycle: DecisionCycle 
       </header>
       <ol className="flex flex-col gap-2">
         {steps.map(step => (
-          <li key={step.who} className="grid grid-cols-[4.75rem_1fr] items-baseline gap-2 text-[0.8125rem]">
+          <li key={step.who} className="grid grid-cols-[4.75rem_1fr] items-baseline gap-2 text-sm">
             <span className="flex items-center gap-1.5 text-muted-foreground">
               <span className={cn("size-1.5 shrink-0 translate-y-[-1px] rounded-full", step.dot, STATE_DOT[step.state])} aria-hidden="true" />
               {step.who}
@@ -102,8 +102,8 @@ export function DecisionRound({ cycle, agents, timing }: { cycle: DecisionCycle 
         ))}
       </ol>
       {summary ? (
-        <figure className="flex flex-col gap-1 rounded-md bg-muted/60 px-3 py-2.5">
-          <p className="text-[0.8125rem] leading-relaxed" data-testid="round-summary">{summary}</p>
+        <figure className="flex flex-col gap-1 border-t pt-3">
+          <p className="text-sm leading-relaxed" data-testid="round-summary">{summary}</p>
           <figcaption className="text-[0.6875rem] text-subtle-foreground">Summary written by this app from the events above, not by JEV.</figcaption>
         </figure>
       ) : null}
@@ -127,7 +127,10 @@ function summarize(cycle: DecisionCycle, timing: SignalTiming | null): string | 
   } else {
     parts.push("Neither agent produced a usable proposal.");
   }
-  if (result) parts.push(`JEV chose to ${choiceName(result.choice).toLowerCase()} with ${formatPercent(result.confidence)} confidence (${result.confidenceBand}).`);
+  if (result) {
+    const action = result.choice === "GRANT_A" ? "grant Agent A" : result.choice === "GRANT_B" ? "grant Agent B" : "defer both requests";
+    parts.push(`JEV chose to ${action} with ${formatPercent(result.confidence)} confidence (${result.confidenceBand}).`);
+  }
   else if (cycle.arbitration?.status === "failed") parts.push("JEV did not answer in time, so it reported no confidence.");
   if (cycle.fallback) parts.push(`The deterministic fallback (${cycle.fallback.reason.replaceAll("_", " ")}) chose to ${cycle.fallback.selectedPhase === "HOLD" ? "hold the current phase" : `serve ${phaseName(cycle.fallback.selectedPhase)}`}.`);
   if (decision) {

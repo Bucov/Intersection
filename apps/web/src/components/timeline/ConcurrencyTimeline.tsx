@@ -8,12 +8,13 @@ import { shallowEqual, useStore } from "@/state/store";
 
 // AI: a tighter window so second-long inference bars stay legible. Fixed: show the schedule ahead.
 const WINDOW: Record<ControllerMode, { back: number; ahead: number }> = {
-  ai: { back: 45_000, ahead: 6_000 },
-  traditional: { back: 55_000, ahead: 30_000 },
+  // About 50 px per simulated second on a laptop, so a 0.9 s inference prints its latency.
+  ai: { back: 14_000, ahead: 3_000 },
+  traditional: { back: 40_000, ahead: 30_000 },
 };
-const ROW = 17;
+const ROW = 18;
 const GAP = 4;
-const LABEL_W = 64;
+const LABEL_W = 74;
 const AXIS_H = 18;
 
 type Row = { key: string; label: string; kind: "signal-ns" | "signal-ew" | TimelineLane };
@@ -85,8 +86,10 @@ export function ConcurrencyTimeline({ mode }: { mode: ControllerMode }) {
 
   const rows = mode === "ai" ? AI_ROWS : FIXED_ROWS;
   const now = Math.max(clock, data.phases[data.phases.length - 1]?.startSimMs ?? 0);
-  const start = now - WINDOW[mode].back;
-  const end = now + WINDOW[mode].ahead;
+  // The axis starts at 0:00 and fills up before it starts to scroll.
+  const span = WINDOW[mode].back + WINDOW[mode].ahead;
+  const start = Math.max(0, now - WINDOW[mode].back);
+  const end = start + span;
   const plotW = width - LABEL_W - 8;
   const x = (t: number) => LABEL_W + ((t - start) / (end - start)) * plotW;
   const height = rows.length * (ROW + GAP) + AXIS_H;
@@ -98,7 +101,8 @@ export function ConcurrencyTimeline({ mode }: { mode: ControllerMode }) {
   );
 
   const ticks: number[] = [];
-  for (let t = Math.ceil(start / 10_000) * 10_000; t <= end; t += 10_000) if (t >= 0) ticks.push(t);
+  const tickStep = span <= 20_000 ? 5_000 : 10_000;
+  for (let t = Math.ceil(start / tickStep) * tickStep; t <= end; t += tickStep) ticks.push(t);
 
   const signalSegments = (group: "north" | "east") => {
     const out: { from: number; to: number; state: "red" | "yellow" | "green"; future: boolean; phase: SignalPhase }[] = [];
@@ -122,11 +126,12 @@ export function ConcurrencyTimeline({ mode }: { mode: ControllerMode }) {
 
   return (
     <figure className="flex flex-col gap-1.5" aria-label="Coordination timeline">
-      <div ref={wrap} className="w-full">
+      {/* Inline-size containment keeps the SVG's own width out of the layout, so the observer can shrink it. */}
+      <div ref={wrap} className="w-full [contain:inline-size]">
         <svg width={width} height={height} role="img" aria-label={mode === "ai" ? "Signal phases with Agent A, Agent B, JEV and safety activity over the last minute" : "Signal phases over the last minute and the fixed schedule ahead"} className="block overflow-visible">
           {rows.map((row, i) => (
             <g key={row.key} transform={`translate(0 ${rowY(i)})`}>
-              <text x={0} y={ROW / 2 + 4} className="fill-muted-foreground text-[11px]">{row.label}</text>
+              <text x={0} y={ROW / 2 + 4} className="fill-muted-foreground text-[12px]">{row.label}</text>
               <rect x={LABEL_W} y={0} width={plotW} height={ROW} rx={3} className="fill-muted/40" />
             </g>
           ))}
@@ -175,8 +180,8 @@ export function ConcurrencyTimeline({ mode }: { mode: ControllerMode }) {
                       >
                         <title>{`${lane === "jev" ? "JEV" : lane === "safety" ? "Safety gate" : lane === "agent-a" ? "Agent A" : "Agent B"} ⋅ ${bar.outcome}${bar.latencyMs !== null ? ` ⋅ ${formatLatency(bar.latencyMs)}` : ""} ⋅ ${formatClock(bar.startSimMs)}`}</title>
                       </rect>
-                      {label && w > 44 ? (
-                        <text x={x(from) + 5} y={y + ROW / 2 + 2} className="pointer-events-none fill-background font-mono text-[10px] font-medium">{label}</text>
+                      {label && w > 42 ? (
+                        <text x={x(from) + 4} y={y + ROW / 2 + 2.5} className="pointer-events-none fill-background font-mono text-[11px] font-medium">{label}</text>
                       ) : null}
                     </g>
                   );
@@ -188,7 +193,7 @@ export function ConcurrencyTimeline({ mode }: { mode: ControllerMode }) {
           {ticks.map(t => (
             <g key={t} transform={`translate(${x(t)} ${rows.length * (ROW + GAP)})`}>
               <line y1={0} y2={4} className="stroke-subtle-foreground" />
-              <text y={15} textAnchor="middle" className="fill-subtle-foreground font-mono text-[10px]">{formatClock(t)}</text>
+              <text y={15} textAnchor="middle" className="fill-subtle-foreground font-mono text-[11px]">{formatClock(t)}</text>
             </g>
           ))}
         </svg>
