@@ -58,7 +58,7 @@ export class MockDriver {
         this.accumulator = 0;
       }
       if (steps > 0) {
-        this.sim.advance(steps);
+        this.sim.advance(steps, STEP_MS / this.sim.speedMultiplier);
         this.sim.broadcastSnapshot();
       }
     } else {

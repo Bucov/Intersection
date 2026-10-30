@@ -145,6 +145,31 @@ describe("offline demo engine", () => {
     }
   });
 
+  it("dates a catch-up batch back, so simulated latency spans the same simulation time", () => {
+    const scenario = SCENARIO_CATALOG.find(s => s.id === "simultaneous-proposals")!;
+    let wall = WALL_START;
+    const sim = new MockSimulation({
+      sessionId: "test-batch", mode: "ai", scenarioId: scenario.id, parameters: scenario.defaults,
+      signalTiming: DEFAULT_SIGNAL_TIMING, seed: 42, wallClock: () => wall,
+    });
+    sim.control("start", sim.generation);
+    sim.drain();
+    // Real time and simulation time move together until both agents start inference...
+    let started = false;
+    for (let i = 0; i < 600 && !started; i++) {
+      wall += 100;
+      sim.advance(1);
+      started = sim.drain().some(e => e.type === "agent.status" && e.payload.status === "inference");
+    }
+    expect(started).toBe(true);
+    // ...then the page stalls for 3 s and the driver runs the missed steps in one batch.
+    wall += 3000;
+    sim.advance(30, 100);
+    const finished = sim.drain().flatMap(e => (e.type === "agent.status" && e.payload.lastInference?.outcome === "completed" ? [e.payload.lastInference] : []));
+    expect(finished).toHaveLength(2);
+    for (const interval of finished) expect(interval.completedAtSimMs! - interval.startedAtSimMs).toBe(interval.latencyMs);
+  });
+
   it("falls back deterministically when JEV times out", () => {
     const scenario = SCENARIO_CATALOG.find(s => s.id === "jev-failure")!;
     const run = createRun(scenario, "ai");

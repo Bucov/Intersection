@@ -208,6 +208,8 @@ export class MockSimulation {
   private version = 0;
   private sequence = 0;
   private time = 0;
+  /** How far the step being run lies before the wall clock's "now" (see advance). */
+  private wallLag = 0;
   private outbox: ServerEvent[] = [];
   private history: ServerEvent[] = [];
   private samples: MetricsSample[] = [];
@@ -389,15 +391,24 @@ export class MockSimulation {
   }
 
   /** Run up to `steps` physics steps while the session is running. */
-  advance(steps: number): void {
-    for (let i = 0; i < steps && this.sessionStatus === "running"; i++) this.step();
+  /**
+   * Runs physics steps. A real-time driver catching up after a slow frame runs several steps at one
+   * instant; `stepWallMs` dates each of them back to the real moment it stands for, so simulated model
+   * latency (wall clock) ends at the matching simulation time instead of at the first step of the batch.
+   */
+  advance(steps: number, stepWallMs = 0): void {
+    for (let i = 0; i < steps && this.sessionStatus === "running"; i++) {
+      this.wallLag = (steps - 1 - i) * stepWallMs;
+      this.step();
+    }
+    this.wallLag = 0;
   }
 
   // ---------------------------------------------------------------------------
   // Host interface used by the adaptive controller
 
   now(): number { return this.time; }
-  wallNow(): number { return this.wallClock(); }
+  wallNow(): number { return this.wallClock() - this.wallLag; }
   bumpVersion(): number { return ++this.version; }
 
   signalView() {
@@ -1164,7 +1175,7 @@ export class MockSimulation {
       stateVersion: this.version,
       sequence: this.sequence,
       simulationTimeMs: this.time,
-      wallTime: new Date(this.wallClock()).toISOString(),
+      wallTime: new Date(this.wallNow()).toISOString(),
       source,
       provenance,
       summary: summary.slice(0, 500),
