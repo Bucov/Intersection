@@ -270,6 +270,8 @@ export class Simulation {
   private wallLag = 0;
   private outbox: ServerEvent[] = [];
   private history: ServerEvent[] = [];
+  private historySizes: number[] = [];
+  private historyBytes = 0;
   private samples: MetricsSample[] = [];
 
   // World state, rebuilt on reset.
@@ -763,8 +765,13 @@ export class Simulation {
     if (this.outbox.length > 4000) this.outbox.shift();
     if (this.retainEvents > 0) {
       this.history.push(event);
-      if (this.history.length > this.retainEvents)
-        this.history.splice(0, this.history.length - this.retainEvents);
+      const bytes = JSON.stringify(event).length * 2;
+      this.historySizes.push(bytes);
+      this.historyBytes += bytes;
+      while (this.history.length > this.retainEvents || this.historyBytes > 8 * 1024 * 1024) {
+        this.history.shift();
+        this.historyBytes -= this.historySizes.shift()!;
+      }
     }
     return event;
   }
@@ -785,6 +792,7 @@ export class Simulation {
     for (const approach of APPROACHES) this.moveLane(approach, T);
     this.despawn(T);
     for (const approach of APPROACHES) this.spawn(approach, T);
+    if (this.signal.phase === "ALL_RED") this.signal.clearanceBlocked = T >= this.signal.startedAt + this.timing.allRedMs && this.boxOccupied();
     this.trackQueue();
     this.adaptive?.update();
 

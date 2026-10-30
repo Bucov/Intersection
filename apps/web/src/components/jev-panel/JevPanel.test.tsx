@@ -82,3 +82,16 @@ describe("Decision round", () => {
     expect(screen.getByText("Summary written by this app from the events above, not by JEV.")).toBeInTheDocument();
   });
 });
+
+it('preserves missing live adapter measurements and separates JEV provenance from proposal provenance', () => {
+  const cycle = arbitrated('simultaneous-proposals');
+  const record = cycle.arbitration!;
+  record.result = null;
+  record.adapterResult = {requestId:record.arbitrationId,sessionId:record.sessionId,cycleId:record.correlationId,generation:record.generation,stateVersion:1,status:'selected',selectedCandidateId:record.proposalA.proposalId,source:'jev',measurements:'model',confidence:null,probabilities:null,abstainProbability:null,latencyMs:15};
+  record.fallbackReason='low_confidence';
+  wrap(<JevPanel cycle={cycle} jevModel={null} />);
+  expect(screen.getByText('Live')).toBeInTheDocument();
+  expect(screen.queryByRole('meter')).not.toBeInTheDocument();
+  expect(screen.getByText(/Confidence: unavailable/)).toBeInTheDocument();
+  expect(screen.getByText(/measured wall time/)).toBeInTheDocument();
+});

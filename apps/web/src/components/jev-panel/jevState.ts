@@ -32,7 +32,7 @@ export function jevState(cycle: DecisionCycle | null): JevState {
     if (cycle.fallback) return { kind: "fallback", label: "Fallback rules decided", tone: "warning" };
     const a = cycle.proposals["agent-a"];
     const b = cycle.proposals["agent-b"];
-    if (a && b && a.requestedPhase === b.requestedPhase) return { kind: "not-needed", label: "No arbitration needed", tone: "neutral" };
+    if (a && b && a.requestedPhase === b.requestedPhase && a.requestedGreenSeconds === b.requestedGreenSeconds) return { kind: "not-needed", label: "No arbitration needed", tone: "neutral" };
     if (decision) return { kind: "not-needed", label: "No arbitration needed", tone: "neutral" };
     return { kind: "idle", label: cycle.conflict ? "Conflict detected" : "Agents are working", tone: "neutral" };
   }
@@ -46,7 +46,8 @@ export function jevState(cycle: DecisionCycle | null): JevState {
       if (arbitration.fallbackReason === "invalid_response") return { kind: "invalid", label: "Invalid response ⋅ fallback used", tone: "warning" };
       return { kind: "provider-error", label: "Provider error ⋅ fallback used", tone: "warning" };
     case "completed": {
-      const result = arbitration.result!;
+      const result = arbitration.result;
+      if (!result) return { kind: "fallback", label: arbitration.adapterResult?.status === "abstained" ? "JEV abstained ⋅ fallback used" : "Measurements unavailable ⋅ fallback used", tone: "warning" };
       if (decision?.status === "rejected") return { kind: "safety-rejected", label: "Rejected by the safety gate", tone: "negative" };
       if (result.confidenceBand === "low") return { kind: "low-confidence", label: "Low confidence ⋅ fallback used", tone: "warning" };
       if (cycle.fallback?.reason === "medium_confidence_deferred") return { kind: "medium-deferred", label: "Medium confidence ⋅ deferred", tone: "warning" };

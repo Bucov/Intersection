@@ -1,0 +1,23 @@
+import {test,expect,type Page} from '@playwright/test';
+import {SocketMessageSchema,type ServerEvent} from '@intersection/shared';
+test.beforeEach(async({context})=>{await context.addInitScript(()=>localStorage.setItem('intersection.preferences.v1',JSON.stringify({dataSource:'backend',quality:'low'})));});
+const visible=(page:Page,id:string)=>page.getByTestId(id).filter({visible:true}).first();
+function capture(page:Page){const events:ServerEvent[]=[];const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));page.on('websocket',ws=>ws.on('framereceived',f=>{const p=SocketMessageSchema.safeParse(JSON.parse(String(f.payload)));if(!p.success)errors.push('Invalid socket frame');else if(p.data.type!=='pong')events.push(p.data);}));return {events,errors};}
+test('traditional browser simulation uses authoritative motion, controls and metrics with no keys',async({page})=>{
+ const {events,errors}=capture(page);await page.goto('/simulate/traditional?skipIntro&scenario=competing-priorities');await expect(visible(page,'session-status')).toHaveText('Running');await expect(page.getByTestId('fixed-time-panel')).toContainText('No AI is called');await expect(page.getByTestId('scene')).toHaveAttribute('data-webgl','ok');
+ await expect.poll(()=>events.filter(e=>e.type==='simulation.snapshot').length).toBeGreaterThan(5);
+ const snapshots=events.filter(e=>e.type==='simulation.snapshot');const first=snapshots.find(e=>e.payload.vehicles.length>0)!;await expect.poll(()=>events.some(e=>e.type==='simulation.snapshot'&&e.payload.vehicles.some(v=>{const old=first.payload.vehicles.find(x=>x.id===v.id);return old&&JSON.stringify(old.position)!==JSON.stringify(v.position);}))).toBe(true);
+ await page.getByTestId('playback').click();await expect(visible(page,'session-status')).toHaveText('Paused');const time=await visible(page,'sim-clock').textContent();await page.waitForTimeout(350);await expect(visible(page,'sim-clock')).toHaveText(time!);
+ await page.getByTestId('playback').click();await expect(visible(page,'session-status')).toHaveText('Running');await page.getByRole('button',{name:'4 times speed'}).click();await page.getByRole('tab',{name:'Metrics'}).click();await expect(page.getByTestId('metrics-panel')).toContainText('Time-average queue');
+ await page.getByTestId('reset').click();await expect(visible(page,'session-status')).toHaveText('Ready');expect(events.some(e=>e.type==='agent.proposal'||e.type==='jev.arbitration')).toBe(false);expect(errors).toEqual([]);await page.screenshot({path:'/tmp/intersection-traditional.png'});
+});
+for(const scenario of ['simultaneous-proposals','jev-uncertainty','jev-failure'])test(`AI browser displays actual bridge ${scenario}`,async({page})=>{
+ const {events,errors}=capture(page);await page.goto(`/simulate/ai?skipIntro&scenario=${scenario}`);await expect(visible(page,'session-status')).toHaveText('Running');await expect.poll(()=>events.some(e=>e.type==='jev.arbitration'&&['completed','timed_out'].includes(e.payload.bridgePhase??''))).toBe(true);
+ await expect(page.getByTestId('agent-card-agent-a')).toContainText('Offline runner');await expect(page.getByTestId('agent-card-agent-b')).toContainText('Offline runner');
+ await expect(page.getByTestId('jev-panel')).toContainText('Mock');if(scenario==='jev-failure')await expect(page.getByTestId('jev-state')).toContainText('Timed out');else await expect(page.getByTestId('jev-panel')).toContainText('Synthetic confidence');
+ if(scenario==='simultaneous-proposals'){await page.screenshot({path:'/tmp/intersection-ai.png'});await page.setViewportSize({width:390,height:844});await expect(page.getByTestId('agent-card-agent-a')).toBeVisible();await page.screenshot({path:'/tmp/intersection-ai-mobile.png',fullPage:true});}
+ await page.getByRole('tab',{name:'Transcript'}).click();await expect(page.getByTestId('transcript')).toContainText('Proposal');expect(errors).toEqual([]);
+});
+test('browser compares measured independent sessions and renders the honest limitations',async({page})=>{
+ const {errors}=capture(page);await page.goto('/simulate/traditional?skipIntro');await expect(visible(page,'session-status')).toHaveText('Running');await page.getByRole('tab',{name:'Compare'}).click();await page.getByRole('button',{name:'Run comparison'}).click();const panel=page.getByTestId('comparison');await expect(panel).toContainText('Limitations');await expect(panel).toContainText('actual adapter mock choices');await expect(panel.getByRole('rowheader',{name:'Completed trips',exact:true})).toBeVisible();expect(errors).toEqual([]);
+});

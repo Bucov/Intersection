@@ -58,7 +58,7 @@ export function ConnectionStatus() {
           <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 border-t pt-3 text-sm">
             {healthProviders.map(p => (
               <div key={p.provider} className="contents">
-                <dt className="text-muted-foreground">{p.provider === "gemini" ? "Gemini" : "JEV"}</dt>
+                <dt className="text-muted-foreground">{p.provider === "gemini" ? "Proposal agents" : "JEV"}</dt>
                 <dd>
                   {p.mode === "mock" ? "Mock" : "Live"} ⋅ {p.status.replaceAll("_", " ")}
                   {p.model ? <span className="text-subtle-foreground"> ⋅ {p.model}</span> : null}

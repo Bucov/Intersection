@@ -24,7 +24,7 @@ export function MetricsPanel({ mode }: { mode: ControllerMode }) {
   const { metrics: m, series, demoMode, time } = useStore(session.store, s => ({ metrics: s.metrics, series: s.series, demoMode: s.snapshot?.config.demoMode ?? null, time: s.simulationTimeMs }), shallowEqual);
   const controllerColor = mode === "ai" ? "var(--chart-ai)" : "var(--chart-fixed)";
   const controllerLabel = mode === "ai" ? "AI" : "Fixed-time";
-  const simulated = demoMode !== "live" ? " (simulated)" : "";
+  const simulated = m?.inferenceTiming === "wall" ? " (measured wall time)" : demoMode !== "live" ? " (simulated)" : "";
 
   if (!m) return <p className="text-sm text-muted-foreground">Metrics appear once the session starts.</p>;
 
@@ -36,6 +36,8 @@ export function MetricsPanel({ mode }: { mode: ControllerMode }) {
           <Row label="On the road" value={formatCount(m.activeVehicleCount)} />
           <Row label="Waiting upstream" hint="Requested but not yet able to enter" value={formatCount(m.upstreamBacklogCount)} />
           <Row label="Queue North/South ⋅ East/West" hint="Stopped before the stop line" value={`${m.queueByApproach.north + m.queueByApproach.south} ⋅ ${m.queueByApproach.east + m.queueByApproach.west}`} />
+          {m.timeAverageQueueLength !== undefined ? <Row label="Time-average queue" hint="Queue integral / elapsed simulation time" value={m.timeAverageQueueLength.toFixed(1)} /> : null}
+          {m.maximumObservedDelayMs !== undefined ? <Row label="Maximum accrued wait" hint="Includes incomplete trips" value={formatSeconds(m.maximumObservedDelayMs)} /> : null}
           <Row label="Longest queue so far" value={formatCount(m.maximumQueueLength)} />
           <Row label="Completed trips" value={formatCount(m.completedVehicleCount)} />
           <Row label="Average wait" hint="Completed trips only" value={m.averageCompletedWaitingTimeMs === null ? none("No completed trips") : formatSeconds(m.averageCompletedWaitingTimeMs)} />
@@ -77,8 +79,8 @@ export function MetricsPanel({ mode }: { mode: ControllerMode }) {
         <section aria-labelledby="metrics-ai" className="flex flex-col gap-1">
           <h3 id="metrics-ai" className="text-[0.9375rem] font-semibold">AI activity</h3>
           <dl className="divide-y text-sm">
-            <Row label="Gemini requests started" value={formatCount(m.geminiRequestCount)} />
-            <Row label="Gemini latency, mean ⋅ max" hint={`${m.geminiLatency.sampleCount} attempts${simulated}`} value={m.geminiLatency.meanMs === null ? none("No attempts yet") : `${formatLatency(m.geminiLatency.meanMs)} ⋅ ${formatLatency(m.geminiLatency.maxMs)}`} />
+            <Row label="Agent requests started" value={formatCount(m.geminiRequestCount)} />
+            <Row label="Agent latency, mean ⋅ max" hint={`${m.geminiLatency.sampleCount} attempts${simulated}`} value={m.geminiLatency.meanMs === null ? none("No attempts yet") : `${formatLatency(m.geminiLatency.meanMs)} ⋅ ${formatLatency(m.geminiLatency.maxMs)}`} />
             <Row label="JEV decisions" hint="Parsed responses: high ⋅ medium ⋅ low confidence" value={`${m.jevDecisionCount} (${m.jevConfidenceCounts.high} ⋅ ${m.jevConfidenceCounts.medium} ⋅ ${m.jevConfidenceCounts.low})`} />
             <Row label="JEV latency, mean ⋅ max" hint={`${m.jevLatency.sampleCount} attempts${simulated}`} value={m.jevLatency.meanMs === null ? none("No attempts yet") : `${formatLatency(m.jevLatency.meanMs)} ⋅ ${formatLatency(m.jevLatency.maxMs)}`} />
             <Row label="Deadline misses" value={formatCount(m.deadlineMissCount)} />

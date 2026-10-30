@@ -100,9 +100,10 @@ export function AgentCard({ agentId, agent, proposal, verdict }: { agentId: Agen
       <footer className="mt-auto flex flex-col gap-1 border-t pt-2.5 text-xs">
         {outcome ? <p className={cn("font-medium leading-snug", TONE[outcome.tone])} data-testid={`agent-verdict-${agentId}`}>{outcome.text}</p> : null}
         <p className="tabular text-subtle-foreground">
-          {interval ? (interval.outcome === "pending" ? "Inference running" : `Inference ${formatLatency(interval.latencyMs)}${agent?.provenance === "mock" ? " (simulated)" : ""}`) : "No inference yet"}
+          {interval ? (interval.outcome === "pending" ? "Inference running" : `Inference ${formatLatency(interval.latencyMs)}${agent?.latencyMeasurement === "wall" ? " (wall time)" : agent?.provenance === "mock" ? " (simulated)" : ""}`) : "No inference yet"}
           {agent && agent.requestCount > 0 ? ` ⋅ ${agent.requestCount} request${agent.requestCount === 1 ? "" : "s"}` : ""}
         </p>
+        {agent?.provider ? <p className="text-subtle-foreground">{agent.provider === "claude" ? "Claude / Anthropic" : agent.provider === "gemini" ? "Gemini" : "Offline runner"}</p> : null}
         {agent?.model ? <p className="truncate text-subtle-foreground" title={agent.model}>{agent.model}</p> : null}
       </footer>
     </article>

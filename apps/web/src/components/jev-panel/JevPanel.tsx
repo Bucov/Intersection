@@ -32,7 +32,8 @@ export function JevPanel({ cycle, jevModel }: { cycle: DecisionCycle | null; jev
   const decision = cycle?.decisions[cycle.decisions.length - 1] ?? null;
   const a = cycle?.proposals["agent-a"] ?? arbitration?.proposalA ?? null;
   const b = cycle?.proposals["agent-b"] ?? arbitration?.proposalB ?? null;
-  const provenance = result?.provenance ?? a?.provenance ?? null;
+  const raw = arbitration?.adapterResult;
+  const provenance = raw ? (raw.source === "mock" ? "mock" : "live") : result?.provenance ?? a?.provenance ?? null;
 
   return (
     <section aria-labelledby="jev-title" className="flex flex-col gap-3.5 rounded-lg border bg-card p-3.5" data-testid="jev-panel">
@@ -42,7 +43,7 @@ export function JevPanel({ cycle, jevModel }: { cycle: DecisionCycle | null; jev
             <span className="size-2 rounded-full bg-jev" aria-hidden="true" />
             JEV arbitration
           </h3>
-          <p className="text-xs text-subtle-foreground">Decides only when the agents ask for different greens</p>
+          <p className="text-xs text-subtle-foreground">Recommends a plan when the agents disagree</p>
         </div>
         <div className="flex shrink-0 items-center gap-1.5">
           {provenance ? <ProvenanceBadge provenance={provenance} /> : null}
@@ -53,15 +54,17 @@ export function JevPanel({ cycle, jevModel }: { cycle: DecisionCycle | null; jev
 
       {arbitration && a && b ? (
         <p className="text-[0.8125rem] leading-snug text-muted-foreground">
-          Called because Agent A asked for <span className="text-foreground">{phaseName(a.requestedPhase)}</span> and Agent B asked for{" "}
-          <span className="text-foreground">{phaseName(b.requestedPhase)}</span>. Only one can be served.
+          Called because Agent A asked for <span className="text-foreground">{phaseName(a.requestedPhase)} for {a.requestedGreenSeconds} s</span> and Agent B asked for{" "}
+          <span className="text-foreground">{phaseName(b.requestedPhase)} for {b.requestedGreenSeconds} s</span>. One plan can be scheduled.
         </p>
       ) : state.kind === "not-needed" ? (
         <p className="text-[0.8125rem] leading-snug text-muted-foreground">The agents did not conflict in the latest round, so the safety gate checked their request directly.</p>
       ) : (
-        <p className="text-[0.8125rem] leading-snug text-muted-foreground">JEV is called when Agent A and Agent B request different greens at the same time.</p>
+        <p className="text-[0.8125rem] leading-snug text-muted-foreground">JEV is called when Agent A and Agent B propose different service plans.</p>
       )}
 
+      {raw?.measurements === "synthetic" ? <p className="text-xs text-subtle-foreground">Synthetic confidence and probabilities from the adapter mock.</p> : null}
+      {raw && !result && arbitration?.status === "completed" ? <p className="text-[0.8125rem] text-muted-foreground">{raw.status === "abstained" ? "JEV abstained. " : "A recommendation was returned. "}Confidence: {raw.confidence === null ? "unavailable" : formatPercent(raw.confidence)}. {raw.probabilities === null ? "Choice probabilities unavailable." : `Candidate probabilities: ${Object.entries(raw.probabilities).map(([id, p]) => `${id === a?.proposalId ? "Agent A" : "Agent B"} ${formatPercent(p)}`).join(", ")}; abstain ${raw.abstainProbability === null ? "unavailable" : formatPercent(raw.abstainProbability)}.`}</p> : null}
       {result && cycle ? (
         <>
           <ul className="flex flex-col gap-1.5" aria-label="Choice distribution">
@@ -106,7 +109,7 @@ export function JevPanel({ cycle, jevModel }: { cycle: DecisionCycle | null; jev
 
       <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 border-t pt-3 text-xs">
         <dt className="text-subtle-foreground">Latency</dt>
-        <dd className="font-mono tabular">{result ? `${formatLatency(result.latencyMs)}${result.provenance === "mock" ? " (simulated)" : ""}` : "—"}</dd>
+        <dd className="font-mono tabular">{raw ? `${formatLatency(raw.latencyMs)} (measured wall time)` : result ? `${formatLatency(result.latencyMs)}${result.provenance === "mock" ? " (simulated)" : ""}` : "—"}</dd>
         <dt className="text-subtle-foreground">Model</dt>
         <dd className="truncate">{result?.model ?? jevModel ?? "Not reported"}{result?.modelVersion ? ` ⋅ ${result.modelVersion}` : ""}</dd>
         <dt className="text-subtle-foreground">Safety gate</dt>

@@ -81,6 +81,10 @@ export class AIService {
   ) {
     // Obtain the public default inference runner, then contain failures before runLoop's
     // fire-and-forget promise. The empty provider runtime owns no participants or timers.
+    // Core 4.1 creates a cloud client for each loop. An explicit empty key disables
+    // its optional exporter, including cached machine credentials; this demo keeps
+    // its bounded event stream locally and does not require a Mozaik cloud account.
+    process.env.MOZAIK_API_KEY = "";
     const native = defineRuntime<State>()
       .initializeRuntime({ state: new State() })
       .getInferenceRunner();

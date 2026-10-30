@@ -32,7 +32,10 @@ export function createStream(seed: number, name: string): RandomStream {
   let c = hashString(`${seed}:${name}:c`);
   let d = 1;
   const next = () => {
-    a >>>= 0; b >>>= 0; c >>>= 0; d >>>= 0;
+    a >>>= 0;
+    b >>>= 0;
+    c >>>= 0;
+    d >>>= 0;
     const t = (a + b) | 0;
     a = b ^ (b >>> 9);
     b = (c + (c << 3)) | 0;

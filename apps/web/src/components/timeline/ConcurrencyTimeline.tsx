@@ -68,6 +68,7 @@ export function ConcurrencyTimeline({ mode }: { mode: ControllerMode }) {
     bars: s.timeline,
     timing: s.snapshot?.config.signalTiming ?? null,
     demoMode: s.snapshot?.config.demoMode ?? null,
+    wallMeasured: s.snapshot?.metrics.inferenceTiming === "wall",
     controller: s.controller?.activeController ?? null,
     nextGreen: s.signal?.nextGreen ?? "EW_GREEN",
     speed: s.speedMultiplier,
@@ -200,7 +201,7 @@ export function ConcurrencyTimeline({ mode }: { mode: ControllerMode }) {
       </div>
       <figcaption className="text-xs text-subtle-foreground">
         {mode === "ai"
-          ? data.demoMode === "live"
+          ? data.demoMode === "live" || data.wallMeasured
             ? `Bars use the backend's recorded start and end times on the simulation clock${data.speed !== 1 ? ` (running at ${data.speed}×, so wall-clock latency spans more simulated time)` : ""}.`
             : "Offline demo: bar lengths are simulated latencies from the mock adapters, not measured model calls. Overlap shows the two agents working at the same time."
           : "Fixed schedule: the faded segments after the line are the same cycle repeating. No AI is called."}
