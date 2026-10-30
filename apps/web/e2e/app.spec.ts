@@ -146,3 +146,14 @@ test("an injected ambulance appears", async ({ page }) => {
   await page.getByRole("tab", { name: "Transcript" }).click();
   await expect(page.getByTestId("transcript")).toContainText("Emergency vehicle entered", { timeout: 60_000 });
 });
+
+test("a paired comparison runs both controllers and reports its limits", async ({ page }) => {
+  await openSimulation(page, "traditional");
+  await page.getByRole("tab", { name: "Compare" }).click();
+  await page.getByRole("button", { name: "Run comparison" }).click();
+  const panel = page.getByTestId("comparison");
+  await expect(panel).toContainText("Limitations");
+  await expect(panel.getByRole("rowheader", { name: "Completed trips", exact: true })).toBeVisible();
+  await expect(panel).toContainText("No Gemini or JEV calls were made");
+  await expect(panel.getByText("Mock", { exact: true })).toBeVisible();
+});

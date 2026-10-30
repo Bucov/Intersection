@@ -65,8 +65,12 @@ export function ComparisonPanel({ scenarioId, seed, scenarios }: { scenarioId: S
   const demoMode = source.catalog?.config.demoMode ?? "mock";
   const execution = demoMode === "mock" ? "accelerated_mock" : "realtime";
 
-  useEffect(() => () => {
-    cancelled.current = true;
+  // Reset on mount too: StrictMode runs cleanup once in development before remounting.
+  useEffect(() => {
+    cancelled.current = false;
+    return () => {
+      cancelled.current = true;
+    };
   }, []);
 
   const run = async () => {
