@@ -25,6 +25,8 @@ export const InferenceIntervalSchema = z.object({
     ctx.addIssue({ code: "custom", message: "Simulation completion must follow start" });
 });
 export const AgentStatusSchema = z.object({
+  provider: z.enum(["gemini", "claude", "mock"]).optional(),
+  latencyMeasurement: z.enum(["wall", "synthetic"]).optional(),
   agentId: AgentIdSchema,
   group: z.enum(["NS", "EW"]),
   status: z.enum(["idle", "inference", "proposal_pending", "cooldown", "error", "disabled"]),
@@ -96,7 +98,23 @@ export const ArbitrationContextSchema = z.object({
   ns: GroupObservationSchema, ew: GroupObservationSchema,
   minimumGreenRemainingMs: SimTimeSchema, maximumGreenRemainingMs: SimTimeSchema,
 });
+/** Lossless adapter boundary. Values are preserved, never synthesized from UI choices. */
+export const AdapterResultSchema = z.object({
+  requestId: IdSchema, sessionId: IdSchema, cycleId: IdSchema,
+  generation: CounterSchema, stateVersion: CounterSchema,
+  status: z.enum(["selected", "abstained", "timeout", "error"]),
+  selectedCandidateId: IdSchema.nullable(), source: z.enum(["jev", "mock"]),
+  measurements: z.enum(["model", "synthetic", "none"]),
+  confidence: ProbabilitySchema.nullable(),
+  probabilities: z.record(z.string(), ProbabilitySchema).nullable(),
+  abstainProbability: ProbabilitySchema.nullable(), latencyMs: NonnegativeSchema,
+  errorCode: z.string().optional(),
+});
 export const ArbitrationRecordSchema = z.object({
+  adapterResult: AdapterResultSchema.optional(),
+  bridgePhase: z.enum(["started", "completed", "abstained", "failed", "timed_out", "discarded"]).optional(),
+  bridgeReason: z.string().optional(),
+  decisionStateVersion: CounterSchema.optional(),
   arbitrationId: IdSchema, correlationId: IdSchema, sessionId: IdSchema,
   generation: CounterSchema, stateVersion: CounterSchema,
   proposalA: TrafficProposalSchema, proposalB: TrafficProposalSchema,
@@ -123,7 +141,7 @@ export const ArbitrationRecordSchema = z.object({
     ctx.addIssue({ code: "custom", path: ["completedAtWallTime"], message: "Completion cannot precede request" });
   if ((r.status === "pending") !== (r.completedAtWallTime === null) || (r.status === "pending" && (r.result !== null || r.fallbackReason !== null)))
     ctx.addIssue({ code: "custom", message: "Pending arbitration has no completion or result" });
-  if (r.status === "completed" && r.result === null)
+  if (r.status === "completed" && r.result === null && !r.adapterResult)
     ctx.addIssue({ code: "custom", path: ["result"], message: "Completed arbitration requires a provider result" });
   if (r.status === "failed" && r.result !== null)
     ctx.addIssue({ code: "custom", path: ["result"], message: "Provider failure cannot contain a successful result" });

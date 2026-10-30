@@ -31,24 +31,52 @@ import {
 } from "@intersection/shared";
 import { createStream, type RandomStream } from "./rng.js";
 
-
 export const STEP_MS = 100;
 
-
-
 export type ServerEventType = ServerEvent["type"];
-export type EventOf<T extends ServerEventType> = Extract<ServerEvent, { type: T }>;
+export type EventOf<T extends ServerEventType> = Extract<
+  ServerEvent,
+  { type: T }
+>;
 export type EventSource = ServerEvent["source"];
 export type EventProvenance = ServerEvent["provenance"];
-export type FaultKind = Extract<InjectedEvent, { type: "provider_fault" }>["fault"];
-export type PhaseChangeReason = EventOf<"signal.phase_changed">["payload"]["reason"];
-export type ControlAction = "start" | "pause" | "resume" | "reset" | "set_speed";
+export type FaultKind = Extract<
+  InjectedEvent,
+  { type: "provider_fault" }
+>["fault"];
+export type PhaseChangeReason =
+  EventOf<"signal.phase_changed">["payload"]["reason"];
+export type ControlAction =
+  | "start"
+  | "pause"
+  | "resume"
+  | "reset"
+  | "set_speed";
 
-export const APPROACHES: readonly Approach[] = ["north", "south", "east", "west"];
-export const GROUP_OF: Record<Approach, MovementGroup> = { north: "NS", south: "NS", east: "EW", west: "EW" };
-export const GREEN_OF: Record<MovementGroup, GreenPhase> = { NS: "NS_GREEN", EW: "EW_GREEN" };
-export const OTHER_GREEN: Record<GreenPhase, GreenPhase> = { NS_GREEN: "EW_GREEN", EW_GREEN: "NS_GREEN" };
-const GROUP_APPROACHES: Record<MovementGroup, readonly Approach[]> = { NS: ["north", "south"], EW: ["east", "west"] };
+export const APPROACHES: readonly Approach[] = [
+  "north",
+  "south",
+  "east",
+  "west",
+];
+export const GROUP_OF: Record<Approach, MovementGroup> = {
+  north: "NS",
+  south: "NS",
+  east: "EW",
+  west: "EW",
+};
+export const GREEN_OF: Record<MovementGroup, GreenPhase> = {
+  NS: "NS_GREEN",
+  EW: "EW_GREEN",
+};
+export const OTHER_GREEN: Record<GreenPhase, GreenPhase> = {
+  NS_GREEN: "EW_GREEN",
+  EW_GREEN: "NS_GREEN",
+};
+const GROUP_APPROACHES: Record<MovementGroup, readonly Approach[]> = {
+  NS: ["north", "south"],
+  EW: ["east", "west"],
+};
 
 // Geometry from the contract: distances along each lane's travel axis, negative before the centre.
 const STOP_LINE = -DEFAULT_GEOMETRY.stopLineDistanceM;
@@ -64,8 +92,10 @@ const HEADWAY_S = 1.3;
 const COMFORT_DECEL = 2.2;
 const LINE_STANDSTILL = 0.4;
 
-
-const VEHICLE_SPECS: Record<VehicleType, { length: number; desired: number; accel: number }> = {
+const VEHICLE_SPECS: Record<
+  VehicleType,
+  { length: number; desired: number; accel: number }
+> = {
   car: { length: 4.5, desired: 13.9, accel: 1.6 },
   van: { length: 5.4, desired: 13.0, accel: 1.3 },
   bus_truck: { length: 11, desired: 11.1, accel: 0.9 },
@@ -73,15 +103,27 @@ const VEHICLE_SPECS: Record<VehicleType, { length: number; desired: number; acce
   police: { length: 4.9, desired: 15.3, accel: 2.2 },
 };
 
-const HEADING: Record<Approach, number> = { north: 0, south: Math.PI, east: -Math.PI / 2, west: Math.PI / 2 };
+const HEADING: Record<Approach, number> = {
+  north: 0,
+  south: Math.PI,
+  east: -Math.PI / 2,
+  west: Math.PI / 2,
+};
 
 /** World position of a lane coordinate `d` (vehicle centre along its travel axis). */
-export function lanePosition(approach: Approach, d: number): { x: number; z: number } {
+export function lanePosition(
+  approach: Approach,
+  d: number,
+): { x: number; z: number } {
   switch (approach) {
-    case "north": return { x: -LANE_OFFSET, z: d };
-    case "south": return { x: LANE_OFFSET, z: -d };
-    case "east": return { x: -d, z: -LANE_OFFSET };
-    case "west": return { x: d, z: LANE_OFFSET };
+    case "north":
+      return { x: -LANE_OFFSET, z: d };
+    case "south":
+      return { x: LANE_OFFSET, z: -d };
+    case "east":
+      return { x: -d, z: -LANE_OFFSET };
+    case "west":
+      return { x: d, z: LANE_OFFSET };
   }
 }
 
@@ -134,10 +176,20 @@ interface SignalRuntime {
   nextGreen: GreenPhase;
   activeCommandId: string | null;
   clearanceBlocked: boolean;
+  nextServiceMs: number | null;
   /** Why the current green is ending (carried through yellow and all-red). */
   exitReason: PhaseChangeReason;
-  plannedEnd: { at: number; commandId: string; reason: PhaseChangeReason } | null;
-  pendingSwitch: { at: number; commandId: string; reason: PhaseChangeReason; target: GreenPhase } | null;
+  plannedEnd: {
+    at: number;
+    commandId: string;
+    reason: PhaseChangeReason;
+  } | null;
+  pendingSwitch: {
+    at: number;
+    commandId: string;
+    reason: PhaseChangeReason;
+    target: GreenPhase;
+  } | null;
 }
 
 export class SimulationError extends Error {
@@ -249,6 +301,7 @@ export class Simulation {
   geminiLatency: LatencyStats = { count: 0, sum: 0, max: 0 };
   jevLatency: LatencyStats = { count: 0, sum: 0, max: 0 };
   jevConfidence = { high: 0, medium: 0, low: 0 };
+  jevUnmeasured = 0;
   deadlineMisses = 0;
   safetyRejections = 0;
   controllerStatus!: ControllerStatus;
@@ -261,21 +314,42 @@ export class Simulation {
   private queueIntegral = 0;
   private maxDelay = 0;
   private executedCommand: string | null = null;
-  invalidateDecisions() { this.decisionStateVersion++; }
+  invalidateDecisions() {
+    this.decisionStateVersion++;
+  }
   /** The only public signal-plan mutation. Validation and commit are synchronous. */
-  requestGreen(target: GreenPhase, durationMs: number, commandId: string, fallback = false) {
+  requestGreen(
+    target: GreenPhase,
+    durationMs: number,
+    commandId: string,
+    fallback = false,
+  ) {
     const s = this.signal;
-    if (this.status !== "running" || !["NS_GREEN", "EW_GREEN"].includes(target) ||
-        !Number.isFinite(durationMs) || durationMs % STEP_MS !== 0 ||
-        durationMs < this.timing.minimumGreenMs || durationMs > this.timing.maximumGreenMs ||
-        !s.phase.endsWith("_GREEN") || s.pendingSwitch || this.executedCommand === commandId) return null;
+    if (
+      this.status !== "running" ||
+      !["NS_GREEN", "EW_GREEN"].includes(target) ||
+      !Number.isFinite(durationMs) ||
+      durationMs % STEP_MS !== 0 ||
+      durationMs < this.timing.minimumGreenMs ||
+      durationMs > this.timing.maximumGreenMs ||
+      !s.phase.endsWith("_GREEN") ||
+      s.pendingSwitch ||
+      this.executedCommand === commandId
+    )
+      return null;
     const latest = s.startedAt + this.timing.maximumGreenMs;
     const earliest = s.startedAt + this.timing.minimumGreenMs;
-    const at = target === s.phase ? Math.min(latest, Math.max(earliest, this.time + durationMs)) : Math.max(earliest, this.time + STEP_MS);
+    const at =
+      target === s.phase
+        ? Math.min(latest, Math.max(earliest, this.time + durationMs))
+        : Math.max(earliest, this.time + STEP_MS);
     if (at > latest) return null;
     const reason = fallback ? "fallback" : "adaptive_command";
     if (target === s.phase) this.extendGreen(at, commandId, reason);
-    else this.scheduleSwitch(target, at, commandId, reason);
+    else {
+      this.scheduleSwitch(target, at, commandId, reason);
+      this.signal.nextServiceMs = durationMs;
+    }
     this.executedCommand = commandId;
     this.invalidateDecisions();
     this.bumpVersion();
@@ -292,7 +366,8 @@ export class Simulation {
     this.timing = structuredClone(options.signalTiming);
     this.seed = options.seed;
     this.speed = options.speedMultiplier ?? 1;
-    this.confidencePolicy = options.confidencePolicy ?? DEFAULT_CONFIDENCE_POLICY;
+    this.confidencePolicy =
+      options.confidencePolicy ?? DEFAULT_CONFIDENCE_POLICY;
     this.wallClock = options.wallClock ?? Date.now;
     this.retainEvents = options.retainEvents ?? 2000;
     this.buildWorld();
@@ -301,13 +376,27 @@ export class Simulation {
   // ---------------------------------------------------------------------------
   // Public accessors
 
-  get status(): SessionStatus { return this.sessionStatus; }
-  get generation(): number { return this.gen; }
-  get simulationTimeMs(): number { return this.time; }
-  get speedMultiplier(): number { return this.speed; }
-  get stateVersion(): number { return this.version; }
-  get latestSequence(): number { return this.sequence; }
-  get durationMs(): number { return this.parameters.durationMs; }
+  get status(): SessionStatus {
+    return this.sessionStatus;
+  }
+  get generation(): number {
+    return this.gen;
+  }
+  get simulationTimeMs(): number {
+    return this.time;
+  }
+  get speedMultiplier(): number {
+    return this.speed;
+  }
+  get stateVersion(): number {
+    return this.version;
+  }
+  get latestSequence(): number {
+    return this.sequence;
+  }
+  get durationMs(): number {
+    return this.parameters.durationMs;
+  }
 
   /** Take every event emitted since the last drain, in sequence order. */
   drain(): ServerEvent[] {
@@ -337,8 +426,13 @@ export class Simulation {
     const snapshot = this.snapshot();
     this.checkpointCounter += 1;
     return {
-      ...this.envelope("simulation", "simulation", "Checkpoint", `checkpoint-${this.gen}-${this.sequence}`,
-        `${this.sessionId}-c${this.sequence}-${this.checkpointCounter}`),
+      ...this.envelope(
+        "simulation",
+        "simulation",
+        "Checkpoint",
+        `checkpoint-${this.gen}-${this.sequence}`,
+        `${this.sessionId}-c${this.sequence}-${this.checkpointCounter}`,
+      ),
       type: "simulation.snapshot",
       payload: snapshot,
     };
@@ -347,13 +441,19 @@ export class Simulation {
   eventHistory(afterSequence: number | undefined, limit: number) {
     const oldest = this.history[0]?.sequence ?? 0;
     const start = afterSequence ?? oldest - 1;
-    const events = this.history.filter(e => e.sequence > start).slice(0, limit);
+    const events = this.history
+      .filter((e) => e.sequence > start)
+      .slice(0, limit);
     return {
       events,
       oldestAvailableSequence: this.history.length ? oldest : 0,
       latestSequence: this.history.length ? this.sequence : 0,
-      expired: afterSequence !== undefined && this.history.length > 0 && afterSequence < oldest - 1,
-      hasMore: this.history.filter(e => e.sequence > start).length > events.length,
+      expired:
+        afterSequence !== undefined &&
+        this.history.length > 0 &&
+        afterSequence < oldest - 1,
+      hasMore:
+        this.history.filter((e) => e.sequence > start).length > events.length,
     };
   }
 
@@ -368,22 +468,42 @@ export class Simulation {
   // ---------------------------------------------------------------------------
   // Controls
 
-  control(action: ControlAction, generation: number, speedMultiplier?: number): void {
-    if (generation !== this.gen) throw new SimulationError("STALE_GENERATION", `Generation ${generation} is not current (${this.gen}).`);
+  control(
+    action: ControlAction,
+    generation: number,
+    speedMultiplier?: number,
+  ): void {
+    if (generation !== this.gen)
+      throw new SimulationError(
+        "STALE_GENERATION",
+        `Generation ${generation} is not current (${this.gen}).`,
+      );
     switch (action) {
       case "start":
-        if (this.sessionStatus !== "ready") throw new SimulationError("INVALID_STATE", `Cannot start a ${this.sessionStatus} session.`);
+        if (this.sessionStatus !== "ready")
+          throw new SimulationError(
+            "INVALID_STATE",
+            `Cannot start a ${this.sessionStatus} session.`,
+          );
         this.setStatus("running");
         this.applyTimeZeroEvents();
         break;
       case "pause":
-        if (this.sessionStatus !== "running") throw new SimulationError("INVALID_STATE", `Cannot pause a ${this.sessionStatus} session.`);
+        if (this.sessionStatus !== "running")
+          throw new SimulationError(
+            "INVALID_STATE",
+            `Cannot pause a ${this.sessionStatus} session.`,
+          );
         this.invalidateDecisions();
         this.adaptive?.discardOutstanding("paused");
         this.setStatus("paused");
         break;
       case "resume":
-        if (this.sessionStatus !== "paused") throw new SimulationError("INVALID_STATE", `Cannot resume a ${this.sessionStatus} session.`);
+        if (this.sessionStatus !== "paused")
+          throw new SimulationError(
+            "INVALID_STATE",
+            `Cannot resume a ${this.sessionStatus} session.`,
+          );
         this.setStatus("running");
         break;
       case "reset":
@@ -397,9 +517,19 @@ export class Simulation {
         this.broadcastSnapshot();
         break;
       case "set_speed": {
-        if (this.sessionStatus === "completed") throw new SimulationError("INVALID_STATE", "Cannot change the speed of a completed session.");
-        if (speedMultiplier === undefined || !(speedMultiplier >= 0.1 && speedMultiplier <= 20))
-          throw new SimulationError("VALIDATION_ERROR", "Speed must be between 0.1 and 20.");
+        if (this.sessionStatus === "completed")
+          throw new SimulationError(
+            "INVALID_STATE",
+            "Cannot change the speed of a completed session.",
+          );
+        if (
+          speedMultiplier === undefined ||
+          !(speedMultiplier >= 0.1 && speedMultiplier <= 20)
+        )
+          throw new SimulationError(
+            "VALIDATION_ERROR",
+            "Speed must be between 0.1 and 20.",
+          );
         this.speed = speedMultiplier;
         this.version += 1;
         this.emitStatus(`Speed set to ${speedMultiplier}×`);
@@ -408,26 +538,58 @@ export class Simulation {
     }
   }
 
-  inject(event: InjectedEvent, generation: number, atSimMs?: number): { scheduleId: string; scheduledAtSimMs: number; sequence: number } {
-    if (generation !== this.gen) throw new SimulationError("STALE_GENERATION", `Generation ${generation} is not current (${this.gen}).`);
-    if (this.sessionStatus === "completed") throw new SimulationError("INVALID_STATE", "The session has completed.");
-    if (event.type === "provider_fault" && event.fault === "low_confidence" && event.provider !== "jev")
-      throw new SimulationError("VALIDATION_ERROR", "Low-confidence faults apply to JEV only.");
+  inject(
+    event: InjectedEvent,
+    generation: number,
+    atSimMs?: number,
+  ): { scheduleId: string; scheduledAtSimMs: number; sequence: number } {
+    if (generation !== this.gen)
+      throw new SimulationError(
+        "STALE_GENERATION",
+        `Generation ${generation} is not current (${this.gen}).`,
+      );
+    if (this.sessionStatus === "completed")
+      throw new SimulationError("INVALID_STATE", "The session has completed.");
+    if (
+      event.type === "provider_fault" &&
+      event.fault === "low_confidence" &&
+      event.provider !== "jev"
+    )
+      throw new SimulationError(
+        "VALIDATION_ERROR",
+        "Low-confidence faults apply to JEV only.",
+      );
     const nextStep = this.sessionStatus === "ready" ? 0 : this.time + STEP_MS;
     const at = atSimMs ?? nextStep;
     if (at % STEP_MS !== 0 || at < nextStep || at >= this.parameters.durationMs)
-      throw new SimulationError("VALIDATION_ERROR", "Injection time must be a future 100 ms step before the scenario ends.");
-    if (this.scheduled.length >= 200) throw new SimulationError("INVALID_STATE", "Scheduled event capacity reached.");
+      throw new SimulationError(
+        "VALIDATION_ERROR",
+        "Injection time must be a future 100 ms step before the scenario ends.",
+      );
+    if (this.scheduled.length >= 200)
+      throw new SimulationError(
+        "INVALID_STATE",
+        "Scheduled event capacity reached.",
+      );
     this.bumpVersion();
     this.invalidateDecisions();
     const scheduleId = `g${this.gen}-inject-${++this.scheduleCounter}`;
-    this.scheduled.push({ scheduleId, atSimMs: at, event, order: 1000 + this.injectionOrder++ });
-    this.emit("simulation.scenario_event", { scheduleId, event, status: "scheduled" }, {
-      source: "api",
-      provenance: "simulation",
-      summary: `Scheduled ${describeInjection(event)} at ${formatClock(at)}`,
-      correlationId: scheduleId,
+    this.scheduled.push({
+      scheduleId,
+      atSimMs: at,
+      event,
+      order: 1000 + this.injectionOrder++,
     });
+    this.emit(
+      "simulation.scenario_event",
+      { scheduleId, event, status: "scheduled" },
+      {
+        source: "api",
+        provenance: "simulation",
+        summary: `Scheduled ${describeInjection(event)} at ${formatClock(at)}`,
+        correlationId: scheduleId,
+      },
+    );
     // A time-zero injection in a running session still applies at the next step.
     return { scheduleId, scheduledAtSimMs: at, sequence: this.sequence };
   }
@@ -449,9 +611,15 @@ export class Simulation {
   // ---------------------------------------------------------------------------
   // Host interface used by the adaptive controller
 
-  now(): number { return this.time; }
-  wallNow(): number { return this.wallClock() - this.wallLag; }
-  bumpVersion(): number { return ++this.version; }
+  now(): number {
+    return this.time;
+  }
+  wallNow(): number {
+    return this.wallClock() - this.wallLag;
+  }
+  bumpVersion(): number {
+    return ++this.version;
+  }
 
   signalView() {
     const s = this.signal;
@@ -463,7 +631,13 @@ export class Simulation {
       latestEnd: state.latestEndAtSimMs,
       nextGreen: s.nextGreen,
       plannedEnd: s.plannedEnd?.at ?? null,
-      pendingSwitch: s.pendingSwitch ? { target: s.pendingSwitch.target, at: s.pendingSwitch.at, commandId: s.pendingSwitch.commandId } : null,
+      pendingSwitch: s.pendingSwitch
+        ? {
+            target: s.pendingSwitch.target,
+            at: s.pendingSwitch.at,
+            commandId: s.pendingSwitch.commandId,
+          }
+        : null,
     };
   }
 
@@ -479,11 +653,15 @@ export class Simulation {
         if (front > STOP_LINE) continue;
         if (veh.v < STOPPED_MPS) queue++;
         else if (STOP_LINE - front < 55) approaching++;
-        maxWaitMs = Math.max(maxWaitMs, veh.waitingMs + (veh.spawnedAt - veh.requestedAt));
+        maxWaitMs = Math.max(
+          maxWaitMs,
+          veh.waitingMs + (veh.spawnedAt - veh.requestedAt),
+        );
         if (veh.emergency) {
           emergencyCount++;
           const eta = veh.v >= STOPPED_MPS ? (STOP_LINE - front) / veh.v : null;
-          if (eta !== null) nearestEta = nearestEta === null ? eta : Math.min(nearestEta, eta);
+          if (eta !== null)
+            nearestEta = nearestEta === null ? eta : Math.min(nearestEta, eta);
         }
       }
       for (const req of this.backlog[approach]) {
@@ -491,48 +669,93 @@ export class Simulation {
         if (req.emergency) emergencyCount++;
       }
     }
-    const rate = GROUP_APPROACHES[group].reduce((sum, a) => sum + this.effectiveRate(a), 0);
+    const rate = GROUP_APPROACHES[group].reduce(
+      (sum, a) => sum + this.effectiveRate(a),
+      0,
+    );
     return {
       queueLength: queue,
       approaching,
       maxWaitSeconds: round1(maxWaitMs / 1000),
       emergencyCount,
-      nearestEmergencyEtaSeconds: nearestEta === null ? null : round1(nearestEta),
+      nearestEmergencyEtaSeconds:
+        nearestEta === null ? null : round1(nearestEta),
       estimatedArrivalRateVehPerHour: Math.round(rate),
-      lastServedAtSimMs: this.signal.phase === GREEN_OF[group] ? this.time : this.servedAt[group],
-      totalGreenMs: this.greenTotal[group] + (this.signal.phase === GREEN_OF[group] ? this.time - this.signal.startedAt : 0),
+      lastServedAtSimMs:
+        this.signal.phase === GREEN_OF[group]
+          ? this.time
+          : this.servedAt[group],
+      totalGreenMs:
+        this.greenTotal[group] +
+        (this.signal.phase === GREEN_OF[group]
+          ? this.time - this.signal.startedAt
+          : 0),
     };
   }
 
   activeFault(provider: "gemini" | "jev"): FaultKind | null {
     for (let i = this.effects.length - 1; i >= 0; i--) {
       const e = this.effects[i].event;
-      if (e.type === "provider_fault" && e.provider === provider) return e.fault;
+      if (e.type === "provider_fault" && e.provider === provider)
+        return e.fault;
     }
     return null;
   }
 
   /** Schedule a switch to `target` (yellow onset at `at`). Called by the safety gate only. */
-  private scheduleSwitch(target: GreenPhase, at: number, commandId: string, reason: PhaseChangeReason) {
+  private scheduleSwitch(
+    target: GreenPhase,
+    at: number,
+    commandId: string,
+    reason: PhaseChangeReason,
+  ) {
     this.signal.pendingSwitch = { target, at, commandId, reason };
     this.signal.plannedEnd = null;
   }
 
   /** Keep the current green until `at` (yellow onset), bounded by maximum green. */
-  private extendGreen(at: number, commandId: string, reason: PhaseChangeReason) {
+  private extendGreen(
+    at: number,
+    commandId: string,
+    reason: PhaseChangeReason,
+  ) {
     this.signal.plannedEnd = { at, commandId, reason };
   }
 
-  setActiveController(activeController: ControllerStatus["activeController"], reason: string | null) {
-    if (this.controllerStatus.activeController === activeController && this.controllerStatus.reason === reason) return;
-    this.controllerStatus = { requestedMode: this.mode, activeController, reason };
-    this.emitStatus(activeController === "deterministic_fallback" ? `Deterministic fallback in control: ${reason ?? "fallback"}` : "Adaptive controller in control");
+  setActiveController(
+    activeController: ControllerStatus["activeController"],
+    reason: string | null,
+  ) {
+    if (
+      this.controllerStatus.activeController === activeController &&
+      this.controllerStatus.reason === reason
+    )
+      return;
+    this.controllerStatus = {
+      requestedMode: this.mode,
+      activeController,
+      reason,
+    };
+    this.emitStatus(
+      activeController === "deterministic_fallback"
+        ? `Deterministic fallback in control: ${reason ?? "fallback"}`
+        : "Adaptive controller in control",
+    );
   }
 
-  emit<T extends ServerEventType>(type: T, payload: EventOf<T>["payload"], meta: EventMeta): EventOf<T> {
+  emit<T extends ServerEventType>(
+    type: T,
+    payload: EventOf<T>["payload"],
+    meta: EventMeta,
+  ): EventOf<T> {
     this.sequence += 1;
     const event = {
-      ...this.envelope(meta.source, meta.provenance, meta.summary, meta.correlationId ?? `${type}-${this.gen}-${this.sequence}`),
+      ...this.envelope(
+        meta.source,
+        meta.provenance,
+        meta.summary,
+        meta.correlationId ?? `${type}-${this.gen}-${this.sequence}`,
+      ),
       type,
       payload,
     } as unknown as EventOf<T>;
@@ -540,7 +763,8 @@ export class Simulation {
     if (this.outbox.length > 4000) this.outbox.shift();
     if (this.retainEvents > 0) {
       this.history.push(event);
-      if (this.history.length > this.retainEvents) this.history.splice(0, this.history.length - this.retainEvents);
+      if (this.history.length > this.retainEvents)
+        this.history.splice(0, this.history.length - this.retainEvents);
     }
     return event;
   }
@@ -582,19 +806,31 @@ export class Simulation {
     const remaining: ActiveEffect[] = [];
     for (const effect of this.effects) {
       if (effect.endsAt <= T) {
-        this.emit("simulation.scenario_event", { scheduleId: effect.scheduleId, event: effect.event, status: "expired" }, {
-          source: "simulation", provenance: "simulation",
-          summary: `${capitalize(describeInjection(effect.event))} ended`, correlationId: effect.scheduleId,
-        });
+        this.emit(
+          "simulation.scenario_event",
+          {
+            scheduleId: effect.scheduleId,
+            event: effect.event,
+            status: "expired",
+          },
+          {
+            source: "simulation",
+            provenance: "simulation",
+            summary: `${capitalize(describeInjection(effect.event))} ended`,
+            correlationId: effect.scheduleId,
+          },
+        );
       } else remaining.push(effect);
     }
     this.effects = remaining;
   }
 
   private applyScheduled(T: number) {
-    const due = this.scheduled.filter(s => s.atSimMs <= T).sort((a, b) => a.atSimMs - b.atSimMs || a.order - b.order);
+    const due = this.scheduled
+      .filter((s) => s.atSimMs <= T)
+      .sort((a, b) => a.atSimMs - b.atSimMs || a.order - b.order);
     if (!due.length) return;
-    this.scheduled = this.scheduled.filter(s => s.atSimMs > T);
+    this.scheduled = this.scheduled.filter((s) => s.atSimMs > T);
     for (const item of due) this.applyInjection(item, T);
   }
 
@@ -602,23 +838,38 @@ export class Simulation {
     const { event } = item;
     switch (event.type) {
       case "emergency":
-        this.request(event.approach, event.vehicleType, event.responding, T, true);
+        this.request(
+          event.approach,
+          event.vehicleType,
+          event.responding,
+          T,
+          true,
+        );
         break;
       case "demand_surge":
       case "temporary_congestion":
       case "provider_fault":
-        this.effects.push({ scheduleId: item.scheduleId, event, endsAt: T + event.durationMs });
+        this.effects.push({
+          scheduleId: item.scheduleId,
+          event,
+          endsAt: T + event.durationMs,
+        });
         break;
       case "decision_boundary":
         // The fixed-time controller ignores decision triggers by contract.
         this.adaptive?.requestCycle("decision_boundary");
         break;
     }
-    this.emit("simulation.scenario_event", { scheduleId: item.scheduleId, event, status: "applied" }, {
-      source: "simulation", provenance: "simulation",
-      summary: `${capitalize(describeInjection(event))}${event.type === "decision_boundary" && this.mode === "traditional" ? " (ignored by the fixed-time controller)" : ""}`,
-      correlationId: item.scheduleId,
-    });
+    this.emit(
+      "simulation.scenario_event",
+      { scheduleId: item.scheduleId, event, status: "applied" },
+      {
+        source: "simulation",
+        provenance: "simulation",
+        summary: `${capitalize(describeInjection(event))}${event.type === "decision_boundary" && this.mode === "traditional" ? " (ignored by the fixed-time controller)" : ""}`,
+        correlationId: item.scheduleId,
+      },
+    );
   }
 
   private hazards(T: number) {
@@ -628,18 +879,45 @@ export class Simulation {
     const congestion = this.hazardRng.next() < random.congestionProbability;
     if (surge) {
       const approach = APPROACHES[Math.floor(this.hazardRng.next() * 4)];
-      this.applyInjection({ scheduleId: `g${this.gen}-hazard-${++this.scheduleCounter}`, atSimMs: T, order: 0, event: { type: "demand_surge", approach, multiplier: 3, durationMs: 120_000 } }, T);
+      this.applyInjection(
+        {
+          scheduleId: `g${this.gen}-hazard-${++this.scheduleCounter}`,
+          atSimMs: T,
+          order: 0,
+          event: {
+            type: "demand_surge",
+            approach,
+            multiplier: 3,
+            durationMs: 120_000,
+          },
+        },
+        T,
+      );
     }
     if (congestion) {
       const approach = APPROACHES[Math.floor(this.hazardRng.next() * 4)];
-      this.applyInjection({ scheduleId: `g${this.gen}-hazard-${++this.scheduleCounter}`, atSimMs: T, order: 0, event: { type: "temporary_congestion", approach, speedFactor: 0.5, durationMs: 120_000 } }, T);
+      this.applyInjection(
+        {
+          scheduleId: `g${this.gen}-hazard-${++this.scheduleCounter}`,
+          atSimMs: T,
+          order: 0,
+          event: {
+            type: "temporary_congestion",
+            approach,
+            speedFactor: 0.5,
+            durationMs: 120_000,
+          },
+        },
+        T,
+      );
     }
   }
 
   private effectiveRate(approach: Approach): number {
     let rate = this.parameters.arrivalRatesVehPerHour[approach];
     for (const { event } of this.effects) {
-      if (event.type === "demand_surge" && event.approach === approach) rate *= event.multiplier;
+      if (event.type === "demand_surge" && event.approach === approach)
+        rate *= event.multiplier;
     }
     return Math.min(rate, 7200);
   }
@@ -647,7 +925,8 @@ export class Simulation {
   private speedFactor(approach: Approach): number {
     let factor = 1;
     for (const { event } of this.effects) {
-      if (event.type === "temporary_congestion" && event.approach === approach) factor = Math.min(factor, event.speedFactor);
+      if (event.type === "temporary_congestion" && event.approach === approach)
+        factor = Math.min(factor, event.speedFactor);
     }
     return factor;
   }
@@ -655,7 +934,9 @@ export class Simulation {
   private arrivals(T: number) {
     // One draw per approach per step regardless of spawn success or controller.
     for (const approach of APPROACHES) {
-      const count = this.demandRng.poisson((this.effectiveRate(approach) / 3600) * (STEP_MS / 1000));
+      const count = this.demandRng.poisson(
+        (this.effectiveRate(approach) / 3600) * (STEP_MS / 1000),
+      );
       for (let i = 0; i < count; i++) {
         const { type, responding } = this.drawVehicleType();
         this.request(approach, type, responding, T, false);
@@ -668,28 +949,55 @@ export class Simulation {
     const u = this.mixRng.next();
     const respondingDraw = this.mixRng.next();
     let acc = 0;
-    for (const type of ["car", "van", "bus_truck", "ambulance", "police"] as const) {
+    for (const type of [
+      "car",
+      "van",
+      "bus_truck",
+      "ambulance",
+      "police",
+    ] as const) {
       acc += mix[type];
       if (u < acc) {
-        const responding = type === "ambulance" || (type === "police" && respondingDraw < this.parameters.policeRespondingProbability);
+        const responding =
+          type === "ambulance" ||
+          (type === "police" &&
+            respondingDraw < this.parameters.policeRespondingProbability);
         return { type, responding };
       }
     }
     return { type: "car", responding: false };
   }
 
-  private request(approach: Approach, type: VehicleType, responding: boolean, T: number, priority: boolean) {
+  private request(
+    approach: Approach,
+    type: VehicleType,
+    responding: boolean,
+    T: number,
+    priority: boolean,
+  ) {
     const emergency = responding && (type === "ambulance" || type === "police");
     const variation = priority ? 1 : 0.92 + this.mixRng.next() * 0.16;
-    const req: DemandRequest = { demandId: `g${this.gen}-demand-${++this.demandCounter}`, approach, type, emergency, requestedAt: T, variation };
+    const req: DemandRequest = {
+      demandId: `g${this.gen}-demand-${++this.demandCounter}`,
+      approach,
+      type,
+      emergency,
+      requestedAt: T,
+      variation,
+    };
     this.requested++;
     // Emergency vehicles move to the head of the upstream backlog.
     if (priority && emergency) this.backlog[approach].unshift(req);
     else this.backlog[approach].push(req);
-    this.emit("simulation.vehicle_event", { kind: "requested", demandId: req.demandId, approach, emergency }, {
-      source: "simulation", provenance: "simulation",
-      summary: `${emergency ? `Responding ${typeLabel(type)}` : capitalize(typeLabel(type))} requested on the ${approach} approach`,
-    });
+    this.emit(
+      "simulation.vehicle_event",
+      { kind: "requested", demandId: req.demandId, approach, emergency },
+      {
+        source: "simulation",
+        provenance: "simulation",
+        summary: `${emergency ? `Responding ${typeLabel(type)}` : capitalize(typeLabel(type))} requested on the ${approach} approach`,
+      },
+    );
   }
 
   private spawn(approach: Approach, T: number) {
@@ -704,7 +1012,10 @@ export class Simulation {
     if (last) {
       const gap = last.d - last.length / 2 - front;
       if (gap < MIN_GAP) return; // Blocked entrance: demand stays upstream.
-      speed = Math.min(spec.desired * this.speedFactor(approach), last.v + Math.max(0, gap - MIN_GAP) * 0.4);
+      speed = Math.min(
+        spec.desired * this.speedFactor(approach),
+        last.v + Math.max(0, gap - MIN_GAP) * 0.4,
+      );
     }
     queue.shift();
     const veh: SimVehicle = {
@@ -727,16 +1038,39 @@ export class Simulation {
     };
     lane.push(veh);
     this.spawned++;
-    this.emit("simulation.vehicle_event", { kind: "spawned", demandId: req.demandId, vehicle: this.vehicleState(veh) }, {
-      source: "simulation", provenance: "simulation",
-      summary: `${capitalize(typeLabel(veh.type))} entered from the ${approach}`,
-    });
+    this.emit(
+      "simulation.vehicle_event",
+      {
+        kind: "spawned",
+        demandId: req.demandId,
+        vehicle: this.vehicleState(veh),
+      },
+      {
+        source: "simulation",
+        provenance: "simulation",
+        summary: `${capitalize(typeLabel(veh.type))} entered from the ${approach}`,
+      },
+    );
     if (veh.emergency) {
-      const eta = veh.v >= STOPPED_MPS ? round1((STOP_LINE - (veh.d + veh.length / 2)) / veh.v) : null;
-      this.emit("simulation.vehicle_event", { kind: "emergency_detected", demandId: req.demandId, vehicleId: veh.id, approach, stopLineEtaSeconds: eta }, {
-        source: "simulation", provenance: "simulation",
-        summary: `Responding ${typeLabel(veh.type)} detected on the ${approach} approach${eta === null ? "" : `, ${eta.toFixed(0)} s from the stop line`}`,
-      });
+      const eta =
+        veh.v >= STOPPED_MPS
+          ? round1((STOP_LINE - (veh.d + veh.length / 2)) / veh.v)
+          : null;
+      this.emit(
+        "simulation.vehicle_event",
+        {
+          kind: "emergency_detected",
+          demandId: req.demandId,
+          vehicleId: veh.id,
+          approach,
+          stopLineEtaSeconds: eta,
+        },
+        {
+          source: "simulation",
+          provenance: "simulation",
+          summary: `Responding ${typeLabel(veh.type)} detected on the ${approach} approach${eta === null ? "" : `, ${eta.toFixed(0)} s from the stop line`}`,
+        },
+      );
       this.adaptive?.requestCycle("emergency");
     }
   }
@@ -768,7 +1102,11 @@ export class Simulation {
       const stopping = beforeLine && !green;
       if (stopping) {
         const toLine = Math.max(STOP_LINE - front, 0.01);
-        if (toLine < gap) { gap = toLine; leadSpeed = 0; standstill = LINE_STANDSTILL; }
+        if (toLine < gap) {
+          gap = toLine;
+          leadSpeed = 0;
+          standstill = LINE_STANDSTILL;
+        }
       }
 
       const v0 = Math.max(veh.desired * factor, 0.5);
@@ -776,15 +1114,26 @@ export class Simulation {
       let interaction = 0;
       if (Number.isFinite(gap)) {
         const dv = veh.v - leadSpeed;
-        const desiredGap = standstill + Math.max(0, veh.v * HEADWAY_S + (veh.v * dv) / (2 * Math.sqrt(veh.maxAccel * COMFORT_DECEL)));
+        const desiredGap =
+          standstill +
+          Math.max(
+            0,
+            veh.v * HEADWAY_S +
+              (veh.v * dv) / (2 * Math.sqrt(veh.maxAccel * COMFORT_DECEL)),
+          );
         interaction = (desiredGap / Math.max(gap, 0.01)) ** 2;
       }
-      const accel = clamp(veh.maxAccel * (free - interaction), -9, veh.maxAccel);
+      const accel = clamp(
+        veh.maxAccel * (free - interaction),
+        -9,
+        veh.maxAccel,
+      );
 
       let v = Math.max(0, veh.v + accel * dt);
       let d = veh.d + ((veh.v + v) / 2) * dt;
       if (leader) {
-        const maxCenter = leader.d - leader.length / 2 - MIN_GAP - veh.length / 2;
+        const maxCenter =
+          leader.d - leader.length / 2 - MIN_GAP - veh.length / 2;
         if (d > maxCenter) {
           d = Math.max(veh.d, maxCenter);
           v = Math.min(v, leader.v);
@@ -804,7 +1153,8 @@ export class Simulation {
 
       if (veh.v < STOPPED_MPS && T > veh.spawnedAt) {
         veh.waitingMs += STEP_MS;
-        if (veh.d + veh.length / 2 <= STOP_LINE && !green) veh.signalDelayMs += STEP_MS;
+        if (veh.d + veh.length / 2 <= STOP_LINE && !green)
+          veh.signalDelayMs += STEP_MS;
       }
     }
   }
@@ -824,13 +1174,23 @@ export class Simulation {
           this.completed.emergencyCount++;
           this.completed.emergencyDelaySum += veh.signalDelayMs;
         }
-        this.emit("simulation.vehicle_event", {
-          kind: "completed", demandId: veh.demandId, vehicleId: veh.id, travelTimeMs: travel,
-          waitingTimeMs: waiting, signalDelayMs: veh.signalDelayMs, emergency: veh.emergency,
-        }, {
-          source: "simulation", provenance: "simulation",
-          summary: `${capitalize(typeLabel(veh.type))} from the ${veh.approach} cleared the intersection after ${(travel / 1000).toFixed(0)} s`,
-        });
+        this.emit(
+          "simulation.vehicle_event",
+          {
+            kind: "completed",
+            demandId: veh.demandId,
+            vehicleId: veh.id,
+            travelTimeMs: travel,
+            waitingTimeMs: waiting,
+            signalDelayMs: veh.signalDelayMs,
+            emergency: veh.emergency,
+          },
+          {
+            source: "simulation",
+            provenance: "simulation",
+            summary: `${capitalize(typeLabel(veh.type))} from the ${veh.approach} cleared the intersection after ${(travel / 1000).toFixed(0)} s`,
+          },
+        );
       }
     }
   }
@@ -838,7 +1198,9 @@ export class Simulation {
   private trackQueue() {
     let waiting = 0;
     for (const approach of APPROACHES) {
-      for (const veh of this.lanes[approach]) if (veh.v < STOPPED_MPS && veh.d + veh.length / 2 <= STOP_LINE) waiting++;
+      for (const veh of this.lanes[approach])
+        if (veh.v < STOPPED_MPS && veh.d + veh.length / 2 <= STOP_LINE)
+          waiting++;
     }
     this.maxQueue = Math.max(this.maxQueue, waiting);
     this.queueIntegral += waiting * STEP_MS;
@@ -852,7 +1214,8 @@ export class Simulation {
     const ids: string[] = [];
     for (const approach of APPROACHES) {
       for (const veh of this.lanes[approach]) {
-        if (veh.d + veh.length / 2 > -BOX && veh.d - veh.length / 2 < BOX) ids.push(veh.id);
+        if (veh.d + veh.length / 2 > -BOX && veh.d - veh.length / 2 < BOX)
+          ids.push(veh.id);
       }
     }
     return ids;
@@ -867,17 +1230,26 @@ export class Simulation {
     if (s.phase === "NS_GREEN" || s.phase === "EW_GREEN") {
       const latestEnd = s.startedAt + t.maximumGreenMs;
       if (this.mode === "traditional") {
-        if (T >= s.startedAt + t.fixedGreenMs) this.endGreen(T, "fixed_cycle", null);
+        if (T >= s.startedAt + t.fixedGreenMs)
+          this.endGreen(T, "fixed_cycle", null);
         return;
       }
       if (T >= latestEnd) this.endGreen(T, "maximum_green", null);
-      else if (s.pendingSwitch && T >= s.pendingSwitch.at) this.endGreen(T, s.pendingSwitch.reason, s.pendingSwitch.commandId);
-      else if (s.plannedEnd && T >= s.plannedEnd.at) this.endGreen(T, s.plannedEnd.reason, s.plannedEnd.commandId);
-      else if (!s.pendingSwitch && !s.plannedEnd && T >= s.startedAt + t.fixedGreenMs) this.endGreen(T, "fallback", null);
+      else if (s.pendingSwitch && T >= s.pendingSwitch.at)
+        this.endGreen(T, s.pendingSwitch.reason, s.pendingSwitch.commandId);
+      else if (s.plannedEnd && T >= s.plannedEnd.at)
+        this.endGreen(T, s.plannedEnd.reason, s.plannedEnd.commandId);
+      else if (
+        !s.pendingSwitch &&
+        !s.plannedEnd &&
+        T >= s.startedAt + t.fixedGreenMs
+      )
+        this.endGreen(T, "fallback", null);
       return;
     }
     if (s.phase === "NS_YELLOW" || s.phase === "EW_YELLOW") {
-      if (T >= s.startedAt + t.yellowMs) this.changePhase("ALL_RED", T, s.exitReason);
+      if (T >= s.startedAt + t.yellowMs)
+        this.changePhase("ALL_RED", T, s.exitReason);
       return;
     }
     if (T >= s.startedAt + t.allRedMs) {
@@ -886,16 +1258,25 @@ export class Simulation {
     }
   }
 
-  private endGreen(T: number, reason: PhaseChangeReason, commandId: string | null) {
+  private endGreen(
+    T: number,
+    reason: PhaseChangeReason,
+    commandId: string | null,
+  ) {
     const s = this.signal;
     s.exitReason = reason;
     s.activeCommandId = commandId;
-    this.changePhase(s.phase === "NS_GREEN" ? "NS_YELLOW" : "EW_YELLOW", T, reason);
+    this.changePhase(
+      s.phase === "NS_GREEN" ? "NS_YELLOW" : "EW_YELLOW",
+      T,
+      reason,
+    );
   }
 
   private changePhase(next: SignalPhase, T: number, reason: PhaseChangeReason) {
     const s = this.signal;
     const previousPhase = s.phase;
+    const appliedCommandId = s.activeCommandId;
     if (previousPhase === "NS_GREEN" || previousPhase === "EW_GREEN") {
       const group: MovementGroup = previousPhase === "NS_GREEN" ? "NS" : "EW";
       this.servedAt[group] = T;
@@ -907,19 +1288,37 @@ export class Simulation {
     s.clearanceBlocked = false;
     if (next === "NS_GREEN" || next === "EW_GREEN") {
       s.nextGreen = OTHER_GREEN[next];
-      s.plannedEnd = null;
+      s.plannedEnd =
+        s.nextServiceMs !== null && appliedCommandId
+          ? {
+              at: T + s.nextServiceMs,
+              commandId: appliedCommandId,
+              reason: s.exitReason,
+            }
+          : null;
+      s.nextServiceMs = null;
       s.pendingSwitch = null;
-      s.activeCommandId = null;
+      s.activeCommandId = appliedCommandId;
     } else if (next === "NS_YELLOW") s.nextGreen = "EW_GREEN";
     else if (next === "EW_YELLOW") s.nextGreen = "NS_GREEN";
     this.signalChanges++;
     this.bumpVersion();
-    this.emit("signal.phase_changed", { previousPhase, signal: this.signalState(), reason }, {
-      source: this.mode === "ai" ? "safety" : "controller",
-      provenance: "deterministic",
-      summary: `${phaseLabel(previousPhase)} → ${phaseLabel(next)} (${reasonLabel(reason)})`,
-      correlationId: s.activeCommandId ?? undefined,
-    });
+    this.emit(
+      "signal.phase_changed",
+      {
+        previousPhase,
+        signal: this.signalState(),
+        reason,
+        commandId: appliedCommandId,
+        ...(appliedCommandId ? { execution: "applied" as const } : {}),
+      },
+      {
+        source: this.mode === "ai" ? "safety" : "controller",
+        provenance: "deterministic",
+        summary: `${phaseLabel(previousPhase)} → ${phaseLabel(next)} (${reasonLabel(reason)})`,
+        correlationId: appliedCommandId ?? undefined,
+      },
+    );
     if (next.endsWith("_GREEN")) this.adaptive?.onGreenStarted();
   }
 
@@ -927,7 +1326,11 @@ export class Simulation {
     const s = this.signal;
     const t = this.timing;
     const green = s.phase === "NS_GREEN" || s.phase === "EW_GREEN";
-    const minimum = green ? t.minimumGreenMs : s.phase === "ALL_RED" ? t.allRedMs : t.yellowMs;
+    const minimum = green
+      ? t.minimumGreenMs
+      : s.phase === "ALL_RED"
+        ? t.allRedMs
+        : t.yellowMs;
     return {
       phase: s.phase,
       phaseStartedAtSimMs: s.startedAt,
@@ -954,7 +1357,13 @@ export class Simulation {
     this.injectionOrder = 0;
     this.requested = 0;
     this.spawned = 0;
-    this.completed = { count: 0, waitingSum: 0, travelSum: 0, emergencyCount: 0, emergencyDelaySum: 0 };
+    this.completed = {
+      count: 0,
+      waitingSum: 0,
+      travelSum: 0,
+      emergencyCount: 0,
+      emergencyDelaySum: 0,
+    };
     this.maxQueue = 0;
     this.queueIntegral = 0;
     this.maxDelay = 0;
@@ -967,6 +1376,7 @@ export class Simulation {
     this.geminiLatency = { count: 0, sum: 0, max: 0 };
     this.jevLatency = { count: 0, sum: 0, max: 0 };
     this.jevConfidence = { high: 0, medium: 0, low: 0 };
+    this.jevUnmeasured = 0;
     this.deadlineMisses = 0;
     this.safetyRejections = 0;
     // Streams restart so a reset replays the same demand from the same seed.
@@ -982,17 +1392,22 @@ export class Simulation {
       nextGreen: OTHER_GREEN[initialGreen],
       activeCommandId: null,
       clearanceBlocked: false,
+      nextServiceMs: null,
       exitReason: "fixed_cycle",
       plannedEnd: null,
       pendingSwitch: null,
     };
     this.scheduled = this.parameters.scheduledEvents.map((e, index) => ({
-      scheduleId: `g${this.gen}-${e.id}`, atSimMs: e.atSimMs, event: e.event, order: index,
+      scheduleId: `g${this.gen}-${e.id}`,
+      atSimMs: e.atSimMs,
+      event: e.event,
+      order: index,
     }));
     this.controllerStatus = {
       requestedMode: this.mode,
       activeController: this.mode === "ai" ? "adaptive" : "fixed_time",
-      reason: this.mode === "ai" ? null : "Fixed-time schedule; no AI is called.",
+      reason:
+        this.mode === "ai" ? null : "Fixed-time schedule; no AI is called.",
     };
 
     // Initial queues: deterministic passenger cars already spawned at time zero.
@@ -1003,16 +1418,33 @@ export class Simulation {
         const spec = VEHICLE_SPECS.car;
         const demandId = `g${this.gen}-demand-${++this.demandCounter}`;
         this.lanes[approach].push({
-          id: `g${this.gen}-vehicle-${++this.vehicleCounter}`, demandId, type: "car", approach,
-          d: front - spec.length / 2, v: 0, a: 0, length: spec.length, desired: spec.desired, maxAccel: spec.accel,
-          requestedAt: 0, spawnedAt: 0, waitingMs: 0, signalDelayMs: 0, emergency: false, committed: false,
+          id: `g${this.gen}-vehicle-${++this.vehicleCounter}`,
+          demandId,
+          type: "car",
+          approach,
+          d: front - spec.length / 2,
+          v: 0,
+          a: 0,
+          length: spec.length,
+          desired: spec.desired,
+          maxAccel: spec.accel,
+          requestedAt: 0,
+          spawnedAt: 0,
+          waitingMs: 0,
+          signalDelayMs: 0,
+          emergency: false,
+          committed: false,
         });
         this.requested++;
         this.spawned++;
         front -= spec.length + MIN_GAP;
       }
     }
-    this.maxQueue = this.lanes.north.length + this.lanes.south.length + this.lanes.east.length + this.lanes.west.length;
+    this.maxQueue =
+      this.lanes.north.length +
+      this.lanes.south.length +
+      this.lanes.east.length +
+      this.lanes.west.length;
 
     this.adaptive?.reset();
     this.recordSample();
@@ -1024,10 +1456,14 @@ export class Simulation {
     const rear = veh.d - veh.length / 2;
     const exit = OPPOSITE_APPROACH[veh.approach];
     let movementState: VehicleState["movementState"];
-    if (front <= STOP_LINE) movementState = veh.v < STOPPED_MPS ? "queued" : "approaching";
+    if (front <= STOP_LINE)
+      movementState = veh.v < STOPPED_MPS ? "queued" : "approaching";
     else if (rear < BOX) movementState = "crossing";
     else movementState = "departing";
-    const eta = front < STOP_LINE && veh.v >= STOPPED_MPS ? round2((STOP_LINE - front) / veh.v) : null;
+    const eta =
+      front < STOP_LINE && veh.v >= STOPPED_MPS
+        ? round2((STOP_LINE - front) / veh.v)
+        : null;
     return {
       id: veh.id,
       type: veh.type,
@@ -1076,7 +1512,11 @@ export class Simulation {
       }
     }
     this.maxQueue = Math.max(this.maxQueue, waiting);
-    const backlog = upstreamBacklogByApproach.north + upstreamBacklogByApproach.south + upstreamBacklogByApproach.east + upstreamBacklogByApproach.west;
+    const backlog =
+      upstreamBacklogByApproach.north +
+      upstreamBacklogByApproach.south +
+      upstreamBacklogByApproach.east +
+      upstreamBacklogByApproach.west;
     const c = this.completed;
     const latency = (stats: LatencyStats) => ({
       sampleCount: stats.count,
@@ -1084,8 +1524,18 @@ export class Simulation {
       maxMs: stats.count ? Math.round(stats.max) : null,
     });
     return {
+      inferenceTiming: "wall",
+      jevUnmeasuredDecisionCount: this.jevUnmeasured,
       timeAverageQueueLength: T ? this.queueIntegral / T : 0,
-      maximumObservedDelayMs: Math.max(this.maxDelay, ...APPROACHES.flatMap(a => this.lanes[a].map(v => v.waitingMs + v.spawnedAt - v.requestedAt)), ...APPROACHES.flatMap(a => this.backlog[a].map(v => T - v.requestedAt))),
+      maximumObservedDelayMs: Math.max(
+        this.maxDelay,
+        ...APPROACHES.flatMap((a) =>
+          this.lanes[a].map((v) => v.waitingMs + v.spawnedAt - v.requestedAt),
+        ),
+        ...APPROACHES.flatMap((a) =>
+          this.backlog[a].map((v) => T - v.requestedAt),
+        ),
+      ),
       requestedVehicleCount: this.requested,
       spawnedVehicleCount: this.spawned,
       completedVehicleCount: c.count,
@@ -1095,18 +1545,29 @@ export class Simulation {
       waitingVehicleCount: waiting,
       queueByApproach,
       maximumQueueLength: this.maxQueue,
-      averageCompletedWaitingTimeMs: c.count ? Math.round(c.waitingSum / c.count) : null,
-      averageCompletedTravelTimeMs: c.count ? Math.round(c.travelSum / c.count) : null,
-      totalObservedWaitingTimeMs: c.waitingSum + activeWaiting + upstreamWaiting,
+      averageCompletedWaitingTimeMs: c.count
+        ? Math.round(c.waitingSum / c.count)
+        : null,
+      averageCompletedTravelTimeMs: c.count
+        ? Math.round(c.travelSum / c.count)
+        : null,
+      totalObservedWaitingTimeMs:
+        c.waitingSum + activeWaiting + upstreamWaiting,
       activeWaitingTimeMs: activeWaiting,
       upstreamWaitingTimeMs: upstreamWaiting,
       throughputVehPerHour: T > 0 ? round1((c.count * 3_600_000) / T) : 0,
       emergencyCompletedCount: c.emergencyCount,
-      averageCompletedEmergencySignalDelayMs: c.emergencyCount ? Math.round(c.emergencyDelaySum / c.emergencyCount) : null,
+      averageCompletedEmergencySignalDelayMs: c.emergencyCount
+        ? Math.round(c.emergencyDelaySum / c.emergencyCount)
+        : null,
       activeEmergencySignalDelayMs: activeEmergencyDelay,
       signalChangeCount: this.signalChanges,
       geminiRequestCount: this.geminiRequests,
-      jevDecisionCount: this.jevConfidence.high + this.jevConfidence.medium + this.jevConfidence.low,
+      jevDecisionCount:
+        this.jevConfidence.high +
+        this.jevConfidence.medium +
+        this.jevConfidence.low +
+        this.jevUnmeasured,
       jevConfidenceCounts: { ...this.jevConfidence },
       geminiLatency: latency(this.geminiLatency),
       jevLatency: latency(this.jevLatency),
@@ -1117,7 +1578,9 @@ export class Simulation {
 
   private buildSnapshot(sequence: number): SimulationSnapshot {
     const vehicles: VehicleState[] = [];
-    for (const approach of APPROACHES) for (const veh of this.lanes[approach]) vehicles.push(this.vehicleState(veh));
+    for (const approach of APPROACHES)
+      for (const veh of this.lanes[approach])
+        vehicles.push(this.vehicleState(veh));
     const config: SessionConfig = {
       mode: this.mode,
       scenarioId: this.scenarioId,
@@ -1171,20 +1634,39 @@ export class Simulation {
   private providerStatuses(): [ProviderStatus, ProviderStatus] {
     if (this.adaptive) return this.adaptive.providerStatuses();
     return [
-      { provider: "gemini", mode: this.demoMode, status: "disabled", model: null, reason: "Agents inactive." },
-      { provider: "jev", mode: this.jevMode, status: "disabled", model: null, reason: "Arbitration inactive." },
+      {
+        provider: "gemini",
+        mode: this.demoMode,
+        status: "disabled",
+        model: null,
+        reason: "Agents inactive.",
+      },
+      {
+        provider: "jev",
+        mode: this.jevMode,
+        status: "disabled",
+        model: null,
+        reason: "Arbitration inactive.",
+      },
     ];
   }
 
   private jevStatus(): JevStatus {
     if (this.adaptive) return this.adaptive.jevStatus();
-    return { status: "disabled", pendingArbitrationId: null, lastArbitration: null };
+    return {
+      status: "disabled",
+      pendingArbitrationId: null,
+      lastArbitration: null,
+    };
   }
 
   private recordSample() {
     const last = this.samples[this.samples.length - 1];
     if (last && last.simulationTimeMs === this.time) return;
-    this.samples.push({ simulationTimeMs: this.time, metrics: this.buildMetrics() });
+    this.samples.push({
+      simulationTimeMs: this.time,
+      metrics: this.buildMetrics(),
+    });
     if (this.samples.length > 4000) this.samples.shift();
   }
 
@@ -1192,8 +1674,11 @@ export class Simulation {
     this.recordSample();
     const metrics = this.buildMetrics();
     this.emit("simulation.metrics", metrics, {
-      source: "simulation", provenance: "simulation",
-      summary: final ? `Final metrics at ${formatClock(this.time)}` : `Metrics at ${formatClock(this.time)}`,
+      source: "simulation",
+      provenance: "simulation",
+      summary: final
+        ? `Final metrics at ${formatClock(this.time)}`
+        : `Metrics at ${formatClock(this.time)}`,
     });
   }
 
@@ -1204,12 +1689,28 @@ export class Simulation {
   }
 
   private emitStatus(summary: string) {
-    this.emit("simulation.status", { status: this.sessionStatus, speedMultiplier: this.speed, controller: { ...this.controllerStatus } }, {
-      source: "simulation", provenance: "simulation", summary,
-    });
+    this.emit(
+      "simulation.status",
+      {
+        status: this.sessionStatus,
+        speedMultiplier: this.speed,
+        controller: { ...this.controllerStatus },
+      },
+      {
+        source: "simulation",
+        provenance: "simulation",
+        summary,
+      },
+    );
   }
 
-  private envelope(source: EventSource, provenance: EventProvenance, summary: string, correlationId: string, eventId?: string) {
+  private envelope(
+    source: EventSource,
+    provenance: EventProvenance,
+    summary: string,
+    correlationId: string,
+    eventId?: string,
+  ) {
     return {
       protocolVersion: PROTOCOL_VERSION,
       eventId: eventId ?? `${this.sessionId}-e${this.sequence}`,
@@ -1232,22 +1733,33 @@ export class Simulation {
 
 export function phaseLabel(phase: SignalPhase): string {
   switch (phase) {
-    case "NS_GREEN": return "North/South green";
-    case "NS_YELLOW": return "North/South yellow";
-    case "EW_GREEN": return "East/West green";
-    case "EW_YELLOW": return "East/West yellow";
-    case "ALL_RED": return "All red";
+    case "NS_GREEN":
+      return "North/South green";
+    case "NS_YELLOW":
+      return "North/South yellow";
+    case "EW_GREEN":
+      return "East/West green";
+    case "EW_YELLOW":
+      return "East/West yellow";
+    case "ALL_RED":
+      return "All red";
   }
 }
 
 function reasonLabel(reason: PhaseChangeReason): string {
   switch (reason) {
-    case "fixed_cycle": return "fixed schedule";
-    case "adaptive_command": return "adaptive command";
-    case "maximum_green": return "maximum green reached";
-    case "clearance_complete": return "clearance complete";
-    case "reset": return "reset";
-    case "fallback": return "deterministic fallback";
+    case "fixed_cycle":
+      return "fixed schedule";
+    case "adaptive_command":
+      return "adaptive command";
+    case "maximum_green":
+      return "maximum green reached";
+    case "clearance_complete":
+      return "clearance complete";
+    case "reset":
+      return "reset";
+    case "fallback":
+      return "deterministic fallback";
   }
 }
 
@@ -1257,11 +1769,16 @@ function typeLabel(type: VehicleType): string {
 
 export function describeInjection(event: InjectedEvent): string {
   switch (event.type) {
-    case "emergency": return `${event.responding ? "responding " : ""}${event.vehicleType} from the ${event.approach}`;
-    case "demand_surge": return `${event.approach} traffic surge ×${event.multiplier} for ${event.durationMs / 1000} s`;
-    case "temporary_congestion": return `${event.approach} congestion (${Math.round(event.speedFactor * 100)}% speed) for ${event.durationMs / 1000} s`;
-    case "provider_fault": return `${event.provider === "jev" ? "JEV" : "Gemini"} ${event.fault.replace("_", " ")} fault for ${event.durationMs / 1000} s`;
-    case "decision_boundary": return `decision trigger (${event.reason.replace("_", " ")})`;
+    case "emergency":
+      return `${event.responding ? "responding " : ""}${event.vehicleType} from the ${event.approach}`;
+    case "demand_surge":
+      return `${event.approach} traffic surge ×${event.multiplier} for ${event.durationMs / 1000} s`;
+    case "temporary_congestion":
+      return `${event.approach} congestion (${Math.round(event.speedFactor * 100)}% speed) for ${event.durationMs / 1000} s`;
+    case "provider_fault":
+      return `${event.provider === "jev" ? "JEV" : "Gemini"} ${event.fault.replace("_", " ")} fault for ${event.durationMs / 1000} s`;
+    case "decision_boundary":
+      return `decision trigger (${event.reason.replace("_", " ")})`;
   }
 }
 
@@ -1280,6 +1797,12 @@ function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value));
 }
 
-function round1(value: number) { return Math.round(value * 10) / 10; }
-function round2(value: number) { return Math.round(value * 100) / 100; }
-function round3(value: number) { return Math.round(value * 1000) / 1000; }
+function round1(value: number) {
+  return Math.round(value * 10) / 10;
+}
+function round2(value: number) {
+  return Math.round(value * 100) / 100;
+}
+function round3(value: number) {
+  return Math.round(value * 1000) / 1000;
+}

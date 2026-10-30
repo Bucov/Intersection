@@ -11,6 +11,8 @@ export const SessionConfigSchema = z.object({
   signalTiming: SignalTimingSchema, scenario: ScenarioParametersSchema, geometry: GeometrySchema,
 });
 export const TrafficMetricsSchema = z.object({
+  inferenceTiming: z.enum(["wall", "synthetic"]).optional(),
+  jevUnmeasuredDecisionCount: CounterSchema.optional(),
   timeAverageQueueLength: NonnegativeSchema.optional(),
   maximumObservedDelayMs: NonnegativeSchema.optional(),
   requestedVehicleCount: CounterSchema, spawnedVehicleCount: CounterSchema,
@@ -40,7 +42,7 @@ export const TrafficMetricsSchema = z.object({
   if (m.maximumQueueLength < m.waitingVehicleCount) issue("Maximum queue must include current queue");
   if ((m.completedVehicleCount === 0) !== (m.averageCompletedWaitingTimeMs === null) || (m.completedVehicleCount === 0) !== (m.averageCompletedTravelTimeMs === null)) issue("Completed averages are null exactly when no trips completed");
   if (m.emergencyCompletedCount > m.completedVehicleCount || (m.emergencyCompletedCount === 0) !== (m.averageCompletedEmergencySignalDelayMs === null)) issue("Emergency completion average needs an emergency sample");
-  if (Object.values(m.jevConfidenceCounts).reduce((a, b) => a + b, 0) !== m.jevDecisionCount) issue("Confidence bins must count successful JEV decisions");
+  if (Object.values(m.jevConfidenceCounts).reduce((a, b) => a + b, 0) + (m.jevUnmeasuredDecisionCount ?? 0) !== m.jevDecisionCount) issue("Confidence bins must count successful JEV decisions");
   for (const latency of [m.geminiLatency, m.jevLatency]) {
     if ((latency.sampleCount === 0) !== (latency.meanMs === null) || (latency.sampleCount === 0) !== (latency.maxMs === null) || (latency.meanMs !== null && latency.maxMs !== null && latency.meanMs > latency.maxMs)) issue("Latency samples and aggregates must agree");
   }
@@ -77,7 +79,7 @@ export const SimulationSnapshotSchema = z.object({
   if (s.agents[0].agentId !== "agent-a" || s.agents[1].agentId !== "agent-b") issue("Agents must be ordered A, B");
   if (s.providers[0].provider !== "gemini" || s.providers[1].provider !== "jev") issue("Providers must be ordered Gemini, JEV");
   if (s.controller.requestedMode !== s.config.mode) issue("Controller mode must match session config");
-  if (s.providers.some(p => p.mode !== s.config.demoMode) || s.agents.some(a => a.provenance !== s.config.demoMode)) issue("Provider and agent provenance must match the session mode");
+  if (s.providers[0].mode !== s.config.demoMode || s.agents.some(a => a.provenance !== s.config.demoMode)) issue("Provider and agent provenance must match the session mode");
   if (s.simulationTimeMs % s.config.timestepMs !== 0 || s.simulationTimeMs > s.config.scenario.durationMs) issue("Simulation time must align to timestep and duration");
   if (s.signal.phaseStartedAtSimMs > s.simulationTimeMs) issue("Signal cannot start in the future");
   if (s.signal.latestEndAtSimMs !== null && s.simulationTimeMs >= s.signal.latestEndAtSimMs) issue("Green cannot remain active at or beyond maximum deadline");
