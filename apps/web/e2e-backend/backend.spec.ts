@@ -1,6 +1,6 @@
 import {test,expect,type Page} from '@playwright/test';
 import {SocketMessageSchema,type ServerEvent} from '@intersection/shared';
-test.beforeEach(async({context})=>{await context.addInitScript(()=>localStorage.setItem('intersection.preferences.v1',JSON.stringify({dataSource:'backend',quality:'low'})));});
+test.beforeEach(async({context})=>{await context.addInitScript(()=>{ if (location.origin !== 'null') localStorage.setItem('intersection.preferences.v1',JSON.stringify({dataSource:'backend',quality:'low'})); });});
 const visible=(page:Page,id:string)=>page.getByTestId(id).filter({visible:true}).first();
 function capture(page:Page){const events:ServerEvent[]=[];const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));page.on('websocket',ws=>ws.on('framereceived',f=>{const p=SocketMessageSchema.safeParse(JSON.parse(String(f.payload)));if(!p.success)errors.push('Invalid socket frame');else if(p.data.type!=='pong')events.push(p.data);}));return {events,errors};}
 test('traditional browser simulation uses authoritative motion, controls and metrics with no keys',async({page})=>{
