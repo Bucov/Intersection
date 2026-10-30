@@ -1,16 +1,22 @@
-import { useState } from "react";
+import { Suspense, lazy, useState } from "react";
 import type { ControllerMode, ScenarioDefinition, ScenarioId } from "@intersection/shared";
 import { useServices } from "@/app/services";
 import { AgentCard } from "@/components/agent-panels/AgentCard";
-import { ComparisonPanel } from "@/components/comparison/ComparisonPanel";
 import { DecisionRound } from "@/components/jev-panel/DecisionRound";
 import { JevPanel } from "@/components/jev-panel/JevPanel";
-import { MetricsPanel } from "@/components/metrics/MetricsPanel";
 import { Transcript } from "@/components/transcript/Transcript";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { agentVerdict, latestCycle, type SessionState } from "@/state/session";
 import { useStore } from "@/state/store";
 import { FixedTimePanel } from "./FixedTimePanel";
+
+// Charts load on first use of their tabs.
+const MetricsPanel = lazy(() => import("@/components/metrics/MetricsPanel").then(m => ({ default: m.MetricsPanel })));
+const ComparisonPanel = lazy(() => import("@/components/comparison/ComparisonPanel").then(m => ({ default: m.ComparisonPanel })));
+
+function TabLoading() {
+  return <p className="text-sm text-subtle-foreground">Loading…</p>;
+}
 
 function findProposal(state: SessionState, agentId: "agent-a" | "agent-b") {
   for (let i = state.cycles.length - 1; i >= 0; i--) {
@@ -82,10 +88,14 @@ export function SimulationRail({ mode, scenarioId, seed, scenarios }: RailProps)
         <Transcript />
       </TabsContent>
       <TabsContent value="metrics" className="min-h-0 flex-1 overflow-y-auto p-4">
-        <MetricsPanel mode={mode} />
+        <Suspense fallback={<TabLoading />}>
+          <MetricsPanel mode={mode} />
+        </Suspense>
       </TabsContent>
       <TabsContent value="compare" className="min-h-0 flex-1 overflow-y-auto p-4">
-        <ComparisonPanel scenarioId={scenarioId} seed={seed} scenarios={scenarios} />
+        <Suspense fallback={<TabLoading />}>
+          <ComparisonPanel scenarioId={scenarioId} seed={seed} scenarios={scenarios} />
+        </Suspense>
       </TabsContent>
     </Tabs>
   );

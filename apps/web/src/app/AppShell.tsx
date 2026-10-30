@@ -1,15 +1,17 @@
-import { useEffect } from "react";
+import { Suspense, lazy, useEffect } from "react";
 import { Route, Routes, useLocation } from "react-router";
 import { AnimatePresence } from "motion/react";
 import { IntroOverlay } from "@/components/intro/IntroOverlay";
 import { Header } from "@/components/navigation/Header";
-import { IntersectionCanvas } from "@/components/scene/IntersectionCanvas";
 import { AboutPage } from "@/routes/AboutPage";
 import { HomePage } from "@/routes/HomePage";
 import { NotFoundPage } from "@/routes/NotFoundPage";
 import { SettingsPage } from "@/routes/SettingsPage";
 import { SimulationPage } from "@/routes/SimulationPage";
 import { useServices } from "./services";
+
+// Three.js streams in while the intro plays; the intro itself needs only React and Motion.
+const IntersectionCanvas = lazy(() => import("@/components/scene/IntersectionCanvas").then(m => ({ default: m.IntersectionCanvas })));
 
 /** Route sections, so changing mode or scenario inside the simulation keeps the page mounted. */
 function sectionOf(pathname: string): string {
@@ -32,7 +34,9 @@ export function AppShell() {
 
   return (
     <>
-      <IntersectionCanvas />
+      <Suspense fallback={null}>
+        <IntersectionCanvas />
+      </Suspense>
       <Header />
       <AnimatePresence mode="sync" initial={false}>
         <Routes location={location} key={sectionOf(location.pathname)}>

@@ -43,6 +43,20 @@ export default defineConfig({
   server: { proxy },
   preview: { proxy },
   build: {
-    chunkSizeWarningLimit: 1600,
+    // Three.js and friends are one large, rarely changing library chunk loaded behind the intro.
+    chunkSizeWarningLimit: 1400,
+    rolldownOptions: {
+      output: {
+        codeSplitting: {
+          groups: [
+            // Each group holds only the packages it names (rolldown otherwise pulls in every dependency,
+            // e.g. React into the three.js chunk), and matches the package that owns the module.
+            { name: "three", includeDependenciesRecursively: false, test: /node_modules[\\/](three|@react-three[\\/][^\\/]+|three-stdlib|camera-controls|maath)[\\/](?!.*node_modules)/, priority: 30 },
+            { name: "charts", includeDependenciesRecursively: false, test: /node_modules[\\/](recharts|d3-[a-z-]+|victory-vendor)[\\/](?!.*node_modules)/, priority: 20 },
+            { name: "react", includeDependenciesRecursively: false, test: /node_modules[\\/](react|react-dom|scheduler|react-router|@base-ui[\\/][^\\/]+|motion|motion-dom|framer-motion)[\\/](?!.*node_modules)/, priority: 10 },
+          ],
+        },
+      },
+    },
   },
 });
