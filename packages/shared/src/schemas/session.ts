@@ -11,6 +11,8 @@ export const SessionConfigSchema = z.object({
   signalTiming: SignalTimingSchema, scenario: ScenarioParametersSchema, geometry: GeometrySchema,
 });
 export const TrafficMetricsSchema = z.object({
+  timeAverageQueueLength: NonnegativeSchema.optional(),
+  maximumObservedDelayMs: NonnegativeSchema.optional(),
   requestedVehicleCount: CounterSchema, spawnedVehicleCount: CounterSchema,
   completedVehicleCount: CounterSchema, activeVehicleCount: CounterSchema,
   upstreamBacklogCount: CounterSchema, upstreamBacklogByApproach: ApproachCountsSchema,
@@ -58,6 +60,7 @@ export const JevStatusSchema = z.object({
 export const SimulationSnapshotSchema = z.object({
   protocolVersion: z.literal(1), sessionId: IdSchema, generation: CounterSchema,
   stateVersion: CounterSchema, sequence: CounterSchema,
+  decisionStateVersion: CounterSchema.optional(), snapshotSequence: CounterSchema.optional(), eventSequence: CounterSchema.optional(),
   status: SessionStatusSchema, simulationTimeMs: SimTimeSchema,
   config: SessionConfigSchema, signal: SignalStateSchema,
   vehicles: z.array(VehicleStateSchema), occupiedVehicleIds: z.array(IdSchema),
