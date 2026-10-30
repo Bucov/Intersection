@@ -1,5 +1,7 @@
 # Running Intersection with real AI
 
+> Short version: [`QUICKSTART.md`](QUICKSTART.md). This page is the detailed reference.
+
 This guide describes the code currently in this repository. It explains what was implemented, how to connect the browser to the server, and how to replace both mock agents and mock arbitration with real services.
 
 ## What the project does
@@ -24,7 +26,7 @@ During this continuation I removed forced vendor chunk groups from Vite to fix t
 
 Verification on this machine: production build and typecheck passed, 174 unit/integration tests passed, all five existing production backend browser tests passed, and lint passed with warnings. The dependency tree has one deduplicated Mozaik core 4.1.0 and adapter 0.1.0. The adapter archive is checked into `vendor`; its source commit and checksum are in `vendor/README.md`.
 
-Live Gemini, Claude and TypeSafe calls have **not** been proven in this work. The live smoke command skipped because it was not enabled. Offline concurrency tests prove orchestration overlap, not live provider performance. Expanded browser coverage, the final resource audit and clean-clone verification remain outstanding.
+Update (2026-10-30): the live smoke test now passes with Gemini agents and live TypeSafe JEV (conflict, measured JEV response, selected proposal, overlapping inference). It previously failed because Gemini wrapped its JSON in markdown fences; agents now request structured JSON output. Live Claude was not verified because the configured Anthropic key was rejected. Expanded browser coverage, the final resource audit and clean-clone verification remain outstanding.
 
 ## 1. Install the project
 
@@ -52,7 +54,7 @@ These are API credentials, not browser chat subscriptions. Use accounts with the
 
 Both agents may use Gemini, both may use Claude, or they may use different providers. You only need keys for providers actually selected. You still need the TypeSafe key if you want arbitration to be live too.
 
-No Mozaik cloud API key is required. The service explicitly disables the optional Mozaik cloud telemetry exporter; a log saying that telemetry is disabled is expected and does not mean Gemini or Claude is disabled.
+No Mozaik cloud API key is required. Streaming agent loops to the Mozaik cloud dashboard (app.jigjoy.ai) is optional: pair once with `npx @mozaik-ai/cloud-sdk pair` and set `MOZAIK_CLOUD=on`. See step 5 of `QUICKSTART.md`. The startup log's last line reports whether it is on.
 
 ## 3. Create the server environment file
 

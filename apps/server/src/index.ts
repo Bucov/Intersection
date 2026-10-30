@@ -8,6 +8,7 @@ for (const [i, agent] of config.agents.entries())
     console.warn(`Agent ${i === 0 ? "A" : "B"} unavailable: ${agent.reason}`);
 const ai = new AIService(config);
 if (ai.jevUnavailable) console.warn(`JEV unavailable: ${ai.jevUnavailable}`);
+console.log(ai.cloud.message);
 const { app } = await buildApp({
   demoMode: config.mode,
   jevMode: config.jevMode,

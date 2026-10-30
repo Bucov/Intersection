@@ -31,6 +31,7 @@ import {
 } from "./schemas.js";
 import { type AIConfig, type AgentConfig } from "./config.js";
 import { Coordinator } from "./coordinator.js";
+import { configureMozaikCloud, type CloudStatus } from "./cloud.js";
 import type { ManagedSession } from "../sessions.js";
 class State extends RuntimeState {}
 class Observe extends SituationSpecification {
@@ -73,6 +74,7 @@ export class AIService {
   activeInference = 0;
   disposed = false;
   jevUnavailable: string | null = null;
+  readonly cloud: CloudStatus;
   readonly diagnostics: string[] = [];
   constructor(
     readonly config: AIConfig,
@@ -81,10 +83,9 @@ export class AIService {
   ) {
     // Obtain the public default inference runner, then contain failures before runLoop's
     // fire-and-forget promise. The empty provider runtime owns no participants or timers.
-    // Core 4.1 creates a cloud client for each loop. An explicit empty key disables
-    // its optional exporter, including cached machine credentials; this demo keeps
-    // its bounded event stream locally and does not require a Mozaik cloud account.
-    process.env.MOZAIK_API_KEY = "";
+    // Core 4.1 creates a cloud client for each loop; streaming to Mozaik cloud is
+    // opt-in through MOZAIK_CLOUD=on and needs no account otherwise.
+    this.cloud = configureMozaikCloud();
     const native = defineRuntime<State>()
       .initializeRuntime({ state: new State() })
       .getInferenceRunner();
@@ -300,6 +301,10 @@ export class AIService {
           context: task.participant.getMemory().getContext(),
           tools: [],
           maxOutputTokens: 512,
+          // Without a schema Gemini wraps its JSON in markdown fences.
+          ...(this.config.mode === "live" && {
+            structuredOutput: proposalOutput(task.config.provider),
+          }),
         },
       );
     return true;
@@ -350,6 +355,23 @@ export class AIService {
     this.runtime.leave(this.participant);
     this.participant.setHandlers([]);
   }
+}
+// Plain JSON Schema shared by both providers; Gemini's responseSchema rejects
+// additionalProperties, while Anthropic's json_schema format requires it.
+function proposalOutput(provider: AgentConfig["provider"]) {
+  return {
+    name: "traffic_proposal",
+    schema: {
+      type: "object",
+      properties: {
+        requestedPhase: { type: "string", enum: ["NS_GREEN", "EW_GREEN"] },
+        requestedGreenSeconds: { type: "integer" },
+        summary: { type: "string" },
+      },
+      required: ["requestedPhase", "requestedGreenSeconds", "summary"],
+      ...(provider === "claude" && { additionalProperties: false }),
+    },
+  };
 }
 function answer(text: string): InferenceOutput {
   return {

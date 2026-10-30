@@ -4,6 +4,8 @@ Intersection is a Jigjoy 2026 October hackathon traffic simulation by students a
 
 ## Run locally
 
+**New here? Follow [`docs/QUICKSTART.md`](docs/QUICKSTART.md)** — keys, live models, and the optional Mozaik cloud dashboard in one page.
+
 Use Node 22 or newer. The original implementation was verified with Node 22/npm 10; this checkout also builds with Node 24/npm 11. From the repository root (these commands also work in fish):
 
 ```sh
@@ -16,7 +18,7 @@ In a second terminal run `npm run dev:web`. Open the URL printed by Vite and sel
 
 ## AI configuration
 
-See `apps/server/.env.example` for configuration names. Select each agent's provider and supported model explicitly; run `npm run models -w @intersection/server` to list the installed registry. Gemini requires `GEMINI_API_KEY`; Claude requires `ANTHROPIC_API_KEY`. Live JEV requires `TYPESAFE_API_KEY`. Mock execution demonstrates orchestration and adapter behavior, not live model quality. Live provider and JEV calls have not been verified in this delivery.
+See `apps/server/.env.example` for configuration names. Select each agent's provider and supported model explicitly; run `npm run models -w @intersection/server` to list the installed registry. Gemini requires `GEMINI_API_KEY`; Claude requires `ANTHROPIC_API_KEY`. Live JEV requires `TYPESAFE_API_KEY`. Mock execution demonstrates orchestration and adapter behavior, not live model quality. Live Gemini and TypeSafe JEV calls are verified by `npm run test:live` (see the quickstart). Streaming agent loops to the Mozaik cloud dashboard is optional and opt-in via `MOZAIK_CLOUD=on`.
 
 The server uses Mozaik core 4.1.0 and the separate packaged `mozaik-jev-adapter`. The repository-relative archive and its provenance are documented in `vendor/README.md`. No adapter checkout under `/tmp` is needed for installation.
 

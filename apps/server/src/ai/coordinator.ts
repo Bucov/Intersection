@@ -250,7 +250,12 @@ export class Coordinator implements Coordination {
       const text = (payload as { answer: { content: { text: string } } }).answer
         .content.text;
       if (text.length > 8000) throw Error();
-      action = ProposalSchema.parse(JSON.parse(text));
+      // Tolerate a markdown code fence around the JSON object.
+      const json = text
+        .trim()
+        .replace(/^```(?:json)?\s*/i, "")
+        .replace(/\s*```$/, "");
+      action = ProposalSchema.parse(JSON.parse(json));
     } catch {
       this.fail("invalid_response");
       return;
