@@ -22,3 +22,11 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Impeccable design tooling: keep the surface brief, drop caches and review captures
+.impeccable/*.cache.json
+.impeccable/review/
+
+# Playwright
+playwright-report/
+test-results/
