@@ -23,7 +23,7 @@ STORY: See a living intersection, learn there are two ways to run it, pick one, 
 
 FIRST VIEWPORT: Header: nav left, "Intersection" top-middle, data-source status right. Centre: the diorama, cars stopping and going. Traditional panel left, AI panel right, each one line, three facts, a primary Run button. Simulation: scene full-bleed, decision rail right, signal HUD top-left, playback and signal-timing timeline docked bottom.
 
-FORM: Brief- and user-pinned ("something simple that is easy to make, easy to understand and presents everything it needs to present"); concept-seed not run. Signature move: the concurrency timeline drawn as a traffic-engineering signal-timing chart, agent, JEV and safety bars on the signal phases' time axis. seed: none (unavailable)
+FORM: Brief- and user-pinned ("something simple that is easy to make, easy to understand and presents everything it needs to present"). concept-seed was rolled for the record; its assignment is not adopted because a user-pinned direction beats the roll. Signature move: the concurrency timeline drawn as a traffic-engineering signal-timing chart, agent, JEV and safety bars on the signal phases' time axis. seed:232c8ca45e1eb370
 
 FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance
 

@@ -7,9 +7,11 @@
 @custom-variant dark (&:is(.dark *));
 
 /*
- * Design tokens. Every colour, face and radius in the app (including the 3D
- * scene, which reads the --scene-* variables at runtime) comes from here, so a
- * new visual direction is a token swap rather than a component rewrite.
+ * Design tokens. Every interface colour, face and radius comes from here, and the
+ * 3D scene reads the --scene-* variables at runtime for its ground, roads,
+ * planting, buildings and signals, so a new visual direction is mostly a token
+ * swap. Vehicle paints and the scene's light colours are still set in
+ * components/scene (Vehicles.tsx, geometry.ts, IntersectionScene.tsx).
  */
 @theme inline {
     --font-sans: "Overpass Variable", ui-sans-serif, system-ui, sans-serif;

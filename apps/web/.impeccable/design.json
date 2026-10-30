@@ -1,0 +1,827 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-30T00:00:00Z",
+  "title": "Design System: Intersection",
+  "extensions": {
+    "colorMeta": {
+      "background": {
+        "role": "neutral",
+        "displayName": "Dark Room",
+        "canonical": "oklch(0.135 0.005 255)",
+        "tonalRamp": [
+          "oklch(0.150 0.005 255)",
+          "oklch(0.264 0.004 255)",
+          "oklch(0.379 0.003 255)",
+          "oklch(0.493 0.002 255)",
+          "oklch(0.607 0.002 255)",
+          "oklch(0.721 0.001 255)",
+          "oklch(0.836 0.001 255)",
+          "oklch(0.950 0.001 255)"
+        ]
+      },
+      "foreground": {
+        "role": "neutral",
+        "displayName": "Foreground White",
+        "canonical": "oklch(0.96 0.003 255)",
+        "tonalRamp": [
+          "oklch(0.150 0.001 255)",
+          "oklch(0.264 0.001 255)",
+          "oklch(0.379 0.001 255)",
+          "oklch(0.493 0.001 255)",
+          "oklch(0.607 0.002 255)",
+          "oklch(0.721 0.002 255)",
+          "oklch(0.836 0.002 255)",
+          "oklch(0.950 0.003 255)"
+        ]
+      },
+      "card": {
+        "role": "neutral",
+        "displayName": "Bench",
+        "canonical": "oklch(0.175 0.006 255)",
+        "tonalRamp": [
+          "oklch(0.150 0.006 255)",
+          "oklch(0.264 0.005 255)",
+          "oklch(0.379 0.004 255)",
+          "oklch(0.493 0.003 255)",
+          "oklch(0.607 0.002 255)",
+          "oklch(0.721 0.002 255)",
+          "oklch(0.836 0.002 255)",
+          "oklch(0.950 0.002 255)"
+        ]
+      },
+      "popover": {
+        "role": "neutral",
+        "displayName": "Raised Slab",
+        "canonical": "oklch(0.205 0.007 255)",
+        "tonalRamp": [
+          "oklch(0.150 0.006 255)",
+          "oklch(0.264 0.006 255)",
+          "oklch(0.379 0.005 255)",
+          "oklch(0.493 0.004 255)",
+          "oklch(0.607 0.003 255)",
+          "oklch(0.721 0.002 255)",
+          "oklch(0.836 0.002 255)",
+          "oklch(0.950 0.002 255)"
+        ]
+      },
+      "panel": {
+        "role": "neutral",
+        "displayName": "Glass Slab",
+        "canonical": "oklch(0.165 0.006 255 / 0.94)"
+      },
+      "primary": {
+        "role": "primary",
+        "displayName": "Lamp White",
+        "canonical": "oklch(0.96 0.003 255)",
+        "tonalRamp": [
+          "oklch(0.150 0.001 255)",
+          "oklch(0.264 0.001 255)",
+          "oklch(0.379 0.001 255)",
+          "oklch(0.493 0.001 255)",
+          "oklch(0.607 0.002 255)",
+          "oklch(0.721 0.002 255)",
+          "oklch(0.836 0.002 255)",
+          "oklch(0.950 0.003 255)"
+        ]
+      },
+      "primary-foreground": {
+        "role": "neutral",
+        "displayName": "Ink on Lamp",
+        "canonical": "oklch(0.17 0.006 255)",
+        "tonalRamp": [
+          "oklch(0.150 0.006 255)",
+          "oklch(0.264 0.005 255)",
+          "oklch(0.379 0.004 255)",
+          "oklch(0.493 0.003 255)",
+          "oklch(0.607 0.002 255)",
+          "oklch(0.721 0.002 255)",
+          "oklch(0.836 0.002 255)",
+          "oklch(0.950 0.002 255)"
+        ]
+      },
+      "secondary": {
+        "role": "neutral",
+        "displayName": "Secondary Fill",
+        "canonical": "oklch(0.245 0.007 255)",
+        "tonalRamp": [
+          "oklch(0.150 0.006 255)",
+          "oklch(0.264 0.007 255)",
+          "oklch(0.379 0.006 255)",
+          "oklch(0.493 0.005 255)",
+          "oklch(0.607 0.003 255)",
+          "oklch(0.721 0.002 255)",
+          "oklch(0.836 0.002 255)",
+          "oklch(0.950 0.002 255)"
+        ]
+      },
+      "muted": {
+        "role": "neutral",
+        "displayName": "Muted Fill",
+        "canonical": "oklch(0.235 0.007 255)",
+        "tonalRamp": [
+          "oklch(0.150 0.006 255)",
+          "oklch(0.264 0.007 255)",
+          "oklch(0.379 0.006 255)",
+          "oklch(0.493 0.004 255)",
+          "oklch(0.607 0.003 255)",
+          "oklch(0.721 0.002 255)",
+          "oklch(0.836 0.002 255)",
+          "oklch(0.950 0.002 255)"
+        ]
+      },
+      "accent": {
+        "role": "neutral",
+        "displayName": "Accent Fill",
+        "canonical": "oklch(0.27 0.008 255)",
+        "tonalRamp": [
+          "oklch(0.150 0.007 255)",
+          "oklch(0.264 0.008 255)",
+          "oklch(0.379 0.007 255)",
+          "oklch(0.493 0.006 255)",
+          "oklch(0.607 0.004 255)",
+          "oklch(0.721 0.003 255)",
+          "oklch(0.836 0.002 255)",
+          "oklch(0.950 0.002 255)"
+        ]
+      },
+      "muted-foreground": {
+        "role": "neutral",
+        "displayName": "Supporting Grey",
+        "canonical": "oklch(0.76 0.01 255)",
+        "tonalRamp": [
+          "oklch(0.150 0.003 255)",
+          "oklch(0.264 0.003 255)",
+          "oklch(0.379 0.005 255)",
+          "oklch(0.493 0.006 255)",
+          "oklch(0.607 0.008 255)",
+          "oklch(0.721 0.009 255)",
+          "oklch(0.836 0.009 255)",
+          "oklch(0.950 0.007 255)"
+        ]
+      },
+      "subtle-foreground": {
+        "role": "neutral",
+        "displayName": "Caption Grey",
+        "canonical": "oklch(0.64 0.012 255)",
+        "tonalRamp": [
+          "oklch(0.150 0.004 255)",
+          "oklch(0.264 0.006 255)",
+          "oklch(0.379 0.008 255)",
+          "oklch(0.493 0.010 255)",
+          "oklch(0.607 0.011 255)",
+          "oklch(0.721 0.011 255)",
+          "oklch(0.836 0.009 255)",
+          "oklch(0.950 0.007 255)"
+        ]
+      },
+      "border": {
+        "role": "neutral",
+        "displayName": "Hairline",
+        "canonical": "oklch(1 0 0 / 10%)"
+      },
+      "input": {
+        "role": "neutral",
+        "displayName": "Input Hairline",
+        "canonical": "oklch(1 0 0 / 15%)"
+      },
+      "ring": {
+        "role": "neutral",
+        "displayName": "Focus Ring",
+        "canonical": "oklch(0.88 0.03 255)",
+        "tonalRamp": [
+          "oklch(0.150 0.007 255)",
+          "oklch(0.264 0.007 255)",
+          "oklch(0.379 0.009 255)",
+          "oklch(0.493 0.014 255)",
+          "oklch(0.607 0.019 255)",
+          "oklch(0.721 0.023 255)",
+          "oklch(0.836 0.028 255)",
+          "oklch(0.950 0.027 255)"
+        ]
+      },
+      "signal-red": {
+        "role": "secondary",
+        "displayName": "Signal Red",
+        "canonical": "oklch(0.645 0.215 27)",
+        "tonalRamp": [
+          "oklch(0.150 0.066 27)",
+          "oklch(0.264 0.100 27)",
+          "oklch(0.379 0.135 27)",
+          "oklch(0.493 0.169 27)",
+          "oklch(0.607 0.204 27)",
+          "oklch(0.721 0.192 27)",
+          "oklch(0.836 0.158 27)",
+          "oklch(0.950 0.123 27)"
+        ]
+      },
+      "signal-amber": {
+        "role": "secondary",
+        "displayName": "Signal Amber",
+        "canonical": "oklch(0.83 0.165 78)",
+        "tonalRamp": [
+          "oklch(0.150 0.041 78)",
+          "oklch(0.264 0.041 78)",
+          "oklch(0.379 0.061 78)",
+          "oklch(0.493 0.087 78)",
+          "oklch(0.607 0.114 78)",
+          "oklch(0.721 0.140 78)",
+          "oklch(0.836 0.164 78)",
+          "oklch(0.950 0.137 78)"
+        ]
+      },
+      "signal-green": {
+        "role": "secondary",
+        "displayName": "Signal Green",
+        "canonical": "oklch(0.78 0.17 152)",
+        "tonalRamp": [
+          "oklch(0.150 0.043 152)",
+          "oklch(0.264 0.047 152)",
+          "oklch(0.379 0.074 152)",
+          "oklch(0.493 0.102 152)",
+          "oklch(0.607 0.129 152)",
+          "oklch(0.721 0.156 152)",
+          "oklch(0.836 0.157 152)",
+          "oklch(0.950 0.130 152)"
+        ]
+      },
+      "group-ns": {
+        "role": "secondary",
+        "displayName": "North/South Cyan",
+        "canonical": "oklch(0.79 0.115 218)",
+        "tonalRamp": [
+          "oklch(0.150 0.029 218)",
+          "oklch(0.264 0.030 218)",
+          "oklch(0.379 0.049 218)",
+          "oklch(0.493 0.067 218)",
+          "oklch(0.607 0.086 218)",
+          "oklch(0.721 0.104 218)",
+          "oklch(0.836 0.108 218)",
+          "oklch(0.950 0.089 218)"
+        ]
+      },
+      "group-ew": {
+        "role": "secondary",
+        "displayName": "East/West Violet",
+        "canonical": "oklch(0.74 0.15 305)",
+        "tonalRamp": [
+          "oklch(0.150 0.037 305)",
+          "oklch(0.264 0.050 305)",
+          "oklch(0.379 0.074 305)",
+          "oklch(0.493 0.098 305)",
+          "oklch(0.607 0.122 305)",
+          "oklch(0.721 0.146 305)",
+          "oklch(0.836 0.130 305)",
+          "oklch(0.950 0.106 305)"
+        ]
+      },
+      "jev": {
+        "role": "tertiary",
+        "displayName": "JEV Warm White",
+        "canonical": "oklch(0.9 0.045 85)",
+        "tonalRamp": [
+          "oklch(0.150 0.011 85)",
+          "oklch(0.264 0.011 85)",
+          "oklch(0.379 0.012 85)",
+          "oklch(0.493 0.019 85)",
+          "oklch(0.607 0.027 85)",
+          "oklch(0.721 0.034 85)",
+          "oklch(0.836 0.041 85)",
+          "oklch(0.950 0.042 85)"
+        ]
+      },
+      "safety": {
+        "role": "tertiary",
+        "displayName": "Safety Steel",
+        "canonical": "oklch(0.77 0.035 245)",
+        "tonalRamp": [
+          "oklch(0.150 0.009 245)",
+          "oklch(0.264 0.010 245)",
+          "oklch(0.379 0.016 245)",
+          "oklch(0.493 0.021 245)",
+          "oklch(0.607 0.027 245)",
+          "oklch(0.721 0.033 245)",
+          "oklch(0.836 0.032 245)",
+          "oklch(0.950 0.026 245)"
+        ]
+      },
+      "emergency": {
+        "role": "tertiary",
+        "displayName": "Emergency Rose",
+        "canonical": "oklch(0.7 0.19 15)",
+        "tonalRamp": [
+          "oklch(0.150 0.048 15)",
+          "oklch(0.264 0.074 15)",
+          "oklch(0.379 0.105 15)",
+          "oklch(0.493 0.135 15)",
+          "oklch(0.607 0.165 15)",
+          "oklch(0.721 0.184 15)",
+          "oklch(0.836 0.154 15)",
+          "oklch(0.950 0.123 15)"
+        ]
+      },
+      "positive": {
+        "role": "tertiary",
+        "displayName": "Positive",
+        "canonical": "oklch(0.78 0.13 160)",
+        "tonalRamp": [
+          "oklch(0.150 0.033 160)",
+          "oklch(0.264 0.036 160)",
+          "oklch(0.379 0.057 160)",
+          "oklch(0.493 0.078 160)",
+          "oklch(0.607 0.099 160)",
+          "oklch(0.721 0.119 160)",
+          "oklch(0.836 0.120 160)",
+          "oklch(0.950 0.099 160)"
+        ]
+      },
+      "warning": {
+        "role": "tertiary",
+        "displayName": "Warning",
+        "canonical": "oklch(0.82 0.14 75)",
+        "tonalRamp": [
+          "oklch(0.150 0.035 75)",
+          "oklch(0.264 0.035 75)",
+          "oklch(0.379 0.053 75)",
+          "oklch(0.493 0.076 75)",
+          "oklch(0.607 0.098 75)",
+          "oklch(0.721 0.121 75)",
+          "oklch(0.836 0.137 75)",
+          "oklch(0.950 0.115 75)"
+        ]
+      },
+      "destructive": {
+        "role": "tertiary",
+        "displayName": "Destructive",
+        "canonical": "oklch(0.68 0.19 25)",
+        "tonalRamp": [
+          "oklch(0.150 0.049 25)",
+          "oklch(0.264 0.079 25)",
+          "oklch(0.379 0.110 25)",
+          "oklch(0.493 0.140 25)",
+          "oklch(0.607 0.171 25)",
+          "oklch(0.721 0.179 25)",
+          "oklch(0.836 0.149 25)",
+          "oklch(0.950 0.118 25)"
+        ]
+      },
+      "chart-ns": {
+        "role": "tertiary",
+        "displayName": "Chart North/South",
+        "canonical": "#00a4c0",
+        "tonalRamp": [
+          "oklch(0.150 0.033 216)",
+          "oklch(0.264 0.052 216)",
+          "oklch(0.379 0.071 216)",
+          "oklch(0.493 0.090 216)",
+          "oklch(0.607 0.108 216)",
+          "oklch(0.721 0.108 216)",
+          "oklch(0.836 0.089 216)",
+          "oklch(0.950 0.070 216)"
+        ]
+      },
+      "chart-ew": {
+        "role": "tertiary",
+        "displayName": "Chart East/West",
+        "canonical": "#8048b6",
+        "tonalRamp": [
+          "oklch(0.150 0.082 305)",
+          "oklch(0.264 0.109 305)",
+          "oklch(0.379 0.136 305)",
+          "oklch(0.493 0.163 305)",
+          "oklch(0.607 0.149 305)",
+          "oklch(0.721 0.122 305)",
+          "oklch(0.836 0.095 305)",
+          "oklch(0.950 0.068 305)"
+        ]
+      },
+      "chart-fixed": {
+        "role": "tertiary",
+        "displayName": "Chart Fixed-time",
+        "canonical": "#3987e5",
+        "tonalRamp": [
+          "oklch(0.150 0.055 255)",
+          "oklch(0.264 0.080 255)",
+          "oklch(0.379 0.106 255)",
+          "oklch(0.493 0.132 255)",
+          "oklch(0.607 0.158 255)",
+          "oklch(0.721 0.139 255)",
+          "oklch(0.836 0.113 255)",
+          "oklch(0.950 0.087 255)"
+        ]
+      },
+      "chart-ai": {
+        "role": "tertiary",
+        "displayName": "Chart AI",
+        "canonical": "#d95926",
+        "tonalRamp": [
+          "oklch(0.150 0.059 40)",
+          "oklch(0.264 0.086 40)",
+          "oklch(0.379 0.114 40)",
+          "oklch(0.493 0.141 40)",
+          "oklch(0.607 0.169 40)",
+          "oklch(0.721 0.149 40)",
+          "oklch(0.836 0.121 40)",
+          "oklch(0.950 0.093 40)"
+        ]
+      },
+      "chart-grid": {
+        "role": "neutral",
+        "displayName": "Chart Grid",
+        "canonical": "oklch(1 0 0 / 8%)"
+      },
+      "scene-base": {
+        "role": "neutral",
+        "displayName": "Scene Base",
+        "canonical": "oklch(0.185 0.006 255)",
+        "tonalRamp": [
+          "oklch(0.150 0.006 255)",
+          "oklch(0.264 0.005 255)",
+          "oklch(0.379 0.004 255)",
+          "oklch(0.493 0.003 255)",
+          "oklch(0.607 0.002 255)",
+          "oklch(0.721 0.002 255)",
+          "oklch(0.836 0.002 255)",
+          "oklch(0.950 0.002 255)"
+        ]
+      },
+      "scene-asphalt": {
+        "role": "neutral",
+        "displayName": "Scene Asphalt",
+        "canonical": "oklch(0.26 0.005 255)",
+        "tonalRamp": [
+          "oklch(0.150 0.004 255)",
+          "oklch(0.264 0.005 255)",
+          "oklch(0.379 0.004 255)",
+          "oklch(0.493 0.003 255)",
+          "oklch(0.607 0.003 255)",
+          "oklch(0.721 0.002 255)",
+          "oklch(0.836 0.001 255)",
+          "oklch(0.950 0.001 255)"
+        ]
+      },
+      "scene-sidewalk": {
+        "role": "neutral",
+        "displayName": "Scene Sidewalk",
+        "canonical": "oklch(0.37 0.006 255)",
+        "tonalRamp": [
+          "oklch(0.150 0.004 255)",
+          "oklch(0.264 0.005 255)",
+          "oklch(0.379 0.006 255)",
+          "oklch(0.493 0.005 255)",
+          "oklch(0.607 0.004 255)",
+          "oklch(0.721 0.003 255)",
+          "oklch(0.836 0.002 255)",
+          "oklch(0.950 0.002 255)"
+        ]
+      },
+      "scene-curb": {
+        "role": "neutral",
+        "displayName": "Scene Curb",
+        "canonical": "oklch(0.46 0.006 255)",
+        "tonalRamp": [
+          "oklch(0.150 0.003 255)",
+          "oklch(0.264 0.004 255)",
+          "oklch(0.379 0.005 255)",
+          "oklch(0.493 0.006 255)",
+          "oklch(0.607 0.005 255)",
+          "oklch(0.721 0.004 255)",
+          "oklch(0.836 0.003 255)",
+          "oklch(0.950 0.002 255)"
+        ]
+      },
+      "scene-marking": {
+        "role": "neutral",
+        "displayName": "Scene Marking",
+        "canonical": "oklch(0.93 0.004 255)",
+        "tonalRamp": [
+          "oklch(0.150 0.001 255)",
+          "oklch(0.264 0.001 255)",
+          "oklch(0.379 0.001 255)",
+          "oklch(0.493 0.002 255)",
+          "oklch(0.607 0.002 255)",
+          "oklch(0.721 0.003 255)",
+          "oklch(0.836 0.003 255)",
+          "oklch(0.950 0.004 255)"
+        ]
+      },
+      "scene-planting": {
+        "role": "neutral",
+        "displayName": "Scene Planting",
+        "canonical": "oklch(0.34 0.045 150)",
+        "tonalRamp": [
+          "oklch(0.150 0.033 150)",
+          "oklch(0.264 0.040 150)",
+          "oklch(0.379 0.043 150)",
+          "oklch(0.493 0.035 150)",
+          "oklch(0.607 0.028 150)",
+          "oklch(0.721 0.021 150)",
+          "oklch(0.836 0.014 150)",
+          "oklch(0.950 0.011 150)"
+        ]
+      },
+      "scene-foliage": {
+        "role": "neutral",
+        "displayName": "Scene Foliage",
+        "canonical": "oklch(0.45 0.07 148)",
+        "tonalRamp": [
+          "oklch(0.150 0.041 148)",
+          "oklch(0.264 0.052 148)",
+          "oklch(0.379 0.063 148)",
+          "oklch(0.493 0.066 148)",
+          "oklch(0.607 0.055 148)",
+          "oklch(0.721 0.043 148)",
+          "oklch(0.836 0.032 148)",
+          "oklch(0.950 0.021 148)"
+        ]
+      },
+      "scene-building": {
+        "role": "neutral",
+        "displayName": "Scene Building",
+        "canonical": "oklch(0.31 0.007 255)",
+        "tonalRamp": [
+          "oklch(0.150 0.005 255)",
+          "oklch(0.264 0.007 255)",
+          "oklch(0.379 0.006 255)",
+          "oklch(0.493 0.005 255)",
+          "oklch(0.607 0.004 255)",
+          "oklch(0.721 0.003 255)",
+          "oklch(0.836 0.002 255)",
+          "oklch(0.950 0.002 255)"
+        ]
+      },
+      "scene-signal-housing": {
+        "role": "neutral",
+        "displayName": "Scene Signal Housing",
+        "canonical": "oklch(0.2 0.004 255)",
+        "tonalRamp": [
+          "oklch(0.150 0.004 255)",
+          "oklch(0.264 0.004 255)",
+          "oklch(0.379 0.003 255)",
+          "oklch(0.493 0.002 255)",
+          "oklch(0.607 0.002 255)",
+          "oklch(0.721 0.001 255)",
+          "oklch(0.836 0.001 255)",
+          "oklch(0.950 0.001 255)"
+        ]
+      },
+      "scene-key-light": {
+        "role": "neutral",
+        "displayName": "Scene Key Light",
+        "canonical": "oklch(0.99 0.012 85)",
+        "tonalRamp": [
+          "oklch(0.150 0.003 85)",
+          "oklch(0.264 0.003 85)",
+          "oklch(0.379 0.003 85)",
+          "oklch(0.493 0.004 85)",
+          "oklch(0.607 0.006 85)",
+          "oklch(0.721 0.007 85)",
+          "oklch(0.836 0.009 85)",
+          "oklch(0.950 0.011 85)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "wordmark": {
+        "displayName": "Wordmark",
+        "purpose": "\"Intersection\" only; header slot and the intro."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "The single Home question above the preview."
+      },
+      "page-title": {
+        "displayName": "Page title",
+        "purpose": "Settings, About and Not Found headings."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Mode card titles."
+      },
+      "title-sm": {
+        "displayName": "Title small",
+        "purpose": "Agent and panel card headings."
+      },
+      "body-lg": {
+        "displayName": "Body large",
+        "purpose": "Mode card summaries and the Run button label."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Facts, nav, tabs, buttons, popover copy."
+      },
+      "body-sm": {
+        "displayName": "Body small",
+        "purpose": "Dense rail text: agent status, rationale, decision rounds, notes."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Stat labels, captions, figcaptions, verdict lines."
+      },
+      "micro": {
+        "displayName": "Micro",
+        "purpose": "Provenance badges and rationale captions only."
+      },
+      "readout": {
+        "displayName": "Readout",
+        "purpose": "Clocks, N/S and E/W chips, axis ticks, latency, model IDs."
+      }
+    },
+    "shadows": [
+      {
+        "name": "floating-slab",
+        "value": "0 18px 40px -24px rgb(0 0 0 / 0.9)",
+        "purpose": "Dock over the scene; Home mode cards use the same value at 0.8 alpha."
+      },
+      {
+        "name": "floating-slab-sm",
+        "value": "0 16px 36px -20px rgb(0 0 0 / 0.9)",
+        "purpose": "Signal HUD; view controls use 0 12px 28px -18px."
+      },
+      {
+        "name": "overlay",
+        "value": "0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1), 0 0 0 1px color-mix(in oklch, var(--foreground) 10%, transparent)",
+        "purpose": "Popovers, select menus, chart tooltips, transcript jump pill."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease-out-enter",
+        "value": "cubic-bezier(0.16, 1, 0.3, 1)",
+        "purpose": "Panel and card entrances, 0.6-0.7s, 6-40px travel (0 under reduced motion)."
+      },
+      {
+        "name": "ease-in-exit",
+        "value": "cubic-bezier(0.55, 0, 1, 0.45)",
+        "purpose": "Exits, 0.3-0.42s."
+      },
+      {
+        "name": "ease-travel",
+        "value": "cubic-bezier(0.65, 0, 0.35, 1)",
+        "purpose": "Intro: wordmark travels to the header slot over 1.0s; black curtain fades 0.95s."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "sm",
+        "value": "640px"
+      },
+      {
+        "name": "md",
+        "value": "768px"
+      },
+      {
+        "name": "lg",
+        "value": "1024px"
+      },
+      {
+        "name": "xl",
+        "value": "1280px"
+      }
+    ],
+    "layout": {
+      "header-height": "3.5rem (5.75rem below 640px)",
+      "rail-width": "clamp(22rem, 30vw, 30rem)",
+      "radius-base": "0.5rem"
+    }
+  },
+  "components": [
+    {
+      "name": "Run Button",
+      "kind": "button",
+      "refersTo": "button-run",
+      "description": "The one filled action on a mode card: full width, label left, arrow right.",
+      "html": "<button class=\"ds-btn-run\">Run AI <svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M5 12h14\"/><path d=\"m12 5 7 7-7 7\"/></svg></button>",
+      "css": ".ds-btn-run { font-family: \"Overpass Variable\", ui-sans-serif, system-ui, sans-serif; display: inline-flex; align-items: center; justify-content: space-between; width: 100%; height: 44px; padding: 0 16px; background: var(--primary); color: var(--primary-foreground); border: 1px solid transparent; border-radius: 0.4rem; font-size: 0.9375rem; font-weight: 500; cursor: pointer; transition: background 0.15s, transform 0.1s; } .ds-btn-run:hover { background: color-mix(in oklch, var(--primary) 80%, transparent); } .ds-btn-run:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; } .ds-btn-run:active { transform: translateY(1px); } .ds-btn-run svg { width: 16px; height: 16px; }"
+    },
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Default filled action, e.g. Pause/Play in the dock.",
+      "html": "<button class=\"ds-btn-primary\">Pause</button>",
+      "css": ".ds-btn-primary { font-family: \"Overpass Variable\", ui-sans-serif, system-ui, sans-serif; height: 36px; min-width: 6.5rem; padding: 0 10px; background: var(--primary); color: var(--primary-foreground); border: 1px solid transparent; border-radius: 0.4rem; font-size: 0.875rem; font-weight: 500; cursor: pointer; transition: background 0.15s, transform 0.1s; } .ds-btn-primary:hover { background: color-mix(in oklch, var(--primary) 80%, transparent); } .ds-btn-primary:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; } .ds-btn-primary:active { transform: translateY(1px); }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Supporting actions in popovers (Check backend, Reconnect now).",
+      "html": "<button class=\"ds-btn-secondary\">Check backend</button>",
+      "css": ".ds-btn-secondary { font-family: \"Overpass Variable\", ui-sans-serif, system-ui, sans-serif; height: 32px; padding: 0 10px; background: var(--secondary); color: var(--foreground); border: 1px solid transparent; border-radius: 0.4rem; font-size: 0.875rem; font-weight: 500; cursor: pointer; transition: background 0.15s; } .ds-btn-secondary:hover { background: color-mix(in oklch, var(--secondary), var(--foreground) 5%); } .ds-btn-secondary:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }"
+    },
+    {
+      "name": "Ghost Button",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "Quiet actions on floating slabs (Home in view controls, Use offline demo).",
+      "html": "<button class=\"ds-btn-ghost\">Use offline demo</button>",
+      "css": ".ds-btn-ghost { font-family: \"Overpass Variable\", ui-sans-serif, system-ui, sans-serif; height: 32px; padding: 0 10px; background: transparent; color: var(--foreground); border: 1px solid transparent; border-radius: 0.4rem; font-size: 0.875rem; font-weight: 500; cursor: pointer; transition: background 0.15s; } .ds-btn-ghost:hover { background: color-mix(in oklch, var(--muted) 50%, transparent); } .ds-btn-ghost:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }"
+    },
+    {
+      "name": "Header Navigation",
+      "kind": "nav",
+      "refersTo": "nav-link",
+      "description": "Text links, muted when inactive, 1px underline when active.",
+      "html": "<nav class=\"ds-nav\"><a class=\"ds-nav-link is-active\" href=\"#\">Home</a><a class=\"ds-nav-link\" href=\"#\">Settings</a><a class=\"ds-nav-link\" href=\"#\">About</a></nav>",
+      "css": ".ds-nav { font-family: \"Overpass Variable\", ui-sans-serif, system-ui, sans-serif; display: flex; gap: 4px; background: var(--background); padding: 12px; } .ds-nav-link { position: relative; display: inline-flex; align-items: center; height: 32px; padding: 0 10px; border-radius: 0.4rem; font-size: 0.875rem; color: var(--muted-foreground); text-decoration: none; transition: color 0.15s, background 0.15s; } .ds-nav-link:hover { background: var(--muted); color: var(--foreground); } .ds-nav-link:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; } .ds-nav-link.is-active { color: var(--foreground); } .ds-nav-link.is-active::after { content: \"\"; position: absolute; left: 10px; right: 10px; bottom: -1px; height: 1px; background: var(--foreground); }"
+    },
+    {
+      "name": "Provenance Badge",
+      "kind": "chip",
+      "refersTo": "badge-provenance",
+      "description": "Where a value came from; sits beside every model output. Mock is dashed.",
+      "html": "<span class=\"ds-prov ds-prov-mock\" tabindex=\"0\">Mock</span> <span class=\"ds-prov ds-prov-live\" tabindex=\"0\">Live</span> <span class=\"ds-prov ds-prov-rule\" tabindex=\"0\">Rule-based</span>",
+      "css": ".ds-prov { font-family: \"Overpass Variable\", ui-sans-serif, system-ui, sans-serif; display: inline-flex; align-items: center; height: 20px; padding: 0 8px; border: 1px solid var(--border); border-radius: 9999px; font-size: 0.6875rem; font-weight: 500; line-height: 1; color: var(--subtle-foreground); } .ds-prov:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; } .ds-prov-mock { border-style: dashed; border-color: color-mix(in oklch, var(--foreground) 35%, transparent); color: var(--muted-foreground); } .ds-prov-live { border-color: color-mix(in oklch, var(--foreground) 60%, transparent); color: var(--foreground); } .ds-prov-rule { border-color: color-mix(in oklch, var(--safety) 45%, transparent); color: var(--safety); }"
+    },
+    {
+      "name": "Signal Chip",
+      "kind": "chip",
+      "refersTo": "signal-chip",
+      "description": "Movement group and its current lamp; mono label.",
+      "html": "<span class=\"ds-sig\"><span class=\"ds-lamp\" style=\"background: var(--signal-red)\"></span>N/S</span> <span class=\"ds-sig\"><span class=\"ds-lamp\" style=\"background: var(--signal-green)\"></span>E/W</span>",
+      "css": ".ds-sig { font-family: \"Overpass Mono Variable\", ui-monospace, monospace; display: inline-flex; align-items: center; gap: 6px; padding: 4px 6px; border: 1px solid var(--border); border-radius: 0.4rem; font-size: 0.75rem; color: var(--foreground); } .ds-lamp { width: 10px; height: 10px; border-radius: 9999px; }"
+    },
+    {
+      "name": "Mode Card",
+      "kind": "card",
+      "refersTo": "card-mode",
+      "description": "One side of the controller choice on Home; title, summary, mechanism diagram, three facts, Run.",
+      "html": "<section class=\"ds-mode\"><h2>AI intersection</h2><p class=\"ds-mode-sum\">Two AI agents propose, JEV decides.</p><ul><li>JEV picks between conflicting proposals</li><li>The safety gate enforces green limits</li></ul><button class=\"ds-mode-run\">Run AI <svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M5 12h14\"/><path d=\"m12 5 7 7-7 7\"/></svg></button></section>",
+      "css": ".ds-mode { font-family: \"Overpass Variable\", ui-sans-serif, system-ui, sans-serif; display: flex; flex-direction: column; gap: 20px; max-width: 23rem; padding: 20px; background: var(--card); color: var(--foreground); border: 1px solid var(--border); border-radius: 0.7rem; box-shadow: 0 18px 40px -24px rgb(0 0 0 / 0.8); transition: border-color 0.3s; } .ds-mode:hover { border-color: color-mix(in oklch, var(--foreground) 25%, transparent); } .ds-mode h2 { margin: 0; font-size: 1.25rem; font-weight: 600; letter-spacing: -0.01em; } .ds-mode-sum { margin: 8px 0 0; font-size: 0.9375rem; line-height: 1.625; color: var(--muted-foreground); } .ds-mode ul { margin: 0; padding-left: 18px; font-size: 0.875rem; line-height: 1.375; } .ds-mode li::marker { color: var(--subtle-foreground); } .ds-mode-run { font-family: \"Overpass Variable\", ui-sans-serif, system-ui, sans-serif; display: flex; justify-content: space-between; align-items: center; height: 44px; padding: 0 16px; background: var(--primary); color: var(--primary-foreground); border: 0; border-radius: 0.4rem; font-size: 0.9375rem; font-weight: 500; cursor: pointer; } .ds-mode-run:hover { background: color-mix(in oklch, var(--primary) 80%, transparent); } .ds-mode-run:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; } .ds-mode-run svg { width: 16px; height: 16px; }"
+    },
+    {
+      "name": "Agent Card",
+      "kind": "card",
+      "refersTo": "card-agent",
+      "description": "One agent in the rail: identity dot and group, provenance, observed, asks for, rationale, verdict.",
+      "html": "<article class=\"ds-agent\"><header><div><h3><span class=\"ds-dot\"></span>Agent A</h3><p class=\"ds-grp\">North/South</p></div><span class=\"ds-agent-prov\">Mock</span></header><p class=\"ds-k\">Asks for</p><p class=\"ds-v\">North/South green ⋅ 10 s</p><footer>Granted by JEV</footer></article>",
+      "css": ".ds-agent { font-family: \"Overpass Variable\", ui-sans-serif, system-ui, sans-serif; display: flex; flex-direction: column; gap: 12px; width: 15rem; padding: 12px; background: var(--card); color: var(--foreground); border: 1px solid var(--border); border-radius: 0.5rem; } .ds-agent header { display: flex; justify-content: space-between; align-items: flex-start; } .ds-agent h3 { display: flex; align-items: center; gap: 6px; margin: 0; font-size: 0.9375rem; font-weight: 600; line-height: 1.25; } .ds-dot { width: 8px; height: 8px; border-radius: 9999px; background: var(--group-ns); } .ds-grp { margin: 0; font-size: 0.75rem; color: var(--group-ns); } .ds-agent-prov { height: 20px; display: inline-flex; align-items: center; padding: 0 8px; border: 1px dashed color-mix(in oklch, var(--foreground) 35%, transparent); border-radius: 9999px; font-size: 0.6875rem; font-weight: 500; color: var(--muted-foreground); } .ds-k { margin: 0; font-size: 0.75rem; color: var(--subtle-foreground); } .ds-v { margin: -10px 0 0; font-size: 0.8125rem; font-weight: 500; } .ds-agent footer { border-top: 1px solid var(--border); padding-top: 10px; font-size: 0.75rem; font-weight: 500; color: var(--positive); }"
+    },
+    {
+      "name": "Signal HUD",
+      "kind": "custom",
+      "refersTo": "panel-floating",
+      "description": "Floating slab over the scene: lamps, status and clock, phase, countdown.",
+      "html": "<section class=\"ds-hud\"><div class=\"ds-hud-top\"><span class=\"ds-hud-chip\"><i style=\"background: var(--signal-red)\"></i>N/S</span><span class=\"ds-hud-chip\"><i style=\"background: var(--signal-green)\"></i>E/W</span><span class=\"ds-hud-clock\">Running <b>0:06</b></span></div><p class=\"ds-hud-phase\">East/West green</p><p class=\"ds-hud-sub\"><b>Minimum green ⋅ 2.1 s left</b> ⋅ must change within 39.1 s</p></section>",
+      "css": ".ds-hud { font-family: \"Overpass Variable\", ui-sans-serif, system-ui, sans-serif; width: 19rem; padding: 16px; background: var(--panel); color: var(--foreground); border: 1px solid var(--border); border-radius: 0.7rem; box-shadow: 0 16px 36px -20px rgb(0 0 0 / 0.9); } .ds-hud-top { display: flex; align-items: center; gap: 6px; } .ds-hud-chip { font-family: \"Overpass Mono Variable\", ui-monospace, monospace; display: inline-flex; align-items: center; gap: 6px; padding: 4px 6px; border: 1px solid var(--border); border-radius: 0.4rem; font-size: 0.75rem; } .ds-hud-chip i { width: 10px; height: 10px; border-radius: 9999px; } .ds-hud-clock { margin-left: auto; font-size: 0.75rem; color: var(--muted-foreground); } .ds-hud-clock b { font-family: \"Overpass Mono Variable\", ui-monospace, monospace; font-weight: 400; color: var(--foreground); font-variant-numeric: tabular-nums; } .ds-hud-phase { margin: 12px 0 0; font-size: 1.125rem; font-weight: 600; letter-spacing: -0.01em; } .ds-hud-sub { margin: 4px 0 0; font-size: 0.875rem; color: var(--subtle-foreground); } .ds-hud-sub b { font-weight: 400; color: var(--foreground); font-variant-numeric: tabular-nums; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Lit Scale Model",
+    "overview": "**Creative North Star: \"The Lit Scale Model\"**\n\nA scale model of one intersection sits under a lamp in a dark room. The interface is the room: near-black, cool-neutral, quiet, built so the lit model is the brightest and most colourful thing on screen. Panels are low-contrast slabs with hairline borders that hold just enough text to explain what the model is doing. The system was built to the user's own brief, \"something simple that is easy to make, easy to understand and presents everything it needs to present\", and it reads that way: familiar shadcn/Base UI primitives, one type family, and no decorative layer.\n\nColour is reserved for meaning. Every hue in the UI encodes something the visitor can also find in the scene: the state of a signal, which movement group (and which agent) a number belongs to, JEV, the safety gate, an emergency vehicle, or a status outcome. Everything else is a step on a single cool-grey ramp (hue 255). Density is moderate. Home is airy and presenter-friendly, and the simulation rail is denser so it reads at laptop distance.\n\nEvery visual decision is a token in `src/index.css`, including the 3D scene, which resolves its `--scene-*` and semantic colours at runtime. The team plans a new visual language later, so treat restyling as a token swap and never as a component rewrite.",
+    "keyCharacteristics": [
+      "Dark, cool-neutral chrome (hue 255) around a lit 3D diorama that stays dominant.",
+      "Hue only where it means something: signal, movement group, participant, status.",
+      "Overpass for everything, Overpass Mono for clocks, IDs and readouts.",
+      "Hairline 10% white borders and tonal steps. Soft ambient shadows appear only on surfaces that float.",
+      "Provenance (mock, live, rule-based, simulation) is always visible next to model output."
+    ],
+    "rules": [
+      {
+        "name": "The Meaning-Only Rule",
+        "body": "Chrome is hue-255 grey. A colour that is not a neutral must name a signal state, a movement group, a participant (Agent A, Agent B, JEV, safety), an emergency, or an outcome. A colour that encodes nothing does not ship.",
+        "section": "colors"
+      },
+      {
+        "name": "The Signal Colours Mean Signals Rule",
+        "body": "`signal-red`, `signal-amber` and `signal-green` are used for signal state and for nothing else. They never indicate success, warning or error. Status has its own tokens.",
+        "section": "colors"
+      },
+      {
+        "name": "The Identity Pairing Rule",
+        "body": "Cyan always means North/South and Agent A. Violet always means East/West and Agent B. The pairing holds in the scene, the timeline, the charts (`chart-ns`, `chart-ew`), the cards and the Home diagram.",
+        "section": "colors"
+      },
+      {
+        "name": "The Readout Rule",
+        "body": "Use Overpass Mono for anything that is a clock, an identifier or a measured readout. Every number that updates in place also gets tabular figures (`.tabular`), so neighbours never shift.",
+        "section": "typography"
+      },
+      {
+        "name": "The One Family Rule",
+        "body": "One family sets everything, and weight and size carry the hierarchy (400, 500, 600, plus 640 for the wordmark). Body text never goes uppercase or letterspaced.",
+        "section": "typography"
+      },
+      {
+        "name": "The Lit Model Rule",
+        "body": "No glow, gradient or coloured shadow appears on interface chrome. Emitted light belongs to the scene. Lamp halos on the 3D signal heads and the brake lights are the world's own light and stay.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "**Do** route every colour, including scene materials, through a token in `src/index.css`. The scene reads `--scene-*` and the semantic tokens at runtime.",
+      "**Do** pair cyan with North/South and Agent A, and violet with East/West and Agent B, on every surface.",
+      "**Do** set clocks, IDs and readouts in Overpass Mono, and give every live number tabular figures.",
+      "**Do** put a provenance badge next to model output, and show null as \"unavailable\" or \"—\" in `subtle-foreground`, never as 0.",
+      "**Do** use `panel` and the floating-slab shadow for anything over the scene, and `card` for anything lying on the page.",
+      "**Do** keep a single filled `primary` action per region."
+    ],
+    "donts": [
+      "**Don't** use signal red, amber or green for success, warning or error. Use `positive`, `warning` and `destructive`.",
+      "**Don't** add glow, gradients or coloured shadows to interface chrome. The scene's lamp halos are the only emitted light.",
+      "**Don't** introduce a hue that encodes nothing, or a second type family.",
+      "**Don't** cover the intersection's centre with a panel, and don't let a panel outweigh the scene.",
+      "**Don't** uppercase or letterspace UI labels."
+    ]
+  }
+}

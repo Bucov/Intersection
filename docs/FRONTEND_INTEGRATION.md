@@ -42,6 +42,17 @@ The UI never branches on the transport. Panels read the normalized `SessionState
 interpolator fed from the same store and is updated in the render loop, not through React renders. Switching to
 the backend is a data-source change, not a code change.
 
+## Loading and screen sizes
+
+- The first load is about 290 KB of gzipped JavaScript (React, routing, Motion, the transports and the offline
+  engine) plus 14 KB of CSS. Three.js and the scene (about 265 KB gzipped) are requested while the intro plays; the
+  chart library (about 100 KB) loads the first time the Metrics or Compare tab opens. Chunk groups are set in
+  `apps/web/vite.config.ts`.
+- Layouts were checked at 390×844, 768×1024, 1024×768, 1024×650, 1280×720, 1440×900 and 1920×1080. From 1280 px the
+  mode cards flank the preview; below that they sit under it with each Run button right after the summary, so both
+  buttons stay in the first viewport down to about 1024×650. Below 1280 px the HUD floating over the scene keeps only
+  the signal block; its counts are in the Metrics tab.
+
 ## What the frontend sends and expects
 
 | Step | Call | Notes |
@@ -151,4 +162,5 @@ are set accordingly. Known noise: React Three Fiber 9.8 logs a `THREE.Clock` dep
 - Side-by-side 3D comparison. The comparison view shows paired metrics and a queue chart instead.
 - The WebSocket transport is verified against the contract with a scripted socket, not against a running backend.
 - The visual language is a placeholder to be replaced by the team's direction through the tokens in
-  `apps/web/src/index.css` (the 3D scene reads the same tokens).
+  `apps/web/src/index.css`, recorded in `apps/web/DESIGN.md`. The 3D scene reads the same tokens for ground, roads,
+  planting, buildings and signals; vehicle paints and light colours are still set in `components/scene`.
