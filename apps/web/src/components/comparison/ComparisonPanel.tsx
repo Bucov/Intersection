@@ -162,8 +162,10 @@ export function ComparisonPanel({ scenarioId, seed, scenarios }: { scenarioId: S
           <p>Waiting now — Fixed: {phase.comparison.traditional.metrics.waitingVehicleCount} · AI: {phase.comparison.ai.metrics.waitingVehicleCount}</p>
         </div> : null}
         {running ? (
-          <div className="h-1 overflow-hidden rounded-full bg-muted" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(progress * 100)} aria-label="Comparison progress">
-            <div className="h-full rounded-full bg-foreground/70 transition-[width]" style={{ width: `${Math.max(4, progress * 100)}%` }} />
+          <div className="flex gap-[3px]" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(progress * 100)} aria-label="Comparison progress">
+            {Array.from({ length: 24 }, (_, i) => (
+              <span key={i} className={i < Math.max(1, Math.round(progress * 24)) ? "size-[9px] bg-foreground/80" : "size-[9px] bg-(--cell)"} />
+            ))}
           </div>
         ) : null}
         {phase.kind === "error" ? <p className="text-sm text-destructive" role="alert">{phase.message}</p> : null}
@@ -184,8 +186,8 @@ export function ComparisonPanel({ scenarioId, seed, scenarios }: { scenarioId: S
               <thead>
                 <tr className="text-left text-xs text-subtle-foreground">
                   <th className="py-1.5 pr-2 font-normal">Metric</th>
-                  <th className="py-1.5 pr-2 text-right font-normal"><span className="mr-1 inline-block h-0.5 w-3 rounded-full bg-chart-fixed align-middle" aria-hidden="true" />Fixed</th>
-                  <th className="py-1.5 text-right font-normal"><span className="mr-1 inline-block h-0.5 w-3 rounded-full bg-chart-ai align-middle" aria-hidden="true" />AI</th>
+                  <th className="py-1.5 pr-2 text-right font-normal"><span className="mr-1.5 inline-block size-2 bg-chart-fixed align-middle" aria-hidden="true" />Fixed</th>
+                  <th className="py-1.5 text-right font-normal"><span className="mr-1.5 inline-block size-2 bg-chart-ai align-middle" aria-hidden="true" />AI</th>
                 </tr>
               </thead>
               <tbody>

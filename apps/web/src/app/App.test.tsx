@@ -21,7 +21,7 @@ describe("App without WebGL or backend", () => {
     // Importing three under a busy parallel run can take several seconds.
     expect(await screen.findByTestId("scene", {}, { timeout: 10_000 })).toHaveAttribute("data-webgl", "unavailable");
     expect(await screen.findByText(/3D view unavailable/, {}, { timeout: 5000 })).toBeInTheDocument();
-    await waitFor(() => expect(screen.getByTestId("connection-status")).toHaveTextContent("Offline demo"));
+    await waitFor(() => expect(screen.getByTestId("connection-status")).toHaveTextContent("offline demo"));
     expect(screen.getByText(/agents and JEV are simulated here, no models are called/)).toBeInTheDocument();
   });
 
@@ -29,11 +29,12 @@ describe("App without WebGL or backend", () => {
     const user = userEvent.setup();
     render(<App services={createAppServices()} />);
     const nav = screen.getByRole("navigation", { name: "Primary" });
-    await user.click(within(nav).getByRole("link", { name: "Settings" }));
+    await user.click(within(nav).getByRole("link", { name: "settings" }));
     expect(await screen.findByRole("heading", { level: 1, name: "Settings" })).toBeInTheDocument();
-    await user.click(within(nav).getByRole("link", { name: "About" }));
+    await user.click(within(nav).getByRole("link", { name: "about" }));
     expect(await screen.findByRole("heading", { level: 2, name: "Team MAGI" })).toBeInTheDocument();
-    await user.click(within(nav).getByRole("link", { name: "Home" }));
+    // The centred wordmark is the way home.
+    await user.click(screen.getByRole("link", { name: "Intersection, home" }));
     expect(await screen.findByRole("heading", { name: "Choose how this intersection is controlled" })).toBeInTheDocument();
   });
 

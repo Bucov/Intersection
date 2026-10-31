@@ -65,7 +65,7 @@ test("navigation between Home, Settings and About", async ({ page }) => {
   await expect(page.getByTestId("scene")).toHaveCSS("opacity", "0");
   await nav.getByRole("link", { name: "About" }).click();
   await expect(page.getByRole("heading", { level: 2, name: "Team MAGI" })).toBeVisible();
-  await nav.getByRole("link", { name: "Home" }).click();
+  await page.getByRole("link", { name: "Intersection, home" }).click();
   await expect(page.getByRole("heading", { name: "Choose how this intersection is controlled" })).toBeVisible();
 });
 
@@ -125,6 +125,28 @@ test("pause, resume and reset", async ({ page }) => {
   await expect(clock).toHaveText("0:00");
   await page.getByTestId("playback").click();
   await expect(status).toHaveText("Running");
+});
+
+test("rewinding a paused session replays an earlier moment", async ({ page }) => {
+  await openSimulation(page, "traditional");
+  const clock = visible(page, "sim-clock");
+  const scene = page.getByTestId("scene");
+  await expect.poll(async () => Number(await scene.getAttribute("data-sim-time")), { timeout: 60_000 }).toBeGreaterThan(12_000);
+  await page.getByTestId("playback").click();
+  await expect(visible(page, "session-status")).toHaveText("Paused");
+  const live = await clock.textContent();
+  await page.waitForTimeout(800);
+  const pausedAt = Number(await scene.getAttribute("data-sim-time"));
+  const strip = page.getByTestId("session-strip");
+  await strip.focus();
+  for (let i = 0; i < 2; i++) await strip.press("Shift+ArrowLeft");
+  await expect(page.getByTestId("replay-status")).toContainText("Replaying");
+  await expect(clock).not.toHaveText(live ?? "");
+  // The scene draws the replayed moment, not the paused one.
+  await expect.poll(async () => Number(await scene.getAttribute("data-sim-time"))).toBeLessThanOrEqual(pausedAt - 9000);
+  await page.getByTestId("playback").click();
+  await expect(visible(page, "session-status")).toHaveText("Running");
+  await expect(page.getByTestId("replay-status")).toContainText("Live");
 });
 
 test("scenario selection creates a new session", async ({ page }) => {

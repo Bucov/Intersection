@@ -14,7 +14,7 @@ export function ViewControls() {
   const webgl = useStore(scene, s => s.webgl);
 
   return (
-    <div className="pointer-events-auto flex items-center gap-1 rounded-lg border bg-panel p-1 shadow-[0_12px_28px_-18px_rgb(0_0_0/0.9)]">
+    <div className="pointer-events-auto flex items-center gap-1 border bg-panel p-1">
       <Button size="sm" variant="ghost" className="h-8" onClick={() => navigate("/")}>
         <ArrowLeft data-icon="inline-start" />
         Home

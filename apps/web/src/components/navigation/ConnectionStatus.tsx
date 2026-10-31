@@ -2,25 +2,22 @@ import { RefreshCw } from "lucide-react";
 import { useServices } from "@/app/services";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverDescription, PopoverTitle, PopoverTrigger } from "@/components/ui/popover";
+import { Square } from "@/components/common/Square";
 import { cn } from "@/lib/utils";
 import { WebSocketIntersectionTransport } from "@/transport/WebSocketIntersectionTransport";
 import { shallowEqual, useStore } from "@/state/store";
 import { summarizeConnection, type ConnectionTone } from "./connection";
 
-const DOT: Record<ConnectionTone, string> = {
-  neutral: "bg-subtle-foreground",
-  positive: "bg-positive",
-  warning: "bg-warning",
-  negative: "bg-destructive",
+const TONE: Record<ConnectionTone, string> = {
+  neutral: "text-subtle-foreground",
+  positive: "text-positive",
+  warning: "text-warning",
+  negative: "text-destructive",
 };
 
-export function StatusDot({ tone, pulsing = false, className }: { tone: ConnectionTone; pulsing?: boolean; className?: string }) {
-  return (
-    <span className={cn("relative inline-flex size-2 shrink-0", className)} aria-hidden="true">
-      {pulsing ? <span className={cn("absolute inset-0 animate-ping rounded-full opacity-60 motion-reduce:hidden", DOT[tone])} /> : null}
-      <span className={cn("relative inline-flex size-2 rounded-full", DOT[tone])} />
-    </span>
-  );
+/** Where the data comes from, as a square: it blinks while the connection is still settling. */
+export function StatusSquare({ tone, pulsing = false, className }: { tone: ConnectionTone; pulsing?: boolean; className?: string }) {
+  return <Square className={cn(TONE[tone], className)} blink={pulsing} />;
 }
 
 export function ConnectionStatus() {
@@ -38,18 +35,18 @@ export function ConnectionStatus() {
         render={
           <button
             type="button"
-            className="inline-flex h-8 items-center gap-2 rounded-md px-2.5 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            className="inline-flex h-9 items-center gap-2 px-1 font-[450] tracking-[-0.01em] text-foreground/72 transition-colors hover:text-foreground"
             data-testid="connection-status"
           />
         }
       >
-        <StatusDot tone={summary.tone} pulsing={summary.pulsing} />
-        <span className="max-sm:max-w-28 max-sm:truncate max-sm:text-xs">{summary.label}</span>
+        <StatusSquare tone={summary.tone} pulsing={summary.pulsing} />
+        <span className="max-sm:max-w-28 max-sm:truncate max-sm:text-xs">{summary.label.toLowerCase()}</span>
       </PopoverTrigger>
       <PopoverContent align="end" className="w-80 gap-3">
         <div className="flex flex-col gap-1">
           <PopoverTitle className="flex items-center gap-2 text-sm">
-            <StatusDot tone={summary.tone} pulsing={summary.pulsing} />
+            <StatusSquare tone={summary.tone} pulsing={summary.pulsing} />
             {summary.label}
           </PopoverTitle>
           <PopoverDescription className="text-sm leading-relaxed">{summary.detail}</PopoverDescription>

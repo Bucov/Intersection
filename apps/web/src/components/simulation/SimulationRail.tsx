@@ -7,7 +7,8 @@ import { DecisionRound } from "@/components/jev-panel/DecisionRound";
 import { JevPanel } from "@/components/jev-panel/JevPanel";
 import { Transcript } from "@/components/transcript/Transcript";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { agentVerdict, latestCycle, type SessionState } from "@/state/session";
+import { formatClock } from "@/lib/format";
+import { agentVerdict, type DecisionCycle } from "@/state/session";
 import { useStore } from "@/state/store";
 import { FixedTimePanel } from "./FixedTimePanel";
 
@@ -19,21 +20,24 @@ function TabLoading() {
   return <p className="text-sm text-subtle-foreground">Loading…</p>;
 }
 
-function findProposal(state: SessionState, agentId: "agent-a" | "agent-b") {
-  for (let i = state.cycles.length - 1; i >= 0; i--) {
-    const p = state.cycles[i].proposals[agentId];
-    if (p) return { proposal: p, cycle: state.cycles[i] };
+function findProposal(cycles: DecisionCycle[], agentId: "agent-a" | "agent-b") {
+  for (let i = cycles.length - 1; i >= 0; i--) {
+    const p = cycles[i].proposals[agentId];
+    if (p) return { proposal: p, cycle: cycles[i] };
   }
   return null;
 }
 
 function DecisionsTab() {
-  const { session } = useServices();
+  const { session, replay } = useServices();
+  const replaying = useStore(replay, r => r.time);
   const view = useStore(session.store, s => {
-    const a = findProposal(s, "agent-a");
-    const b = findProposal(s, "agent-b");
+    // While replaying, the rail explains the moment on screen: the rounds started by then.
+    const cycles = replaying === null ? s.cycles : s.cycles.filter(c => c.startedAtSimMs <= replaying);
+    const a = findProposal(cycles, "agent-a");
+    const b = findProposal(cycles, "agent-b");
     return {
-      cycle: latestCycle(s),
+      cycle: cycles[cycles.length - 1] ?? null,
       agents: s.agents,
       timing: s.snapshot?.config.signalTiming ?? null,
       jevModel: s.providers?.[1].model ?? null,
@@ -48,11 +52,15 @@ function DecisionsTab() {
   return (
     <div className="flex flex-col gap-3">
       {view.controller?.activeController === "deterministic_fallback" ? (
-        <p className="rounded-md border border-warning/40 bg-warning/10 px-3 py-2 text-[0.8125rem] leading-snug text-warning" role="status">
+        <p className="border border-warning/40 bg-warning/10 px-3 py-2 text-[0.8125rem] leading-snug text-warning" role="status">
           Deterministic fallback in control{view.controller.reason ? `: ${view.controller.reason}` : ""}. Rules, not models, are choosing phases.
         </p>
       ) : null}
-      <p className="text-sm leading-relaxed">Two agents inspect the same traffic at the same time. They plan service for North/South and East/West. JEV resolves disagreements or failed requests; the safety controller enforces green limits and clearance before lights change.</p>
+      {replaying !== null ? (
+        <p className="text-sm leading-relaxed text-muted-foreground" role="status">Replaying {formatClock(replaying)}. Below is the latest round that had started by then; agent status lines still describe the paused session.</p>
+      ) : (
+        <p className="text-sm leading-relaxed">Two agents inspect the same traffic at the same time. They plan service for North/South and East/West. JEV resolves disagreements or failed requests; the safety controller enforces green limits and clearance before lights change.</p>
+      )}
       <DecisionRound cycle={view.cycle} agents={view.agents} timing={view.timing} />
       <div className="grid grid-cols-2 gap-3" aria-label="The two agents, working independently">
         <AgentCard agentId="agent-a" agent={view.agents?.[0] ?? null} proposal={view.a?.proposal ?? null} verdict={agentVerdict(view.a?.cycle ?? null, "agent-a")} />
@@ -77,12 +85,12 @@ export function SimulationRail({ mode, scenarioId, seed, scenarios }: RailProps)
 
   return (
     <Tabs value={active} onValueChange={value => setTab(String(value))} className="flex h-full min-h-0 flex-col gap-0">
-      <TabsList variant="line" className="h-11 w-full overflow-x-auto shrink-0 justify-start gap-1 rounded-none border-b px-3">
-        <TabsTrigger value={primary} className="flex-none px-2.5">{mode === "ai" ? "Decisions" : "Controller"}</TabsTrigger>
-        <TabsTrigger value="transcript" className="flex-none px-2.5">{mode === "ai" ? "Transcript" : "Events"}</TabsTrigger>
-        <TabsTrigger value="stats" className="flex-none px-2.5">Decision Stats</TabsTrigger>
-        <TabsTrigger value="metrics" className="flex-none px-2.5">Metrics</TabsTrigger>
-        <TabsTrigger value="compare" className="flex-none px-2.5">Compare</TabsTrigger>
+      <TabsList variant="line" className="h-11 w-full overflow-x-auto shrink-0 justify-start gap-0.5 rounded-none border-b px-2">
+        <TabsTrigger value={primary} className="flex-none px-2">{mode === "ai" ? "Decisions" : "Controller"}</TabsTrigger>
+        <TabsTrigger value="transcript" className="flex-none px-2">{mode === "ai" ? "Transcript" : "Events"}</TabsTrigger>
+        <TabsTrigger value="stats" className="flex-none px-2">Decision Stats</TabsTrigger>
+        <TabsTrigger value="metrics" className="flex-none px-2">Metrics</TabsTrigger>
+        <TabsTrigger value="compare" className="flex-none px-2">Compare</TabsTrigger>
       </TabsList>
       <TabsContent value={primary} className="min-h-0 flex-1 overflow-y-auto p-4">
         {mode === "ai" ? <DecisionsTab /> : <FixedTimePanel />}

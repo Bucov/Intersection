@@ -23,6 +23,8 @@ export interface SceneState {
   webgl: WebGLState;
   /** Resolved render quality (auto preference resolved by the performance monitor). */
   quality: "high" | "low";
+  /** The scene has rendered its first frame. */
+  ready: boolean;
 }
 
 export function createSceneStore() {
@@ -33,6 +35,7 @@ export function createSceneStore() {
     recenter: 0,
     webgl: "unknown",
     quality: "high",
+    ready: false,
   });
 }
 

@@ -2,10 +2,11 @@ import { useNavigate } from "react-router";
 import { RefreshCw, RotateCcw } from "lucide-react";
 import { useServices } from "@/app/services";
 import { PageLayout, PageSection } from "@/components/common/PageLayout";
-import { StatusDot } from "@/components/navigation/ConnectionStatus";
+import { StatusSquare } from "@/components/navigation/ConnectionStatus";
 import { summarizeConnection } from "@/components/navigation/connection";
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { replayIntro } from "@/state/intro";
 import type { DataSourcePreference, QualityPreference } from "@/state/preferences";
 import { shallowEqual, useStore } from "@/state/store";
 
@@ -59,7 +60,7 @@ export function SettingsPage() {
       <PageSection title="Data source" description="Where new sessions come from. The home preview always runs locally.">
         <Choice name="Data source" value={preferences.dataSource} options={SOURCES} onChange={dataSource => services.preferences.setState(p => ({ ...p, dataSource }))} />
         <div className="flex flex-wrap items-center gap-3 rounded-lg border px-3 py-2.5 text-sm">
-          <StatusDot tone={summary.tone} pulsing={summary.pulsing} />
+          <StatusSquare tone={summary.tone} pulsing={summary.pulsing} />
           <span className="font-medium">{summary.label}</span>
           <span className="min-w-0 flex-1 text-muted-foreground">{summary.detail}</span>
           {preferences.dataSource !== "mock" ? (
@@ -80,7 +81,7 @@ export function SettingsPage() {
           <Button
             variant="secondary"
             onClick={() => {
-              services.intro.setState(s => ({ phase: "title", run: s.run + 1 }));
+              services.intro.setState(replayIntro);
               navigate("/");
             }}
           >
@@ -94,7 +95,7 @@ export function SettingsPage() {
         <ul className="flex flex-col gap-2 text-[0.9375rem] text-muted-foreground">
           {LATER.map(item => (
             <li key={item} className="flex gap-2.5">
-              <span className="mt-[0.6rem] size-1 shrink-0 rounded-full bg-subtle-foreground" aria-hidden="true" />
+              <span className="mt-[0.55rem] size-1.5 shrink-0 bg-subtle-foreground" aria-hidden="true" />
               {item}
             </li>
           ))}

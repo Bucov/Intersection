@@ -1,27 +1,32 @@
 import type { Provenance } from "@intersection/shared";
+import { Square } from "@/components/common/Square";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
-const COPY: Record<Provenance, { label: string; hint: string; className: string }> = {
+const COPY: Record<Provenance, { label: string; hint: string; className: string; hollow: boolean }> = {
   mock: {
     label: "Mock",
     hint: "Produced by a deterministic mock adapter. No model was called.",
-    className: "border-dashed border-foreground/35 text-muted-foreground",
+    className: "text-muted-foreground",
+    hollow: true,
   },
   live: {
     label: "Live",
     hint: "Returned by the live model through the backend.",
-    className: "border-foreground/60 text-foreground",
+    className: "text-foreground",
+    hollow: false,
   },
   deterministic: {
     label: "Rule-based",
     hint: "Computed by deterministic controller or safety rules, not by a model.",
-    className: "border-safety/45 text-safety",
+    className: "text-safety",
+    hollow: false,
   },
   simulation: {
     label: "Simulation",
     hint: "Emitted by the traffic simulation.",
-    className: "border-border text-subtle-foreground",
+    className: "text-subtle-foreground",
+    hollow: false,
   },
 };
 
@@ -34,10 +39,11 @@ export function ProvenanceBadge({ provenance, className }: { provenance: Provena
         render={
           <span
             tabIndex={0}
-            className={cn("inline-flex h-5 shrink-0 items-center rounded-full border px-2 text-[0.6875rem] font-medium leading-none", copy.className, className)}
+            className={cn("inline-flex shrink-0 cursor-help items-center gap-1.5 text-xs font-medium leading-none", copy.className, className)}
           />
         }
       >
+        <Square className="size-[7px]" hollow={copy.hollow} />
         {copy.label}
       </TooltipTrigger>
       <TooltipContent className="max-w-64">{copy.hint}</TooltipContent>

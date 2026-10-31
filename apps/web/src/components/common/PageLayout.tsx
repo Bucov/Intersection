@@ -13,7 +13,7 @@ export function PageLayout({ title, lead, children, compact = false }: { title: 
   const revealed = phase === "handoff" || phase === "done";
   return (
     <motion.main
-      className="fixed inset-0 z-10 overflow-y-auto pt-(--header-height)"
+      className="fixed inset-x-0 bottom-0 top-(--header-height) z-10 overflow-y-auto"
       initial={{ opacity: 0, y: reduced ? 0 : 8 }}
       animate={revealed ? { opacity: 1, y: 0, transition: { duration: 0.45, delay: phase === "handoff" ? 0.6 : 0.1, ease: [0.16, 1, 0.3, 1] } } : { opacity: 0 }}
       exit={{ opacity: 0, transition: { duration: 0.2 } }}

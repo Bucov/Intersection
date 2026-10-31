@@ -1,5 +1,6 @@
 import type { AgentStatus, SignalTiming } from "@intersection/shared";
 import { ProvenanceBadge } from "@/components/common/ProvenanceBadge";
+import { Square } from "@/components/common/Square";
 import { choiceName, formatPercent, formatTimestamp, humanize, phaseName } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { DecisionCycle } from "@/state/session";
@@ -16,7 +17,7 @@ interface Step {
 
 const STATE_DOT: Record<StepState, string> = {
   done: "",
-  active: "animate-pulse motion-reduce:animate-none",
+  active: "animate-[square-blink_1.1s_ease-in-out_infinite] motion-reduce:animate-none",
   waiting: "opacity-35",
   skipped: "opacity-35",
   problem: "",
@@ -38,14 +39,14 @@ function agentStep(who: string, dot: string, status: AgentStatus | null, cycle: 
 export function DecisionRound({ cycle, agents, timing }: { cycle: DecisionCycle | null; agents: [AgentStatus, AgentStatus] | null; timing: SignalTiming | null }) {
   if (!cycle) {
     return (
-      <section aria-label="Latest decision round" className="rounded-lg border border-dashed p-3.5 text-[0.8125rem] leading-snug text-muted-foreground">
+      <section aria-label="Latest decision round" className="border border-dashed p-3.5 text-[0.8125rem] leading-snug text-muted-foreground">
         The first round starts once the current green reaches its minimum time. Both agents then observe their approaches at the same moment.
       </section>
     );
   }
   const steps: Step[] = [
-    agentStep("Agent A", "bg-group-ns", agents?.[0] ?? null, cycle, "agent-a"),
-    agentStep("Agent B", "bg-group-ew", agents?.[1] ?? null, cycle, "agent-b"),
+    agentStep("Agent A", "text-group-ns", agents?.[0] ?? null, cycle, "agent-a"),
+    agentStep("Agent B", "text-group-ew", agents?.[1] ?? null, cycle, "agent-b"),
   ];
   const arbitration = cycle.arbitration;
   const result = arbitration?.result ?? null;
@@ -54,20 +55,20 @@ export function DecisionRound({ cycle, agents, timing }: { cycle: DecisionCycle 
   const b = cycle.proposals["agent-b"];
   const agreed = a && b && a.requestedPhase === b.requestedPhase;
 
-  if (arbitration?.status === "pending") steps.push({ who: "JEV", dot: "bg-jev", state: "active", text: "Weighing the two requests…" });
-  else if (result) steps.push({ who: "JEV", dot: "bg-jev", state: "done", text: `${choiceName(result.choice)}${choicePhase(result.choice, cycle) ? ` (${phaseName(choicePhase(result.choice, cycle)!)})` : ""} ⋅ ${formatPercent(result.confidence)} confidence, ${result.confidenceBand}` });
-  else if (arbitration) steps.push({ who: "JEV", dot: "bg-jev", state: "problem", text: `No result: ${humanize(arbitration.fallbackReason ?? arbitration.status).toLowerCase()}` });
-  else if (agreed) steps.push({ who: "JEV", dot: "bg-jev", state: "skipped", text: "Not needed: the agents agree" });
-  else steps.push({ who: "JEV", dot: "bg-jev", state: "waiting", text: cycle.conflict ? "Conflict detected" : "Called only on conflict" });
+  if (arbitration?.status === "pending") steps.push({ who: "JEV", dot: "text-jev", state: "active", text: "Weighing the two requests…" });
+  else if (result) steps.push({ who: "JEV", dot: "text-jev", state: "done", text: `${choiceName(result.choice)}${choicePhase(result.choice, cycle) ? ` (${phaseName(choicePhase(result.choice, cycle)!)})` : ""} ⋅ ${formatPercent(result.confidence)} confidence, ${result.confidenceBand}` });
+  else if (arbitration) steps.push({ who: "JEV", dot: "text-jev", state: "problem", text: `No result: ${humanize(arbitration.fallbackReason ?? arbitration.status).toLowerCase()}` });
+  else if (agreed) steps.push({ who: "JEV", dot: "text-jev", state: "skipped", text: "Not needed: the agents agree" });
+  else steps.push({ who: "JEV", dot: "text-jev", state: "waiting", text: cycle.conflict ? "Conflict detected" : "Called only on conflict" });
 
   if (cycle.fallback) {
-    steps.push({ who: "Fallback", dot: "bg-warning", state: "done", text: `${humanize(cycle.fallback.reason)} → ${phaseName(cycle.fallback.selectedPhase)} (${cycle.fallback.policy})` });
+    steps.push({ who: "Fallback", dot: "text-warning", state: "done", text: `${humanize(cycle.fallback.reason)} → ${phaseName(cycle.fallback.selectedPhase)} (${cycle.fallback.policy})` });
   }
 
   if (decision) {
     steps.push({
       who: "Safety",
-      dot: "bg-safety",
+      dot: "text-safety",
       state: decision.status === "rejected" ? "problem" : "done",
       text: decision.status === "accepted"
         ? decision.requestedPhase === cycle.phaseAtDecision
@@ -76,13 +77,13 @@ export function DecisionRound({ cycle, agents, timing }: { cycle: DecisionCycle 
         : `${humanize(decision.status)} ⋅ ${humanize(decision.reason).toLowerCase()}`,
     });
   } else {
-    steps.push({ who: "Safety", dot: "bg-safety", state: cycle.fallback?.selectedPhase === "HOLD" || result?.choice === "DEFER" ? "skipped" : "waiting", text: cycle.fallback?.selectedPhase === "HOLD" || result?.choice === "DEFER" ? "Nothing to validate: the current phase holds" : "Waiting for a request" });
+    steps.push({ who: "Safety", dot: "text-safety", state: cycle.fallback?.selectedPhase === "HOLD" || result?.choice === "DEFER" ? "skipped" : "waiting", text: cycle.fallback?.selectedPhase === "HOLD" || result?.choice === "DEFER" ? "Nothing to validate: the current phase holds" : "Waiting for a request" });
   }
 
   const summary = summarize(cycle, timing);
 
   return (
-    <section aria-labelledby="round-title" className="flex flex-col gap-3 rounded-lg border bg-card p-3.5" data-testid="decision-round">
+    <section aria-labelledby="round-title" className="flex flex-col gap-3 border bg-card p-3.5" data-testid="decision-round">
       <header className="flex items-center justify-between gap-2">
         <h3 id="round-title" className="text-[0.9375rem] font-semibold">Latest decision round</h3>
         <span className="flex items-center gap-1.5">
@@ -94,7 +95,7 @@ export function DecisionRound({ cycle, agents, timing }: { cycle: DecisionCycle 
         {steps.map(step => (
           <li key={step.who} className="grid grid-cols-[4.75rem_1fr] items-baseline gap-2 text-sm">
             <span className="flex items-center gap-1.5 text-muted-foreground">
-              <span className={cn("size-1.5 shrink-0 translate-y-[-1px] rounded-full", step.dot, STATE_DOT[step.state])} aria-hidden="true" />
+              <Square className={cn("size-[7px] translate-y-[-1px]", step.dot, STATE_DOT[step.state])} hollow={step.state === "waiting" || step.state === "skipped"} />
               {step.who}
             </span>
             <span className={cn("leading-snug", step.state === "problem" ? "text-destructive" : step.state === "waiting" || step.state === "skipped" ? "text-subtle-foreground" : "text-foreground")}>{step.text}</span>

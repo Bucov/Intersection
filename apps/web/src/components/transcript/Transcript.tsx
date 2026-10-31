@@ -2,6 +2,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { ArrowDown } from "lucide-react";
 import { useServices } from "@/app/services";
 import { ProvenanceBadge } from "@/components/common/ProvenanceBadge";
+import { Square } from "@/components/common/Square";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { formatTimestamp } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -10,12 +11,12 @@ import { PARTICIPANT_LABEL, type Participant, type TranscriptEntry } from "@/sta
 
 const PARTICIPANTS: readonly Participant[] = ["simulation", "agent-a", "agent-b", "jev", "controller", "safety"];
 const DOT: Record<Participant, string> = {
-  simulation: "bg-subtle-foreground",
-  "agent-a": "bg-group-ns",
-  "agent-b": "bg-group-ew",
-  jev: "bg-jev",
-  controller: "bg-warning",
-  safety: "bg-safety",
+  simulation: "text-subtle-foreground",
+  "agent-a": "text-group-ns",
+  "agent-b": "text-group-ew",
+  jev: "text-jev",
+  controller: "text-warning",
+  safety: "text-safety",
 };
 const TONE = { neutral: "", positive: "text-positive", warning: "text-warning", negative: "text-destructive" } as const;
 
@@ -26,7 +27,7 @@ function Entry({ entry }: { entry: TranscriptEntry }) {
       <div className="flex min-w-0 flex-col gap-1">
         <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
           <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
-            <span className={cn("size-1.5 rounded-full", DOT[entry.participant])} aria-hidden="true" />
+            <Square className={cn("size-[7px]", DOT[entry.participant])} />
             {PARTICIPANT_LABEL[entry.participant]}
           </span>
           <span className={cn("font-medium", TONE[entry.tone])}>{entry.title}</span>
@@ -36,8 +37,8 @@ function Entry({ entry }: { entry: TranscriptEntry }) {
         <p className="leading-snug text-muted-foreground">{entry.summary}</p>
         {entry.details.length ? (
           <details className="group">
-            <summary className="w-fit cursor-pointer rounded-sm text-xs text-subtle-foreground hover:text-foreground">Details</summary>
-            <dl className="mt-1.5 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 rounded-md bg-muted/50 p-2 text-xs">
+            <summary className="w-fit cursor-pointer text-xs text-subtle-foreground hover:text-foreground">Details</summary>
+            <dl className="mt-1.5 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 bg-muted/50 p-2 text-xs">
               {entry.details.map(d => (
                 <div key={d.label} className="contents">
                   <dt className="text-subtle-foreground">{d.label}</dt>
@@ -108,17 +109,17 @@ export function Transcript() {
       <ToggleGroup multiple value={visible} onValueChange={value => changeFilter(value as Participant[])} spacing={1} size="sm" variant="outline" aria-label="Show participants" className="flex-wrap px-4 pb-3">
         {PARTICIPANTS.map(p => (
           <ToggleGroupItem key={p} value={p} className="h-7 gap-1.5 px-2 text-xs text-subtle-foreground aria-pressed:text-foreground">
-            <span className={cn("size-1.5 rounded-full", DOT[p])} aria-hidden="true" />
+            <Square className={cn("size-[7px]", DOT[p])} />
             {PARTICIPANT_LABEL[p]}
           </ToggleGroupItem>
         ))}
       </ToggleGroup>
-      {historyGap ? <p className="mx-4 mb-2 rounded-md bg-muted px-3 py-2 text-xs text-muted-foreground">Some events were missed while the stream recovered. The transcript may have gaps; the scene and panels show the current checkpoint.</p> : null}
+      {historyGap ? <p className="mx-4 mb-2 bg-muted px-3 py-2 text-xs text-muted-foreground">Some events were missed while the stream recovered. The transcript may have gaps; the scene and panels show the current checkpoint.</p> : null}
       <ol ref={list} onScroll={onScroll} className="min-h-0 flex-1 divide-y overflow-y-auto px-4" aria-label="Event transcript">
         {filtered.length ? filtered.map(entry => <Entry key={entry.key} entry={entry} />) : <li className="py-6 text-center text-sm text-subtle-foreground">{entries.length ? "No events from the selected participants yet." : "Events appear here as the simulation runs."}</li>}
       </ol>
       {unseen > 0 ? (
-        <button type="button" onClick={jump} className="absolute bottom-3 left-1/2 inline-flex -translate-x-1/2 items-center gap-1.5 rounded-full border bg-popover px-3 py-1.5 text-xs shadow-md hover:bg-muted">
+        <button type="button" onClick={jump} className="absolute bottom-3 left-1/2 inline-flex -translate-x-1/2 items-center gap-1.5 border bg-popover px-3 py-1.5 text-xs shadow-[0_12px_28px_-18px_rgb(0_0_0/0.9)] hover:bg-muted">
           <ArrowDown className="size-3.5" aria-hidden="true" />
           {unseen} new {unseen === 1 ? "event" : "events"}
         </button>

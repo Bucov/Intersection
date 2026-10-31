@@ -19,8 +19,9 @@ function previewParameters(): ScenarioParameters {
     durationMs: PREVIEW_DURATION_MS,
     demandPreset: "heavy-all-round",
     arrivalRatesVehPerHour: { north: 360, south: 360, east: 320, west: 320 },
-    initialQueueByApproach: { north: 4, south: 3, east: 5, west: 4 },
-    initialGreen: "EW_GREEN",
+    // The intro's car takes the northbound lane on a north/south green, so that lane starts empty.
+    initialQueueByApproach: { north: 4, south: 0, east: 5, west: 4 },
+    initialGreen: "NS_GREEN",
     scheduledEvents: ambulances,
   };
 }
@@ -65,8 +66,8 @@ export class PreviewFeed implements SceneFeed {
       retainEvents: 0,
     });
     this.sim.control("start", 0);
-    // Pre-roll so the first visible frame already has traffic in motion.
-    this.sim.advance(80);
+    // Pre-roll so the first visible frame already has traffic in motion, with most of the green still ahead.
+    this.sim.advance(40);
     this.sim.drain();
     this.interpolator.clear();
     this.interpolator.push(this.sim.snapshot(), performance.now());

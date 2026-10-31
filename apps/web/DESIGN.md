@@ -1,116 +1,115 @@
 ---
 name: Intersection
-description: One live 3D intersection, two signal controllers, every decision observable.
+description: One live 3D intersection, two controllers on either side of it, every decision drawn in coloured squares.
 colors:
-  background: "oklch(0.135 0.005 255)"
-  foreground: "oklch(0.96 0.003 255)"
-  card: "oklch(0.175 0.006 255)"
-  popover: "oklch(0.205 0.007 255)"
-  panel: "oklch(0.165 0.006 255 / 0.94)"
-  primary: "oklch(0.96 0.003 255)"
-  primary-foreground: "oklch(0.17 0.006 255)"
-  secondary: "oklch(0.245 0.007 255)"
-  muted: "oklch(0.235 0.007 255)"
-  accent: "oklch(0.27 0.008 255)"
-  muted-foreground: "oklch(0.76 0.01 255)"
-  subtle-foreground: "oklch(0.64 0.012 255)"
-  border: "oklch(1 0 0 / 10%)"
-  input: "oklch(1 0 0 / 15%)"
-  ring: "oklch(0.88 0.03 255)"
-  signal-red: "oklch(0.645 0.215 27)"
-  signal-amber: "oklch(0.83 0.165 78)"
-  signal-green: "oklch(0.78 0.17 152)"
-  group-ns: "oklch(0.79 0.115 218)"
-  group-ew: "oklch(0.74 0.15 305)"
-  jev: "oklch(0.9 0.045 85)"
-  safety: "oklch(0.77 0.035 245)"
-  emergency: "oklch(0.7 0.19 15)"
-  positive: "oklch(0.78 0.13 160)"
+  background: "oklch(0.2 0.003 75)"
+  foreground: "oklch(0.93 0.011 80)"
+  card: "oklch(0.232 0.004 75)"
+  popover: "oklch(0.255 0.005 75)"
+  panel: "oklch(0.212 0.004 75 / 0.95)"
+  primary: "oklch(0.93 0.011 80)"
+  primary-foreground: "oklch(0.2 0.003 75)"
+  secondary: "oklch(0.27 0.005 75)"
+  muted: "oklch(0.262 0.005 75)"
+  accent: "oklch(0.3 0.006 75)"
+  muted-foreground: "oklch(0.75 0.009 80)"
+  subtle-foreground: "oklch(0.63 0.008 80)"
+  border: "oklch(0.93 0.011 80 / 11%)"
+  input: "oklch(0.93 0.011 80 / 18%)"
+  ring: "oklch(0.93 0.011 80 / 85%)"
+  cell: "oklch(0.93 0.011 80 / 7%)"
+  signal-red: "oklch(0.64 0.215 27)"
+  signal-amber: "oklch(0.81 0.16 78)"
+  signal-green: "oklch(0.75 0.19 148)"
+  group-ns: "oklch(0.76 0.13 222)"
+  group-ew: "oklch(0.68 0.19 302)"
+  jev: "oklch(0.9 0.075 95)"
+  safety: "oklch(0.74 0.04 245)"
+  emergency: "oklch(0.68 0.21 10)"
+  positive: "oklch(0.78 0.14 160)"
   warning: "oklch(0.82 0.14 75)"
-  destructive: "oklch(0.68 0.19 25)"
+  destructive: "oklch(0.68 0.2 27)"
   chart-ns: "#00a4c0"
   chart-ew: "#8048b6"
   chart-fixed: "#3987e5"
   chart-ai: "#d95926"
-  chart-grid: "oklch(1 0 0 / 8%)"
-  scene-base: "oklch(0.185 0.006 255)"
-  scene-asphalt: "oklch(0.26 0.005 255)"
-  scene-sidewalk: "oklch(0.37 0.006 255)"
-  scene-curb: "oklch(0.46 0.006 255)"
-  scene-marking: "oklch(0.93 0.004 255)"
-  scene-planting: "oklch(0.34 0.045 150)"
-  scene-foliage: "oklch(0.45 0.07 148)"
-  scene-building: "oklch(0.31 0.007 255)"
-  scene-signal-housing: "oklch(0.2 0.004 255)"
-  scene-key-light: "oklch(0.99 0.012 85)"
+  scene-base: "oklch(0.235 0.004 75)"
+  scene-asphalt: "oklch(0.29 0.004 75)"
+  scene-sidewalk: "oklch(0.41 0.006 75)"
+  scene-curb: "oklch(0.5 0.006 75)"
+  scene-marking: "oklch(0.92 0.012 85)"
+  scene-planting: "oklch(0.35 0.04 135)"
+  scene-foliage: "oklch(0.46 0.07 138)"
+  scene-building: "oklch(0.33 0.005 75)"
+  scene-signal-housing: "oklch(0.22 0.004 75)"
+  scene-key-light: "oklch(0.99 0.015 80)"
 typography:
-  wordmark:
-    fontFamily: "Overpass Variable, ui-sans-serif, system-ui, sans-serif"
-    fontSize: "1.3125rem"
+  wordmark-intro:
+    fontFamily: "Onest Variable, ui-sans-serif, system-ui, sans-serif"
+    fontSize: "clamp(52px, 13vw, 208px)"
     fontWeight: 640
     lineHeight: 1
-    letterSpacing: "-0.02em"
-  headline:
-    fontFamily: "Overpass Variable, ui-sans-serif, system-ui, sans-serif"
-    fontSize: "clamp(1.375rem, 2.2vw, 1.875rem)"
-    fontWeight: 600
-    lineHeight: 1.2
-    letterSpacing: "-0.015em"
-  page-title:
-    fontFamily: "Overpass Variable, ui-sans-serif, system-ui, sans-serif"
-    fontSize: "2rem"
-    fontWeight: 600
-    lineHeight: 1.25
-    letterSpacing: "-0.02em"
-  title:
-    fontFamily: "Overpass Variable, ui-sans-serif, system-ui, sans-serif"
-    fontSize: "1.25rem"
-    fontWeight: 600
-    lineHeight: 1.4
+    letterSpacing: "-0.035em"
+  wordmark:
+    fontFamily: "Onest Variable, ui-sans-serif, system-ui, sans-serif"
+    fontSize: "1.0625rem"
+    fontWeight: 640
+    lineHeight: 1
+    letterSpacing: "-0.035em"
+  display:
+    fontFamily: "Onest Variable, ui-sans-serif, system-ui, sans-serif"
+    fontSize: "clamp(2.25rem, 3.4vw, 3.25rem)"
+    fontWeight: 620
+    lineHeight: 0.95
+    letterSpacing: "-0.045em"
+  nav:
+    fontFamily: "Onest Variable, ui-sans-serif, system-ui, sans-serif"
+    fontSize: "1rem"
+    fontWeight: 450
+    lineHeight: 1.5
     letterSpacing: "-0.01em"
+  headline:
+    fontFamily: "Onest Variable, ui-sans-serif, system-ui, sans-serif"
+    fontSize: "clamp(1.0625rem, 1.3vw, 1.25rem)"
+    fontWeight: 450
+    lineHeight: 1.3
+    letterSpacing: "-0.015em"
+  action:
+    fontFamily: "Onest Variable, ui-sans-serif, system-ui, sans-serif"
+    fontSize: "1.125rem"
+    fontWeight: 560
+    lineHeight: 1.4
+    letterSpacing: "-0.02em"
   title-sm:
-    fontFamily: "Overpass Variable, ui-sans-serif, system-ui, sans-serif"
+    fontFamily: "Onest Variable, ui-sans-serif, system-ui, sans-serif"
     fontSize: "0.9375rem"
     fontWeight: 600
     lineHeight: 1.25
-  body-lg:
-    fontFamily: "Overpass Variable, ui-sans-serif, system-ui, sans-serif"
-    fontSize: "0.9375rem"
-    fontWeight: 400
-    lineHeight: 1.625
   body:
-    fontFamily: "Overpass Variable, ui-sans-serif, system-ui, sans-serif"
+    fontFamily: "Onest Variable, ui-sans-serif, system-ui, sans-serif"
     fontSize: "0.875rem"
     fontWeight: 400
     lineHeight: 1.43
   body-sm:
-    fontFamily: "Overpass Variable, ui-sans-serif, system-ui, sans-serif"
+    fontFamily: "Onest Variable, ui-sans-serif, system-ui, sans-serif"
     fontSize: "0.8125rem"
     fontWeight: 400
     lineHeight: 1.375
   label:
-    fontFamily: "Overpass Variable, ui-sans-serif, system-ui, sans-serif"
+    fontFamily: "Onest Variable, ui-sans-serif, system-ui, sans-serif"
     fontSize: "0.75rem"
     fontWeight: 400
     lineHeight: 1.33
-  micro:
-    fontFamily: "Overpass Variable, ui-sans-serif, system-ui, sans-serif"
-    fontSize: "0.6875rem"
-    fontWeight: 500
-    lineHeight: 1
   readout:
-    fontFamily: "Overpass Mono Variable, ui-monospace, SFMono-Regular, monospace"
+    fontFamily: "Onest Variable, ui-sans-serif, system-ui, sans-serif"
     fontSize: "0.75rem"
     fontWeight: 400
     lineHeight: 1.33
     fontFeature: "\"tnum\""
 rounded:
-  sm: "0.3rem"
-  md: "0.4rem"
-  lg: "0.5rem"
-  xl: "0.7rem"
-  full: "9999px"
+  none: "0px"
 spacing:
+  square-gap: "3px"
   xs: "4px"
   sm: "8px"
   md: "12px"
@@ -122,231 +121,185 @@ components:
     backgroundColor: "{colors.primary}"
     textColor: "{colors.primary-foreground}"
     typography: "{typography.body}"
-    rounded: "{rounded.md}"
+    rounded: "{rounded.none}"
     padding: "0 10px"
     height: "36px"
-  button-run:
-    backgroundColor: "{colors.primary}"
-    textColor: "{colors.primary-foreground}"
-    typography: "{typography.body-lg}"
-    rounded: "{rounded.md}"
-    padding: "0 16px"
-    height: "44px"
-    width: "100%"
   button-secondary:
     backgroundColor: "{colors.secondary}"
     textColor: "{colors.foreground}"
-    rounded: "{rounded.md}"
-    padding: "0 10px"
-    height: "32px"
-  button-ghost:
+    rounded: "{rounded.none}"
+    height: "36px"
+  mode-action:
     textColor: "{colors.foreground}"
-    rounded: "{rounded.md}"
-    padding: "0 10px"
-    height: "32px"
-  button-ghost-hover:
-    backgroundColor: "{colors.muted}"
+    typography: "{typography.action}"
   nav-link:
-    textColor: "{colors.muted-foreground}"
-    typography: "{typography.body}"
-    rounded: "{rounded.md}"
-    padding: "0 10px"
-    height: "32px"
-  nav-link-active:
     textColor: "{colors.foreground}"
-  card-mode:
-    backgroundColor: "{colors.card}"
-    textColor: "{colors.foreground}"
-    rounded: "{rounded.xl}"
-    padding: "20px"
+    typography: "{typography.nav}"
+    height: "36px"
+  square-mark:
+    size: "7px"
+    rounded: "{rounded.none}"
+  legend-square:
+    size: "9px"
+    rounded: "{rounded.none}"
+  timeline-cell:
+    backgroundColor: "{colors.cell}"
+    size: "up to 12px"
+    rounded: "{rounded.none}"
   panel-floating:
     backgroundColor: "{colors.panel}"
     textColor: "{colors.foreground}"
-    rounded: "{rounded.xl}"
+    rounded: "{rounded.none}"
     padding: "16px"
-  card-agent:
-    backgroundColor: "{colors.card}"
-    textColor: "{colors.foreground}"
-    rounded: "{rounded.lg}"
-    padding: "12px"
-  badge-provenance:
-    textColor: "{colors.muted-foreground}"
-    typography: "{typography.micro}"
-    rounded: "{rounded.full}"
-    padding: "0 8px"
-    height: "20px"
-  signal-chip:
-    textColor: "{colors.foreground}"
-    typography: "{typography.readout}"
-    rounded: "{rounded.md}"
-    padding: "4px 6px"
-  tabs-line:
-    textColor: "{colors.muted-foreground}"
-    typography: "{typography.body}"
-    height: "44px"
 ---
 
 # Design System: Intersection
 
 ## Overview
 
-**Creative North Star: "The Lit Scale Model"**
+**Creative North Star: "Both Sides of the Junction"**
 
-A scale model of one intersection sits under a lamp in a dark room. The interface is the room: near-black, cool-neutral, quiet, built so the lit model is the brightest and most colourful thing on screen. Panels are low-contrast slabs with hairline borders that hold just enough text to explain what the model is doing. The system was built to the user's own brief, "something simple that is easy to make, easy to understand and presents everything it needs to present", and it reads that way: familiar shadcn/Base UI primitives, one type family, and no decorative layer.
+A warm charcoal room with one live scale model of an intersection in the middle of it. The two ways of running that intersection stand on either side of the model like the two camps of a data essay, each drawn as a column of small coloured squares that spells out its mechanism. Type sits directly on the ground: a wide, tight grotesk in warm off-white, lowercase in the navigation and the wordmark, with no bars, cards or pills around it. Colour lives only in squares, and every square means one thing.
 
-Colour is reserved for meaning. Every hue in the UI encodes something the visitor can also find in the scene: the state of a signal, which movement group (and which agent) a number belongs to, JEV, the safety gate, an emergency vehicle, or a status outcome. Everything else is a step on a single cool-grey ramp (hue 255). Density is moderate. Home is airy and presenter-friendly, and the simulation rail is denser so it reads at laptop distance.
+The interface borrows two references and keeps them apart. The chrome takes its palette, type and lowercase restraint from a dark grotesk portfolio header: charcoal ground, off-white words spread across the top, nothing boxed. The data takes its form from a unit-chart essay: crisp squares in a few saturated colours, two millimetres apart, one square per unit. The 3D scene stays the brightest, most detailed thing on screen; the opening sequence earns that by showing one car alone before the world appears around it.
 
-Every visual decision is a token in `src/index.css`, including the 3D scene, which resolves its `--scene-*` and semantic colours at runtime. The team plans a new visual language later, so treat restyling as a token swap and never as a component rewrite.
+Density is moderate. Home is airy and presenter-friendly; the simulation is denser so it reads at laptop distance. Every visual decision is a token in `src/index.css`, and the 3D scene reads its `--scene-*` and semantic colours at runtime.
 
 **Key Characteristics:**
-- Dark, cool-neutral chrome (hue 255) around a lit 3D diorama that stays dominant.
-- Hue only where it means something: signal, movement group, participant, status.
-- Overpass for everything, Overpass Mono for clocks, IDs and readouts.
-- Hairline 10% white borders and tonal steps. Soft ambient shadows appear only on surfaces that float.
-- Provenance (mock, live, rule-based, simulation) is always visible next to model output.
+- Warm charcoal room (hue 75, near-zero chroma) and warm off-white type; the scene's lamp is the only light.
+- One family, Onest, from the poster-scale intro wordmark down to tabular readouts.
+- Squares, not dots: crisp, unrounded, 7 to 12px, 2 to 3px apart, each a single meaning.
+- No containers on the ground: titles, legends and links sit directly on the room. Only surfaces that float over the scene get a slab.
+- Square corners everywhere (`--radius: 0`).
+- Provenance (mock, live, rule-based, simulation) is always visible next to model output, as a square and a word.
 
 ## Colors
 
-The palette is a cool near-black neutral ramp plus a small set of semantic hues, each of which keeps a single meaning across the scene, charts, timeline and panels.
+A warm neutral ramp around one charcoal, plus the small set of saturated meaning colours that only ever appear as squares, lights in the scene and chart series.
 
 ### Primary
-- **Lamp White** (`primary`): solid fill for the main action (Run, Pause/Play) with near-black `primary-foreground` text. The inverted white button is the only filled control on a screen, so it reads as the one thing to press. It shares its value with `foreground`.
+- **Warm Off-White** (`primary` / `foreground`, oklch(0.93 0.011 80)): all primary text, the wordmark, the one filled control per region (Play/Pause) with charcoal text on it, the playhead, the "live" square.
 
 ### Secondary
-- **Signal Red / Signal Amber / Signal Green** (`signal-red`, `signal-amber`, `signal-green`): signal state only. They colour the lamps in the HUD and strip, the fixed-cycle diagram, the N/S and E/W rows of the timeline, and the 3D signal heads. In the bar charts, red is drawn at reduced strength so that green, the active state, carries the row.
-- **North/South Cyan** (`group-ns`): the North/South movement group and Agent A, wherever either appears (identity dots, agent card subtitle, pipeline diagram node, timeline lane, queue stat, text selection tint).
-- **East/West Violet** (`group-ew`): the East/West movement group and Agent B, applied the same way.
+- **Signal Red / Amber / Green** (`signal-red`, `signal-amber`, `signal-green`): signal state only. Lamp squares in the HUD, the signal rows of the timeline and session strip, the fixed-cycle unit chart, the fixed-time legend on Home, the 3D signal heads and stop-line strips.
+- **North/South Cyan** (`group-ns`): the North/South group and Agent A, wherever either appears.
+- **East/West Violet** (`group-ew`): the East/West group and Agent B.
 
 ### Tertiary
-- **JEV Warm White** (`jev`): JEV, the arbitration model, as its dot, diagram node and timeline lane.
-- **Safety Steel** (`safety`): the deterministic safety gate and the "Rule-based" provenance badge.
+- **JEV Straw** (`jev`): JEV, the arbitration model: its square, its timeline row, its chosen-probability unit bar.
+- **Safety Steel** (`safety`): the deterministic safety gate and the rule-based provenance square.
 - **Emergency Rose** (`emergency`): emergency vehicles and emergency urgency only.
-- **Status hues** (`positive`, `warning`, `destructive`): outcome text and dots (accepted, fallback/high urgency, rejected/failed, connection state).
-- **Chart series** (`chart-ns`, `chart-ew`, `chart-fixed`, `chart-ai`, with `chart-grid` gridlines): darker steps of the identity hues for Recharts series, checked for separation against `card`. The fixed-time and AI controller series are a blue/orange pair that appears only in Metrics and Compare.
+- **Status hues** (`positive`, `warning`, `destructive`): outcomes, connection state and confidence bands.
+- **Chart series** (`chart-ns`, `chart-ew`, `chart-fixed`, `chart-ai`): Recharts lines in Metrics and Compare.
 
 ### Neutral
-- **Dark Room** (`background`): page ground, header, the scene's clear colour.
-- **Bench** (`card`): Home mode cards, agent cards, rail content cards.
-- **Glass Slab** (`panel`, 94% opaque): every surface that floats over the scene (HUD, dock, view controls, connection banner) and the decision rail.
-- **Raised Slab** (`popover`): popovers, select menus, chart tooltips, the transcript jump pill.
-- **Fill steps** (`secondary`, `muted`, `accent`): hover fills, secondary buttons, the timeline row tracks (`muted` at 40%), the inline "finished" note.
-- **Text steps** (`foreground`, `muted-foreground`, `subtle-foreground`): primary text; supporting text and inactive nav; captions, notes, axis ticks and "unavailable" values.
-- **Hairline** (`border` at 10% white, `input` at 15%): every border and divider. `ring` provides the focus outline.
-- **Scene materials** (`scene-*`): the diorama's base, asphalt, sidewalk, curb, markings, planting, foliage, buildings, signal housings and key light. These are the same neutral ramp with two muted greens and a warm lamp.
+- **Charcoal Room** (`background`, oklch(0.2 0.003 75)): page ground, the scene's clear colour and fog, the intro's mask. Pre-painted as `#171615` in `index.html`.
+- **Bench** (`card`) and **Raised Slab** (`popover`): the decision round's box, select menus, tooltips.
+- **Floating Slab** (`panel`, 95%): the HUD, the dock, the view controls and the decision rail.
+- **Fill steps** (`secondary`, `muted`, `accent`): secondary buttons, hover fills, pressed toggles.
+- **Text steps** (`foreground`, `muted-foreground`, `subtle-foreground`): text, supporting text, captions and axis labels.
+- **Empty Cell** (`cell`, off-white at 7%): an empty square of a unit chart; the grid stays visible where nothing happened.
+- **Hairline** (`border` 11%, `input` 18%): every divider and slab edge.
 
 ### Named Rules
-**The Meaning-Only Rule.** Chrome is hue-255 grey. A colour that is not a neutral must name a signal state, a movement group, a participant (Agent A, Agent B, JEV, safety), an emergency, or an outcome. A colour that encodes nothing does not ship.
+**The Square Means One Thing Rule.** A coloured square names a signal state, a participant, a status or a provenance. A square that encodes nothing does not ship, and nothing else in the chrome carries hue.
 
-**The Signal Colours Mean Signals Rule.** `signal-red`, `signal-amber` and `signal-green` are used for signal state and for nothing else. They never indicate success, warning or error. Status has its own tokens.
+**The Signal Colours Mean Signals Rule.** Red, amber and green are signal state only; outcomes use `positive`, `warning` and `destructive`.
 
-**The Identity Pairing Rule.** Cyan always means North/South and Agent A. Violet always means East/West and Agent B. The pairing holds in the scene, the timeline, the charts (`chart-ns`, `chart-ew`), the cards and the Home diagram.
+**The Identity Pairing Rule.** Cyan is North/South and Agent A; violet is East/West and Agent B, in the scene, the timeline, the legends and the charts.
 
 ## Typography
 
-**Display Font:** Overpass Variable (with ui-sans-serif, system-ui)
-**Body Font:** Overpass Variable
-**Label/Mono Font:** Overpass Mono Variable (with ui-monospace, SFMono-Regular)
+**Display Font:** Onest Variable (with ui-sans-serif, system-ui)
+**Body Font:** Onest Variable
+**Readout Font:** Onest Variable with tabular figures (`.font-mono` and `.tabular` both set `tabular-nums`)
 
-**Character:** Overpass descends from US highway signage and was built to be read at a distance. That suits a projected demo, and it gives a whole product one plain, legible voice. Its mono sibling sets anything that ticks.
+**Character:** A wide grotesk with round dots and flat-topped t's, set tight. At poster scale it is the intro's wordmark; at 1rem in lowercase it is quiet navigation; with tabular figures it is every clock and readout.
 
 ### Hierarchy
-- **Wordmark** (640, 1.3125rem in the header, line-height 1, -0.02em): "Intersection" only. The same style is set larger in the intro and travels into the header slot.
-- **Headline** (600, clamp(1.375rem, 2.2vw, 1.875rem), -0.015em, balanced): the single Home question above the preview.
-- **Page title** (600, 2rem, -0.02em): Settings, About and Not Found headings.
-- **Title** (600, 1.25rem, -0.01em): mode card titles. The HUD phase name uses 1.125rem at 600.
-- **Title small** (600, 0.9375rem): agent and panel card headings.
-- **Body large** (400, 0.9375rem, 1.625): mode card summaries, the Run button label.
-- **Body** (400, 0.875rem): facts, nav, tabs, buttons, popover copy.
-- **Body small** (400, 0.8125rem): the dense rail text, including agent status, rationale, decision rounds and notes. This is the workhorse size of the simulation view.
-- **Label** (400–500, 0.75rem): stat labels, captions, figcaptions, verdict lines.
-- **Micro** (500, 0.6875rem): provenance badges and rationale captions only.
-- **Readout** (Overpass Mono, 0.75rem; 11px in SVG): the sim clock, N/S and E/W chips, timeline axis ticks and latency labels, model IDs.
+- **Wordmark, intro** (640, clamp(52px, 13vw, 208px), -0.035em, lowercase "intersection"): the opening poster; the same element travels into the header.
+- **Wordmark** (640, 1.0625rem, -0.035em, lowercase): the centred home button in the header.
+- **Display** (620, clamp(2.25rem, 3.4vw, 3.25rem), 0.95, -0.045em): the two controller titles on Home, "traditional" and "AI".
+- **Nav** (450, 1rem, -0.01em, lowercase): header links and the data-source status.
+- **Headline** (450, clamp(1.0625rem, 1.3vw, 1.25rem)): the single Home question.
+- **Action** (560, 1.125rem, -0.02em): "Run traditional →" and "Run AI →".
+- **Title small** (600, 0.9375rem): rail headings and agent names.
+- **Body / Body small** (400, 0.875rem / 0.8125rem): legends, rail text, decision rounds.
+- **Label / Readout** (400, 0.75rem; 11px in SVG): stat labels, axis ticks, latencies, clocks, always tabular.
 
 ### Named Rules
-**The Readout Rule.** Use Overpass Mono for anything that is a clock, an identifier or a measured readout. Every number that updates in place also gets tabular figures (`.tabular`), so neighbours never shift.
+**The One Family Rule.** Onest sets everything; weight, size and case carry hierarchy. There is no monospace face.
 
-**The One Family Rule.** One family sets everything, and weight and size carry the hierarchy (400, 500, 600, plus 640 for the wordmark). Body text never goes uppercase or letterspaced.
+**The Lowercase Chrome Rule.** The wordmark and header links are lowercase. Proper names and acronyms inside them keep their case ("by MAGI", "AI"); body copy uses sentence case.
 
 ## Layout
 
-The 3D scene is a single canvas staged behind the routes, and each page reserves a "stage" region for it. Panels are positioned around the stage or float over it; they never cover the intersection's centre.
+The 3D scene is one canvas behind every route. Each page reserves an empty "stage" element whose rect becomes the camera's insets.
 
-- **Header:** fixed, `--header-height` 3.5rem, filled with `background` and no border. A three-column grid puts nav on the left, the wordmark in the centre and data-source status on the right. Below 640px it grows to 5.75rem and splits into two rows: wordmark and status on the first, nav centred on the second.
-- **Home:** at 1280px and above (xl), a three-column grid (`minmax(18.5rem, 23rem) 1fr minmax(18.5rem, 23rem)`, 32px column gap) has the two mode cards flank the preview. They share one subgrid row, so both cards get the same height and top line, centred vertically. Between 768px and 1280px the cards sit side by side under the preview, and each card's Run button moves up to follow its summary so both actions land in the first viewport. Below 768px everything stacks, with the preview at 52vh.
-- **Simulation (1024px and up):** the scene fills the left column. The decision rail sits on the right at `--rail-width` (clamp(22rem, 30vw, 30rem)) in `panel` with a left hairline. The signal HUD floats top-left, the view controls top-right, and the dock (control bar and timeline) is pinned to the bottom with 16px insets. Below 1280px the HUD keeps only its signal block, and the counts move to the Metrics tab.
-- **Simulation (below 1024px):** the scene takes 58vh. The dock carries a one-line signal strip above the controls, the full HUD follows the dock, and the rail stacks below with a top hairline and a minimum height of 32rem.
-- **Rhythm:** a 4px base. Expect 4/8/12px inside components, 12–16px between cards in the rail, 20px of mode-card padding, and 32px page gutters at xl (16px phone, 24px tablet).
+- **Header:** transparent, fixed, 3.75rem. Five equal columns at 640px and up: "compare" left-aligned, "settings" centred in column two, the wordmark at the exact centre, "about" centred in column four, the data source right-aligned. Below 640px it is 5.75rem: wordmark centred and status right on the first row, the three links centred on the second. Page content starts below the header (`top: var(--header-height)`), so nothing scrolls under it.
+- **Home (xl, 1280px+):** three columns (`minmax(17rem, 23rem) 1fr minmax(17rem, 23rem)`). The traditional block stands left, right-aligned, its squares on its right edge; the AI block stands right, left-aligned, its squares on its left edge; both share a top line. A radial falloff (`ellipse 36% 48% at 50% 53%`) lets the roads fade into the room before they reach the text.
+- **Home (md to xl):** the preview on top, the two blocks beneath it, still mirrored around the page's centre line. A room-coloured layer behind the blocks fades in over 4rem from the caption, so the text sits on clean ground rather than on the scene's unlit edge.
+- **Home (phones):** stacked, both blocks left-aligned with squares on the left.
+- **Simulation (lg+):** scene left, rail right (`clamp(22rem, 30vw, 30rem)`), HUD top-left, view controls top-right, the dock (controls, timeline, session strip) pinned to the bottom with 16px insets.
+- **Square rhythm:** squares are spaced 2 to 3px apart; a unit-chart row pitch is 12 to 16px. Elsewhere a 4px base: 8 to 12px inside groups, 16 to 20px between them.
 
 ## Elevation & Depth
 
-Depth comes from tonal layering: `background` < `card` < `panel`/`popover`, with 10% white hairlines. At rest, chrome lying on the page is flat. Only surfaces that float above the scene (or above the Home preview) get a soft, downward, black ambient shadow with a strong negative spread. It reads as a slab casting onto the table, not as a lift effect. Shadows never glow or tint. The scene is where the real light lives: the key light, the cast shadows and the lit signal lamps.
-
-### Shadow Vocabulary
-- **Floating slab** (`box-shadow: 0 18px 40px -24px rgb(0 0 0 / 0.9)`): the dock and the Home mode cards (the cards use 0.8 alpha).
-- **Floating slab, small** (`box-shadow: 0 16px 36px -20px rgb(0 0 0 / 0.9)`; view controls use `0 12px 28px -18px`): the signal HUD and the view-controls cluster.
-- **Overlay** (Tailwind `shadow-md` plus a 1px `foreground/10` ring): popovers, select menus, chart tooltips, the transcript jump pill. The connection banner uses `shadow-lg`.
+Flat. Depth comes from the scene's own light and from tonal steps: `background` < `panel` < `card` < `popover`. Slabs that float over the scene carry a hairline border and no shadow. The only shadows are on overlays that pop over content (menus, tooltips, the connection banner, the transcript's jump button).
 
 ### Named Rules
-**The Lit Model Rule.** No glow, gradient or coloured shadow appears on interface chrome. Emitted light belongs to the scene. Lamp halos on the 3D signal heads and the brake lights are the world's own light and stay.
+**The Lamp Is the Only Light Rule.** No glow, gradient or coloured shadow on chrome. The one gradient is the Home room falloff, which is the room's own colour fading in, not decoration.
 
 ## Shapes
 
-Gently rounded and consistent. The base radius is `--radius` 0.5rem, with steps derived from it: controls, chips, nav links and diagram nodes use `md` (0.4rem); agent cards, the view-controls cluster and the banner use `lg` (0.5rem); the larger floating slabs and mode cards use `xl` (0.7rem). Anything that is a point, including status dots, identity dots, signal lamps, the bullet markers and provenance badges, is fully round. Timeline bars use 2px corners and their row tracks 3px, which keeps them chart-like rather than pill-like. Borders are always 1px hairlines. A dashed border signals something provisional: mock provenance, muted or discarded timeline bars, and the empty first decision round.
+Square corners throughout (`--radius: 0`): buttons, toggles, selects, slabs and every mark. Round shapes are reserved for primitives that need them (switch, radio). Squares are the shape language: 7px for inline markers, 9px for legends and unit bars, up to 12px for timeline cells. A hollow square (1.5px outline) means "not real" or "not yet": mock provenance, a waiting decision step, a failed or discarded timeline cell. Borders are 1px hairlines; a dashed border marks something provisional.
 
 ## Components
 
-### Buttons
-Familiar, quiet controls in which the white primary carries all the weight.
-- **Shape:** gently rounded (`rounded.md`, 0.4rem). Default height is 36px; small is 32px; the Run button is 44px.
-- **Primary:** `primary` fill with `primary-foreground` text, 500 weight. The Run button is full card width, with its label on the left and a trailing arrow icon on the right.
-- **Hover / Focus:** primary fades to 80%. Focus shows the `ring` border plus a 3px ring at 50%; global `:focus-visible` is a 2px `ring` outline with 2px offset. Pressing nudges the button down 1px. Disabled is 50% opacity.
-- **Secondary / Ghost:** secondary sits on `secondary` and lightens 5% toward foreground on hover. Ghost is transparent and fills with `muted` on hover. Destructive is a 10–20% tinted fill and is not used as a solid.
+### Header
+Plain lowercase words on the room. The current page shows a 6px off-white square before its label; hovering another link shows the square at 40%. The wordmark is the home link; during the intro it is invisible until the travelling title lands on it.
 
-### Chips (signal chips and segmented controls)
-- **Signal chip:** a hairline-bordered `md` capsule holding a 10px round lamp in the signal colour and a mono "N/S" or "E/W" label. Unknown state shows a `muted` lamp.
-- **Segmented toggles** (speed, controller, camera view): a ToggleGroup with no spacing. The pressed item fills with `accent` and its text turns `foreground`.
+### Controller blocks (Home)
+A display title, a one-line summary, a legend column of 9px squares (the fixed cycle phase by phase, then three hollow squares for the cycle repeating, or the AI pipeline Agent A → Agent B → JEV → safety → light), one or two lines of fact, and the action. The whole block is the hit area. Hover underlines the action, nudges its arrow and runs a dimming wave down the squares (`legend-run`, 0.9s, 55ms stagger). Starting blinks the squares.
 
-### Cards / Containers
-- **Corner Style:** `xl` for mode cards and floating slabs, `lg` for cards inside the rail.
-- **Background:** `card` for content that lies on the page, `panel` for anything floating over the scene.
-- **Shadow Strategy:** see Elevation. Only floating slabs and the mode cards carry shadows.
-- **Border:** 1px `border` hairline everywhere. A selected mode card raises its border to `foreground/40`. Warning callouts use `warning/40` border on a `warning/10` fill.
-- **Internal Padding:** 20px for mode cards, 16px for the HUD and rail tab bodies, 12px for agent cards and the dock.
+### Square mark
+`Square`: a 7 to 10px square in a meaning colour, solid or hollow, optionally blinking (`square-blink`, 1.1s). Replaces every status dot, identity dot and provenance pill. Provenance reads as square plus word: hollow "Mock", solid off-white "Live", steel "Rule-based", subtle "Simulation".
 
-### Inputs / Fields
-- **Style:** Base UI select and switch primitives on an `input` hairline with an `md` radius and a transparent fill. Menus open on `popover`.
-- **Focus:** the shared ring treatment described under Buttons.
-
-### Navigation
-- **Header nav:** 0.875rem text-only links, 32px tall, with `md` hover fill in `muted`. Inactive links use `muted-foreground` and the active link uses `foreground` with a 1px foreground underline. The centred wordmark is the home link.
-- **Rail tabs:** line variant, 44px tall, with a bottom hairline under the list. The active tab shows a 2px foreground underline. The first tab is "Decisions" in AI mode and "Controller" in traditional mode.
-- **Phones:** nav drops to a centred second header row, and the status label truncates.
-
-### Provenance Badge (signature)
-A 20px pill, 0.6875rem at 500 weight, with a tooltip explaining the source. **Mock** has a dashed `foreground/35` border with muted text. **Live** has a solid `foreground/60` border. **Rule-based** has a `safety` border and text. **Simulation** has a plain hairline with subtle text. It sits beside every piece of model output.
-
-### Signal-Timing Timeline (signature)
-A traffic-engineering signal-timing chart drawn in SVG on the simulation clock. The N/S and E/W light rows sit on top, with Agent A, Agent B, JEV and Safety lanes beneath. Rows are 18px with 4px gaps, a 74px label column, `muted/40` tracks, and a 1px foreground "now" line. Lane fills use the identity tokens at 90%. Pending bars sit at 55% and pulse (the pulse is off under reduced motion). Failed or rejected bars become a `destructive` outline. Discarded bars become a dashed `subtle-foreground` outline. Latency prints in mono on the bar when it fits. Projected fixed-time phases are drawn at 32% opacity. The Home fixed-cycle diagram is the static miniature of the same chart.
+### Buttons and toggles
+Square-cornered shadcn/Base UI primitives. Play/Pause is the one filled off-white button; secondary and outline toggles sit on `secondary` and `input` hairlines.
 
 ### Signal HUD
-A `panel` slab (19rem) with the two signal chips, the session status and mono clock, the phase name, a countdown, a single controller/scenario/speed line, and a stat grid with identity dots. Between 1024px and 1280px it floats in compact form, signal block only. Below 1024px the dock shows the one-line Signal Strip, and the full HUD sits under the dock.
+A `panel` slab: two signal lamps as squares with "N/S" and "E/W", status and tabular clock, phase name, countdown (or "Replaying m:ss of m:ss"), and a stat grid whose queue labels carry the group squares.
+
+### Signal-timing unit chart (signature)
+The coordination drawn as squares on the simulation clock: N/S and E/W light rows, then Agent A, Agent B, JEV and Safety. One square per step (100 ms to 10 s, the finest that keeps a 12px pitch), empty steps as `cell` squares. Pending squares blink, failed are destructive outlines, discarded are subtle outlines. Ahead of the live edge only the fixed schedule is drawn, at 28%; after a replayed moment, what followed is drawn at 42%. A right-hand column prints each lane's latest latency. While paused, dragging the grid moves the playhead.
+
+### Session strip and rewind (signature)
+The whole scenario as two rows of small squares (N/S, E/W light), a 2px off-white playhead and a faint live-edge marker. It is a slider: while paused, drag it or use ← → (Shift for 5 s), Home and End. Replay is drawn from recorded snapshots: the scene, the HUD and the decision rail all show the replayed moment; resuming returns to live. The status line says which: "Live ⋅ pause to rewind" with a blinking square, or "Replaying m:ss ⋅ the simulation is paused at m:ss" with "Back to m:ss".
+
+### Unit bars
+Probabilities and progress as rows of 9px squares: JEV's choice distribution and confidence (20 squares, 5% each, thresholds as hairline ticks), the comparison's progress (24 squares), and decision sources as one square per accepted decision (or per n when there are many).
+
+### Opening sequence (signature)
+"intersection" at poster scale and "by MAGI" on the empty room. One car drives up the northbound lane through a soft hole in the room-coloured mask that follows it; the camera cranes up behind it. The car breaks through the byline (letters pushed aside, blurred, faded) while the title lifts into the header slot. As the car nears the far side of the junction the mask opens outward from it, the fleet fades in, the camera pulls back to the Home framing and the page appears. Any key or click skips. Reduced motion, no WebGL or a scene that is not ready within 2.5s fall back to the title travelling over a fading room.
 
 ### Motion
-Entrances use `cubic-bezier(0.16, 1, 0.3, 1)` over 0.6–0.7s with 6–40px of travel. Exits use `cubic-bezier(0.55, 0, 1, 0.45)` over 0.3–0.42s. The intro title travels to its header slot with `cubic-bezier(0.65, 0, 0.35, 1)` over 1.0s. When the visitor prefers reduced motion, travel distances become 0 and spinners and pulses stop.
+Entrances use `cubic-bezier(0.16, 1, 0.3, 1)` over 0.6 to 0.8s. Exits use `cubic-bezier(0.55, 0, 1, 0.45)` over 0.3 to 0.42s. The intro title travels with `cubic-bezier(0.55, 0, 0.15, 1)` over 1.05s. Reduced motion removes travel, waves and blinking.
 
 ## Do's and Don'ts
 
 ### Do:
-- **Do** route every colour, including scene materials, through a token in `src/index.css`. The scene reads `--scene-*` and the semantic tokens at runtime.
-- **Do** pair cyan with North/South and Agent A, and violet with East/West and Agent B, on every surface.
-- **Do** set clocks, IDs and readouts in Overpass Mono, and give every live number tabular figures.
-- **Do** put a provenance badge next to model output, and show null as "unavailable" or "—" in `subtle-foreground`, never as 0.
-- **Do** use `panel` and the floating-slab shadow for anything over the scene, and `card` for anything lying on the page.
-- **Do** keep a single filled `primary` action per region.
+- **Do** draw status, identity and provenance as squares, never dots or pills.
+- **Do** keep text on the ground; give a surface a slab only when it floats over the scene.
+- **Do** set every clock, latency and live number with tabular figures.
+- **Do** pair cyan with North/South and Agent A, violet with East/West and Agent B, everywhere.
+- **Do** label replay as replay and mock as mock; show null as "—" or "unavailable", never 0.
+- **Do** route every colour, scene materials included, through a token in `src/index.css`.
 
 ### Don't:
-- **Don't** use signal red, amber or green for success, warning or error. Use `positive`, `warning` and `destructive`.
-- **Don't** add glow, gradients or coloured shadows to interface chrome. The scene's lamp halos are the only emitted light.
-- **Don't** introduce a hue that encodes nothing, or a second type family.
-- **Don't** cover the intersection's centre with a panel, and don't let a panel outweigh the scene.
-- **Don't** uppercase or letterspace UI labels.
+- **Don't** round corners or use a status dot.
+- **Don't** use signal red, amber or green for success, warning or error.
+- **Don't** add a hue that encodes nothing, or a second type family.
+- **Don't** box Home's titles and legends in cards.
+- **Don't** cover the intersection's centre with a panel or let a panel outweigh the scene.
+- **Don't** present a replayed moment as the live simulation, or claim the authoritative simulation was rewound.

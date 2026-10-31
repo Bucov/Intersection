@@ -2,13 +2,14 @@ import { useState } from "react";
 import { AlertTriangle, CircleDot, LoaderCircle, Pause, Send } from "lucide-react";
 import type { AgentId, AgentStatus, TrafficProposal } from "@intersection/shared";
 import { ProvenanceBadge } from "@/components/common/ProvenanceBadge";
+import { Square } from "@/components/common/Square";
 import { formatLatency, humanize, phaseName } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { AgentVerdict } from "@/state/session";
 
-const IDENTITY: Record<AgentId, { name: string; group: string; dot: string; text: string }> = {
-  "agent-a": { name: "Agent A", group: "North/South", dot: "bg-group-ns", text: "text-group-ns" },
-  "agent-b": { name: "Agent B", group: "East/West", dot: "bg-group-ew", text: "text-group-ew" },
+const IDENTITY: Record<AgentId, { name: string; group: string; text: string }> = {
+  "agent-a": { name: "Agent A", group: "North/South", text: "text-group-ns" },
+  "agent-b": { name: "Agent B", group: "East/West", text: "text-group-ew" },
 };
 
 function statusLine(agent: AgentStatus | null): { icon: React.ReactNode; text: string } {
@@ -48,11 +49,11 @@ export function AgentCard({ agentId, agent, proposal, verdict }: { agentId: Agen
   const interval = agent?.lastInference ?? null;
 
   return (
-    <article aria-label={`${identity.name}, ${identity.group}`} className="flex min-w-0 flex-col gap-3 rounded-lg border bg-card p-3" data-testid={`agent-card-${agentId}`}>
+    <article aria-label={`${identity.name}, ${identity.group}`} className="flex min-w-0 flex-col gap-3 border-t pt-3" data-testid={`agent-card-${agentId}`}>
       <header className="flex items-start justify-between gap-2">
         <div className="min-w-0">
           <h3 className="flex items-center gap-1.5 text-[0.9375rem] font-semibold leading-tight">
-            <span className={cn("size-2 rounded-full", identity.dot)} aria-hidden="true" />
+            <Square className={cn("size-2", identity.text)} />
             {identity.name}
           </h3>
           <p className={cn("text-xs", identity.text)}>{identity.group}</p>
@@ -82,11 +83,11 @@ export function AgentCard({ agentId, agent, proposal, verdict }: { agentId: Agen
             <p className={cn("text-xs", proposal.urgency === "emergency" ? "text-emergency" : proposal.urgency === "high" ? "text-warning" : "text-subtle-foreground")}>{humanize(proposal.urgency)} urgency</p>
           </div>
           <figure className="flex flex-col gap-1">
-            <blockquote className={cn("border-l border-border pl-2.5 leading-snug text-muted-foreground", !expanded && "line-clamp-4")}>{proposal.rationale}</blockquote>
+            <blockquote className={cn("leading-snug text-muted-foreground", !expanded && "line-clamp-4")}>{proposal.rationale}</blockquote>
             <figcaption className="flex items-center justify-between gap-2 text-[0.6875rem] text-subtle-foreground">
               <span>{proposal.provenance === "live" ? "Model rationale" : "Mock rationale (rule-based)"}</span>
               {proposal.rationale.length > 110 ? (
-                <button type="button" className="rounded-sm underline-offset-2 hover:text-foreground hover:underline" onClick={() => setExpanded(v => !v)}>
+                <button type="button" className="underline-offset-2 hover:text-foreground hover:underline" onClick={() => setExpanded(v => !v)}>
                   {expanded ? "Less" : "More"}
                 </button>
               ) : null}

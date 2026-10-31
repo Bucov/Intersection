@@ -1,24 +1,36 @@
 import { Check } from "lucide-react";
 import { ProvenanceBadge } from "@/components/common/ProvenanceBadge";
+import { Square } from "@/components/common/Square";
 import { choiceName, formatLatency, formatPercent, humanize, phaseName } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { DecisionCycle } from "@/state/session";
 import { choicePhase, jevState } from "./jevState";
 
-const TONE = { neutral: "border-border text-muted-foreground", positive: "border-positive/40 text-positive", warning: "border-warning/40 text-warning", negative: "border-destructive/50 text-destructive" } as const;
+const TONE = { neutral: "text-muted-foreground", positive: "text-positive", warning: "text-warning", negative: "text-destructive" } as const;
+const UNITS = 20;
+
+/** A probability as twenty squares, five percent each; `tone` colours the filled ones. */
+function UnitBar({ value, tone, marks = [] }: { value: number; tone: string; marks?: number[] }) {
+  const filled = Math.round(Math.min(1, Math.max(0, value)) * UNITS);
+  return (
+    <span className="relative flex gap-[3px]" aria-hidden="true">
+      {Array.from({ length: UNITS }, (_, i) => (
+        <span key={i} className={cn("size-[9px] shrink-0", i < filled ? tone : "bg-(--cell)")} />
+      ))}
+      {marks.map(mark => (
+        <span key={mark} className="absolute -inset-y-1 w-px bg-foreground/60" style={{ left: `calc(${mark * UNITS} * 12px - 2px)` }} />
+      ))}
+    </span>
+  );
+}
 
 function ConfidenceMeter({ confidence, high, medium }: { confidence: number; high: number; medium: number }) {
   return (
-    <div className="flex flex-col gap-1">
-      <div className="relative h-2 rounded-full bg-muted" role="meter" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(confidence * 100)} aria-label="JEV confidence">
-        <div className={cn("absolute inset-y-0 left-0 rounded-full", confidence >= high ? "bg-positive" : confidence >= medium ? "bg-warning" : "bg-destructive")} style={{ width: `${confidence * 100}%` }} />
-        {[medium, high].map(mark => (
-          <span key={mark} className="absolute -inset-y-1 w-px bg-foreground/50" style={{ left: `${mark * 100}%` }} aria-hidden="true" />
-        ))}
-      </div>
-      <div className="relative h-3.5 font-mono text-[0.625rem] text-subtle-foreground" aria-hidden="true">
-        <span className="absolute -translate-x-1/2" style={{ left: `${medium * 100}%` }}>{formatPercent(medium)}</span>
-        <span className="absolute -translate-x-1/2" style={{ left: `${high * 100}%` }}>{formatPercent(high)}</span>
+    <div className="flex flex-col gap-1" role="meter" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(confidence * 100)} aria-label="JEV confidence">
+      <UnitBar value={confidence} tone={confidence >= high ? "bg-positive" : confidence >= medium ? "bg-warning" : "bg-destructive"} marks={[medium, high]} />
+      <div className="relative h-3.5 w-[237px] font-mono text-[0.625rem] text-subtle-foreground" aria-hidden="true">
+        <span className="absolute -translate-x-1/2" style={{ left: `calc(${medium * UNITS} * 12px - 2px)` }}>{formatPercent(medium)}</span>
+        <span className="absolute -translate-x-1/2" style={{ left: `calc(${high * UNITS} * 12px - 2px)` }}>{formatPercent(high)}</span>
       </div>
     </div>
   );
@@ -36,11 +48,11 @@ export function JevPanel({ cycle, jevModel }: { cycle: DecisionCycle | null; jev
   const provenance = raw ? (raw.source === "mock" ? "mock" : "live") : result?.provenance ?? a?.provenance ?? null;
 
   return (
-    <section aria-labelledby="jev-title" className="flex flex-col gap-3.5 rounded-lg border bg-card p-3.5" data-testid="jev-panel">
+    <section aria-labelledby="jev-title" className="flex flex-col gap-3.5 border-t pt-3.5" data-testid="jev-panel">
       <header className="flex items-start justify-between gap-2">
         <div>
           <h3 id="jev-title" className="flex items-center gap-1.5 text-[0.9375rem] font-semibold">
-            <span className="size-2 rounded-full bg-jev" aria-hidden="true" />
+            <Square className="size-2 text-jev" />
             JEV arbitration
           </h3>
           <p className="text-xs text-subtle-foreground">Chooses a safe action when agents disagree or fail</p>
@@ -50,7 +62,10 @@ export function JevPanel({ cycle, jevModel }: { cycle: DecisionCycle | null; jev
         </div>
       </header>
 
-      <p className={cn("w-fit rounded-full border px-2.5 py-0.5 text-xs font-medium", TONE[state.tone])} role="status" data-testid="jev-state">{state.label}</p>
+      <p className={cn("flex w-fit items-center gap-1.5 text-xs font-medium", TONE[state.tone])} role="status" data-testid="jev-state">
+        <Square className="size-[7px]" />
+        {state.label}
+      </p>
 
       {arbitration?.recoveryReason ? <p className="text-sm">An agent could not provide a plan ({humanize(arbitration.recoveryReason)}). JEV is reviewing the current traffic.</p> : arbitration && a && b ? (
         <p className="text-[0.8125rem] leading-snug text-muted-foreground">
@@ -80,8 +95,8 @@ export function JevPanel({ cycle, jevModel }: { cycle: DecisionCycle | null; jev
                     {phase ? <span className="text-subtle-foreground">⋅ {phaseName(phase)}</span> : null}
                   </span>
                   <span className="font-mono tabular text-xs">{formatPercent(p.probability)}</span>
-                  <span className="col-span-2 h-1.5 overflow-hidden rounded-full bg-muted">
-                    <span className={cn("block h-full rounded-full", chosen ? "bg-jev" : "bg-subtle-foreground/60")} style={{ width: `${p.probability * 100}%` }} />
+                  <span className="col-span-2">
+                    <UnitBar value={p.probability} tone={chosen ? "bg-jev" : "bg-subtle-foreground/70"} />
                   </span>
                 </li>
               );

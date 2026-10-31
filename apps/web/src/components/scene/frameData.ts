@@ -16,6 +16,8 @@ export interface FrameData {
   mode: ControllerMode | null;
   /** Container element that receives test/debug attributes. */
   debugElement: HTMLElement | null;
+  /** The intro's opening car; simulated vehicles in its way are not drawn while it is on the road. */
+  hero: { active: boolean; x: number; z: number };
 }
 
 export function createFrameData(): FrameData {
@@ -25,6 +27,7 @@ export function createFrameData(): FrameData {
     fade: 1,
     mode: null,
     debugElement: null,
+    hero: { active: false, x: 0, z: 0 },
   };
 }
 

@@ -2,8 +2,9 @@ import { createContext, useContext, type ReactNode } from "react";
 import { PreviewFeed } from "@/components/scene/previewFeed";
 import { SnapshotInterpolator } from "@/components/scene/interpolation";
 import { DataSourceManager } from "@/state/dataSource";
-import { createIntroStore, type IntroState } from "@/state/intro";
+import { createIntroCarProbe, createIntroStore, type IntroCarProbe, type IntroState } from "@/state/intro";
 import { createPreferencesStore, type Preferences } from "@/state/preferences";
+import { createReplayStore, SessionHistory, type ReplayState } from "@/state/replay";
 import { createSceneStore, type SceneState } from "@/state/scene";
 import { SessionController } from "@/state/SessionController";
 import type { Store } from "@/state/store";
@@ -14,9 +15,15 @@ export interface AppServices {
   session: SessionController;
   /** Interpolated view of the active session for the 3D scene. */
   sessionFeed: SnapshotInterpolator;
+  /** Recorded snapshots of the current session, for rewinding while paused. */
+  history: SessionHistory;
+  /** The moment being replayed, or null for live. */
+  replay: Store<ReplayState>;
   preview: PreviewFeed;
   scene: Store<SceneState>;
   intro: Store<IntroState>;
+  /** Where the intro's opening car is on screen (written by the scene, read by the overlay). */
+  introCar: IntroCarProbe;
 }
 
 export function createAppServices(): AppServices {
@@ -24,15 +31,27 @@ export function createAppServices(): AppServices {
   const dataSource = new DataSourceManager(preferences.getState().dataSource, { baseUrl: import.meta.env.VITE_BACKEND_URL ?? "" });
   const session = new SessionController();
   const sessionFeed = new SnapshotInterpolator();
+  const history = new SessionHistory();
+  const replay = createReplayStore();
 
   // The scene reads snapshots from the store, never from React renders.
   let lastSnapshot: unknown = null;
+  let lastKey: string | null = null;
   session.store.subscribe(() => {
     const state = session.store.getState();
+    // Replay only exists while the session stands still; running, a reset or a new session returns to live.
+    const key = state.snapshot ? `${state.snapshot.sessionId}:${state.snapshot.generation}` : null;
+    if (replay.getState().time !== null && (state.status === "running" || key !== lastKey)) replay.setState({ time: null });
+    lastKey = key;
     if (state.snapshot === lastSnapshot) return;
     lastSnapshot = state.snapshot;
-    if (state.snapshot) sessionFeed.push(state.snapshot, state.snapshotReceivedAt);
-    else sessionFeed.clear();
+    if (state.snapshot) {
+      sessionFeed.push(state.snapshot, state.snapshotReceivedAt);
+      history.push(state.snapshot);
+    } else {
+      sessionFeed.clear();
+      history.clear();
+    }
   });
   session.meta.subscribe(() => {
     const connection = session.meta.getState().connection;
@@ -53,9 +72,12 @@ export function createAppServices(): AppServices {
     dataSource,
     session,
     sessionFeed,
+    history,
+    replay,
     preview: new PreviewFeed(),
     scene: createSceneStore(),
     intro: createIntroStore(),
+    introCar: createIntroCarProbe(),
   };
 }
 
@@ -64,6 +86,8 @@ let singleton: AppServices | null = null;
 /** Services live for the page; StrictMode double-mounts must not tear them down. */
 function appServices(): AppServices {
   singleton ??= createAppServices();
+  // Development only: lets visual checks inspect the stores from the console.
+  if (import.meta.env.DEV) (window as unknown as { __intersection?: AppServices }).__intersection = singleton;
   return singleton;
 }
 

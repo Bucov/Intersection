@@ -4,9 +4,11 @@ import type { DirectionalLight, HemisphereLight, SpotLight } from "three";
 import { PerformanceMonitor } from "@react-three/drei";
 import { useReducedMotion } from "motion/react";
 import { useServices } from "@/app/services";
+import { worldVisibility } from "@/state/intro";
 import { useStore } from "@/state/store";
 import { CameraRig } from "./CameraRig";
 import { Diorama } from "./Diorama";
+import { IntroCar } from "./IntroCar";
 import { useFrameData } from "./frameData";
 import { readSceneTheme, type SceneTheme } from "./sceneTheme";
 import { TrafficSignals } from "./TrafficSignals";
@@ -45,9 +47,12 @@ function FeedSampler() {
       s.fade = reduced ? 1 : Math.min(1, s.fade + delta / 0.55);
       if (s.fade === 1) s.stage = "steady";
     }
-    const feed = s.active === "session" ? services.sessionFeed : services.preview;
-    frame.sample = feed.sample(performance.now(), frame.vehicles);
-    frame.fade = s.fade;
+    const now = performance.now();
+    const replaying = services.replay.getState().time;
+    if (s.active === "session" && replaying !== null) frame.sample = services.history.sample(replaying, frame.vehicles);
+    else frame.sample = (s.active === "session" ? services.sessionFeed : services.preview).sample(now, frame.vehicles);
+    // During the intro only the opening car is on the road; the fleet arrives as the mask opens.
+    frame.fade = s.fade * worldVisibility(services.intro.getState(), now);
     frame.mode = s.active === "session" ? mode : null;
   }, -1);
 
@@ -56,7 +61,8 @@ function FeedSampler() {
 
 const LAMP = {
   // Home: a tight pool of lamplight on the model, falling off into the dark room.
-  preview: { angle: 0.4, penumbra: 0.78, intensity: 3.6, hemisphere: 0.1, fill: 0.08 },
+  // The room is warm charcoal, so the falloff stops at the room's tone instead of going black.
+  preview: { angle: 0.4, penumbra: 0.78, intensity: 3.4, hemisphere: 0.32, fill: 0.1 },
   // Simulation: the lamp opens up so the queues on every approach stay readable.
   simulation: { angle: 0.62, penumbra: 0.6, intensity: 3.0, hemisphere: 0.3, fill: 0.22 },
 } as const;
@@ -85,7 +91,7 @@ function Lamp({ theme, shadows }: { theme: SceneTheme; shadows: boolean }) {
 
   return (
     <>
-      <hemisphereLight ref={hemisphere} args={["#aab4c4", "#121417", LAMP.preview.hemisphere]} />
+      <hemisphereLight ref={hemisphere} args={["#c4beb4", "#1a1816", LAMP.preview.hemisphere]} />
       <spotLight
         ref={spot}
         position={[40, 180, 56]}
@@ -101,9 +107,21 @@ function Lamp({ theme, shadows }: { theme: SceneTheme; shadows: boolean }) {
         shadow-camera-near={80}
         shadow-camera-far={420}
       />
-      <directionalLight ref={fill} position={[-90, 70, -50]} intensity={LAMP.preview.fill} color="#9fb3d1" />
+      <directionalLight ref={fill} position={[-90, 70, -50]} intensity={LAMP.preview.fill} color="#cfc6b8" />
     </>
   );
+}
+
+/** Tells the rest of the app that the scene has drawn, so the intro can hand over to it. */
+function ReadySignal() {
+  const { scene } = useServices();
+  const sent = useRef(false);
+  useFrame(() => {
+    if (sent.current) return;
+    sent.current = true;
+    scene.setState(s => (s.ready ? s : { ...s, ready: true }));
+  });
+  return null;
 }
 
 export function IntersectionScene({ quality, onDecline }: { quality: "high" | "low"; onDecline: () => void }) {
@@ -122,7 +140,9 @@ export function IntersectionScene({ quality, onDecline }: { quality: "high" | "l
       <Diorama theme={theme} />
       <TrafficSignals theme={theme} />
       <Vehicles shadows={shadows} />
+      <IntroCar theme={theme} shadows={shadows} />
       <CameraRig />
+      <ReadySignal />
       <PerformanceMonitor onDecline={onDecline} flipflops={2} />
     </>
   );

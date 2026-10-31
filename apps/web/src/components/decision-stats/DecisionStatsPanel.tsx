@@ -8,6 +8,21 @@ const mean = (sum: number, count: number) => count ? `${Math.round(sum / count)}
 function Definition({ children, text }: { children: React.ReactNode; text: string }) {
   return <Tooltip><TooltipTrigger className="cursor-help underline decoration-dotted underline-offset-4">{children}</TooltipTrigger><TooltipContent className="max-w-72">{text}</TooltipContent></Tooltip>;
 }
+/** Every accepted decision as one square, coloured by where it came from (one square per several when there are many). */
+function SourceSquares({ counts }: { counts: { label: string; color: string; count: number }[] }) {
+  const total = counts.reduce((sum, c) => sum + c.count, 0);
+  const per = Math.max(1, Math.ceil(total / 160));
+  const squares = counts.flatMap(c => Array.from({ length: Math.round(c.count / per) }, () => c.color));
+  return (
+    <div className="flex flex-col gap-1.5">
+      <div className="flex flex-wrap gap-[3px]" role="img" aria-label={counts.map(c => `${c.label}: ${c.count}`).join(', ')}>
+        {squares.length ? squares.map((color, i) => <span key={i} className={`size-[9px] ${color}`} />) : <span className="size-[9px] bg-(--cell)" />}
+      </div>
+      {per > 1 ? <p className="text-xs text-subtle-foreground">One square is {per} decisions.</p> : null}
+    </div>
+  );
+}
+
 export function DecisionStatsPanel() {
   const { session } = useServices();
   const snapshot = useStore(session.store, s => s.snapshot);
@@ -24,10 +39,8 @@ export function DecisionStatsPanel() {
       <p className="text-muted-foreground">Session totals · reset with the simulation. <ProvenanceBadge provenance={snapshot.config.demoMode} /> agents · <ProvenanceBadge provenance={snapshot.providers[1].mode} /> JEV</p>
       {!ai ? <p>Fixed controller: {stats.fixedGreenStarts} green starts. AI statistics are not applicable.</p> : <>
         <p><strong className="text-xl tabular-nums">{total}</strong> accepted decisions from the three sources</p>
-        <div className="flex h-3 overflow-hidden rounded-sm bg-muted" role="img" aria-label={sources.map(([key, label]) => `${label}: ${stats.accepted[key]}`).join(', ')}>
-          {sources.map(([key, , color]) => <span key={key} className={color} style={{ width: `${total ? stats.accepted[key] / total * 100 : 0}%` }} />)}
-        </div>
-        <dl className="space-y-2">{sources.map(([key, label]) => <div key={key} className="flex justify-between gap-3"><dt>{label}</dt><dd className="tabular-nums">{stats.accepted[key]} · {total ? `${(100 * stats.accepted[key] / total).toFixed(1)}%` : '—'}</dd></div>)}</dl>
+        <SourceSquares counts={sources.map(([key, label, color]) => ({ label, color, count: stats.accepted[key] }))} />
+        <dl className="space-y-2">{sources.map(([key, label, color]) => <div key={key} className="flex justify-between gap-3"><dt className="flex items-center gap-2"><span className={`size-[9px] ${color}`} aria-hidden="true" />{label}</dt><dd className="tabular-nums">{stats.accepted[key]} · {total ? `${(100 * stats.accepted[key] / total).toFixed(1)}%` : '—'}</dd></div>)}</dl>
         <p className="text-xs text-muted-foreground">JEV accepted: {stats.jevAcceptedBands.high} high confidence; {stats.jevAcceptedBands.medium} medium confidence. Single-agent requests accepted separately: {stats.singleAgentAccepted}. All accepted requests: {total + stats.singleAgentAccepted}.</p>
         <p className="text-xs text-muted-foreground">Automatic green starts without a command: {stats.automaticGreenStarts}. These are not fallback commands.</p>
       </>}

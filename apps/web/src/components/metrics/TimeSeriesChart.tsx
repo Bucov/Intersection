@@ -29,7 +29,7 @@ function ticksFor(min: number, max: number): number[] {
 }
 
 function LineKey({ color }: { color: string }) {
-  return <span className="inline-block h-0.5 w-3 shrink-0 rounded-full" style={{ background: color }} aria-hidden="true" />;
+  return <span className="inline-block size-2 shrink-0" style={{ background: color }} aria-hidden="true" />;
 }
 
 /**

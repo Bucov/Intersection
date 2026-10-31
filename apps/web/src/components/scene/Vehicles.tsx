@@ -78,6 +78,7 @@ export function Vehicles({ shadows }: { shadows: boolean }) {
 
     for (let i = 0; i < frame.sample.count; i++) {
       const v = frame.vehicles[i];
+      if (frame.hero.active && Math.abs(v.x - frame.hero.x) < 3 && Math.abs(v.z - frame.hero.z) < 9) continue;
       const index = s.counts[v.type];
       if (index >= CAPACITY[v.type]) continue;
       s.counts[v.type] = index + 1;

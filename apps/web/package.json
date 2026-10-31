@@ -14,8 +14,7 @@
   },
   "dependencies": {
     "@base-ui/react": "^1.9.0",
-    "@fontsource-variable/overpass": "^5.3.0",
-    "@fontsource-variable/overpass-mono": "^5.3.0",
+    "@fontsource-variable/onest": "^5.3.1",
     "@intersection/shared": "*",
     "@react-three/drei": "^10.7.9",
     "@react-three/fiber": "^9.8.2",

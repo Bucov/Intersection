@@ -98,8 +98,9 @@ export interface SessionState {
   lastError: ErrorDetail | null;
 }
 
-const MAX_CYCLES = 40;
-const MAX_TIMELINE = 400;
+// Enough rounds to explain any moment the visitor can rewind to.
+const MAX_CYCLES = 240;
+const MAX_TIMELINE = 1200;
 const MAX_PHASES = 240;
 const MAX_SERIES = 1800;
 const MAX_TRANSCRIPT = 600;
