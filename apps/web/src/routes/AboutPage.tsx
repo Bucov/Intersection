@@ -31,8 +31,9 @@ export function AboutPage() {
             </a>
           </li>
           <li>
-            {/* Replace this name with a portfolio link when Marko's URL is ready. */}
-            <p className="flex min-h-11 items-center gap-3 text-lg font-medium tracking-tight">Marko Borocki <MemberSquare index={1} /></p>
+            <a href="https://marexmb.github.io/Portfolio/index.html" target="_blank" rel="noopener noreferrer" className={CONTACT_CLASS}>
+              Marko Borocki <MemberSquare index={1} />
+            </a>
           </li>
           <li><EmailContact name="Damjan Cirovic" email="damjancirovic55@gmail.com" index={2} /></li>
           <li><EmailContact name="Nikola Boric" email="nikolaboric42@gmail.com" index={3} /></li>

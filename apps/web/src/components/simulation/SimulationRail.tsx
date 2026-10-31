@@ -5,7 +5,7 @@ import { X } from "lucide-react";
 import { StatsBoard } from "@/components/decision-stats/StatsBoard";
 import { SquareLoader } from "@/components/common/SquareLoader";
 import { SquareWipe } from "@/components/common/SquareWipe";
-import { useSquareWipe } from "@/hooks/useSquareWipe";
+import { WAVE_WIPE, useSquareWipe } from "@/hooks/useSquareWipe";
 import { useViewport } from "@/hooks/useViewport";
 import { cn } from "@/lib/utils";
 import type { ControllerMode, ScenarioDefinition, ScenarioId } from "@intersection/shared";
@@ -104,12 +104,12 @@ export function SimulationRail({ mode, scenarioId, seed, scenarios }: RailProps)
   const { rest, open: openWidth } = widths(viewport.width);
   const scenarioName = scenarios.find(s => s.id === scenarioId)?.name ?? scenarioId;
 
-  const wipe = useSquareWipe();
+  const wipe = useSquareWipe(WAVE_WIPE);
   const select = (value: string) => {
     if (value === active) return;
     // Statistics are for reading the run: hold it still while they are open.
     if (value === "stats" && session.store.getState().status === "running") void session.control("pause");
-    // The panel's content changes under a sweep of squares.
+    // The panel's content changes under a wave of squares.
     wipe.run(() => setTab(value));
   };
 
@@ -169,7 +169,8 @@ export function SimulationRail({ mode, scenarioId, seed, scenarios }: RailProps)
           </Suspense>
         </TabsContent>
       </Tabs>
-      <SquareWipe stage={wipe.stage} cell={34} className="top-11" />
+      {/* The wave crosses the panel at the width of the tab on screen: Statistics opens wider. */}
+      <SquareWipe stage={wipe.stage} pattern="wave" timing={WAVE_WIPE} cell={34} span={wide ? (open ? openWidth : rest) : viewport.width} className="top-11" />
     </motion.div>
   );
 }

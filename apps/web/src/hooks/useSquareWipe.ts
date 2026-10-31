@@ -2,8 +2,15 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useReducedMotion } from "motion/react";
 
 /** How long the squares take to cover, and to clear again. */
-export const COVER_MS = 330;
-export const REVEAL_MS = 380;
+export interface WipeTiming {
+  cover: number;
+  reveal: number;
+}
+
+/** Page changes: a quick scattered cover. */
+export const PAGE_WIPE: WipeTiming = { cover: 330, reveal: 380 };
+/** Panel tabs: a little longer, so the wave can be seen travelling. */
+export const WAVE_WIPE: WipeTiming = { cover: 420, reveal: 480 };
 
 export type WipeStage = "idle" | "cover" | "reveal";
 
@@ -13,11 +20,12 @@ export interface SquareWipeController {
   run: (swap: () => void) => void;
 }
 
-export function useSquareWipe(): SquareWipeController {
+export function useSquareWipe(timing: WipeTiming = PAGE_WIPE): SquareWipeController {
   const reduced = useReducedMotion() ?? false;
   const [stage, setStage] = useState<WipeStage>("idle");
   const timers = useRef<number[]>([]);
   useEffect(() => () => timers.current.forEach(t => window.clearTimeout(t)), []);
+  const { cover, reveal } = timing;
   const run = useCallback((swap: () => void) => {
     timers.current.forEach(t => window.clearTimeout(t));
     if (reduced) {
@@ -29,9 +37,9 @@ export function useSquareWipe(): SquareWipeController {
       window.setTimeout(() => {
         swap();
         setStage("reveal");
-      }, COVER_MS),
-      window.setTimeout(() => setStage("idle"), COVER_MS + REVEAL_MS),
+      }, cover),
+      window.setTimeout(() => setStage("idle"), cover + reveal),
     ];
-  }, [reduced]);
+  }, [reduced, cover, reveal]);
   return { stage, run };
 }
