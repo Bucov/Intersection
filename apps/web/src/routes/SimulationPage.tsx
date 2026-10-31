@@ -92,7 +92,7 @@ export function SimulationPage() {
       <motion.aside
         {...enter("x", 40, 0.05)}
         aria-label={mode === "ai" ? "AI coordination" : "Fixed-time controller"}
-        className="pointer-events-auto flex min-h-[32rem] flex-col border-t bg-panel lg:min-h-0 lg:w-(--rail-width) lg:shrink-0 lg:border-l lg:border-t-0"
+        className="pointer-events-auto relative flex min-h-[32rem] flex-col border-t lg:z-20 lg:min-h-0 lg:w-(--rail-width) lg:shrink-0 lg:border-t-0"
       >
         <SimulationRail mode={mode} scenarioId={scenario.id} seed={seed} scenarios={scenarios} />
       </motion.aside>
