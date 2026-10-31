@@ -8,6 +8,8 @@ The traditional controller repeats a fixed schedule. The AI controller uses two 
 
 **You can try the project without API keys or an AI account.** The default setup uses simulated AI responses. Connecting real Gemini, Claude and JEV models is optional.
 
+But we highly recommend you connect real models
+
 ## Run it on your computer
 
 These instructions work from a fresh download or clone. You do not need a code editor or programming experience. You will copy commands into a terminal—a window where you type instructions for your computer.
