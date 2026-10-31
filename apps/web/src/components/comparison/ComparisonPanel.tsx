@@ -1,6 +1,8 @@
 import { LiveComparison } from "./LiveComparison";
+import { ComparisonTheater } from "./ComparisonTheater";
 import { useEffect, useRef, useState } from "react";
-import { LoaderCircle, Play } from "lucide-react";
+import { Play } from "lucide-react";
+import { SquareLoader } from "@/components/common/SquareLoader";
 import type { ComparisonResponse, MetricsSample, ScenarioDefinition, ScenarioId, TrafficMetrics } from "@intersection/shared";
 import { useServices } from "@/app/services";
 import { ProvenanceBadge } from "@/components/common/ProvenanceBadge";
@@ -54,7 +56,8 @@ const queueTotal = (m: TrafficMetrics) => m.waitingVehicleCount;
  * sessions, same scenario, seed, demand schedule and duration. Results are
  * whatever the runs produce; no winner is assumed.
  */
-export function ComparisonPanel({ scenarioId, seed, scenarios }: { scenarioId: ScenarioId; seed: number; scenarios: readonly ScenarioDefinition[] }) {
+/** `page` (the Compare page) shows both runs as 3D intersections; `rail` (the simulation's side panel) keeps the compact 2D view. */
+export function ComparisonPanel({ scenarioId, seed, scenarios, variant = "rail" }: { scenarioId: ScenarioId; seed: number; scenarios: readonly ScenarioDefinition[]; variant?: "rail" | "page" }) {
   const services = useServices();
   const source = useStore(services.dataSource.store, s => s);
   const [comparisonSeed, setComparisonSeed] = useState(seed);
@@ -146,7 +149,7 @@ export function ComparisonPanel({ scenarioId, seed, scenarios }: { scenarioId: S
             ))}
           </ToggleGroup>
           <Button size="sm" className="h-8" onClick={() => void run()} disabled={running || source.blocked}>
-            {running ? <LoaderCircle className="animate-spin motion-reduce:animate-none" /> : <Play />}
+            {running ? <SquareLoader label="Running" className="text-primary-foreground" /> : <Play />}
             {running ? "Running…" : phase.kind === "done" ? "Run again" : "Run comparison"}
           </Button>
         </div>
@@ -171,7 +174,10 @@ export function ComparisonPanel({ scenarioId, seed, scenarios }: { scenarioId: S
         {phase.kind === "error" ? <p className="text-sm text-destructive" role="alert">{phase.message}</p> : null}
       </section>
 
-      {phase.kind === "running" && phase.comparison && source.kind === "backend" ? <LiveComparison comparison={phase.comparison} /> : null}
+      {variant === "page" && (phase.kind === "running" || phase.kind === "done") && phase.comparison ? (
+        <ComparisonTheater key={phase.comparison.comparisonId} comparison={phase.comparison} />
+      ) : null}
+      {variant === "rail" && phase.kind === "running" && phase.comparison && source.kind === "backend" ? <LiveComparison comparison={phase.comparison} /> : null}
       {phase.kind === "done" ? (
         <>
           <section aria-labelledby="comparison-results" className="flex flex-col gap-2">
@@ -227,7 +233,7 @@ export function ComparisonPanel({ scenarioId, seed, scenarios }: { scenarioId: S
           </section>
         </>
       ) : phase.kind === "idle" ? (
-        <p className="rounded-md border border-dashed p-3 text-[0.8125rem] leading-snug text-muted-foreground">No comparison yet. Run one to see both controllers side by side. Live progress appears while both runs are in progress.</p>
+        <p className="border border-dashed p-3 text-[0.8125rem] leading-snug text-muted-foreground">No comparison yet. Run one to see both controllers side by side{variant === "page" ? " as two live intersections" : ""}.</p>
       ) : null}
     </div>
   );

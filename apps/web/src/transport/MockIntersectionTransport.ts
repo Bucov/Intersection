@@ -25,12 +25,14 @@ import {
   TransportError,
   type Catalog,
   type CommandResult,
+  type ComparisonRecording,
   type ConnectionStatus,
   type IntersectionTransport,
   type SimulationCommand,
 } from "./IntersectionTransport";
 import { MockCommandError, MockSimulation, STEP_MS } from "./mock/engine";
 import { MockDriver } from "./mock/driver";
+import { SessionHistory } from "@/state/replay";
 
 export const MOCK_RUNTIME_CONFIG: RuntimeConfigResponse = {
   protocolVersion: 1,
@@ -52,6 +54,7 @@ interface MockComparison {
   response: ComparisonResponse;
   traditional: MockSimulation;
   ai: MockSimulation;
+  recording: ComparisonRecording;
 }
 
 let sessionCounter = 0;
@@ -263,10 +266,13 @@ export class MockIntersectionTransport implements IntersectionTransport {
         "One seed and one scenario. Results change with the seed and are not a benchmark.",
       ],
     };
-    const entry: MockComparison = { response, traditional, ai };
+    const recording: ComparisonRecording = { traditional: new SessionHistory(), ai: new SessionHistory() };
+    const entry: MockComparison = { response, traditional, ai, recording };
     this.comparisons.set(comparisonId, entry);
     traditional.control("start", 0);
     ai.control("start", 0);
+    recording.traditional.push(traditional.snapshot());
+    recording.ai.push(ai.snapshot());
     this.runComparison(entry);
     return structuredClone(response);
   }
@@ -275,6 +281,10 @@ export class MockIntersectionTransport implements IntersectionTransport {
     const entry = this.comparisons.get(comparisonId);
     if (!entry) throw new TransportError("NOT_FOUND", "Unknown comparison.", { status: 404 });
     return structuredClone(entry.response);
+  }
+
+  getComparisonRecording(comparisonId: string): ComparisonRecording | null {
+    return this.comparisons.get(comparisonId)?.recording ?? null;
   }
 
   dispose(): void {
@@ -295,8 +305,13 @@ export class MockIntersectionTransport implements IntersectionTransport {
       const started = performance.now();
       let done = false;
       do {
-        traditional.advance(50);
-        ai.advance(50);
+        // Two steps at a time, each recorded, so the comparison can be watched back in 3D.
+        for (let i = 0; i < 25; i++) {
+          traditional.advance(2);
+          ai.advance(2);
+          entry.recording.traditional.push(traditional.snapshot());
+          entry.recording.ai.push(ai.snapshot());
+        }
         traditional.drain();
         ai.drain();
         done = traditional.status === "completed" && ai.status === "completed";

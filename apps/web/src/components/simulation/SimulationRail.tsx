@@ -3,6 +3,9 @@ import { Suspense, lazy, useState } from "react";
 import { motion, useReducedMotion } from "motion/react";
 import { X } from "lucide-react";
 import { StatsBoard } from "@/components/decision-stats/StatsBoard";
+import { SquareLoader } from "@/components/common/SquareLoader";
+import { SquareWipe } from "@/components/common/SquareWipe";
+import { useSquareWipe } from "@/hooks/useSquareWipe";
 import { useViewport } from "@/hooks/useViewport";
 import { cn } from "@/lib/utils";
 import type { ControllerMode, ScenarioDefinition, ScenarioId } from "@intersection/shared";
@@ -22,7 +25,7 @@ const MetricsPanel = lazy(() => import("@/components/metrics/MetricsPanel").then
 const ComparisonPanel = lazy(() => import("@/components/comparison/ComparisonPanel").then(m => ({ default: m.ComparisonPanel })));
 
 function TabLoading() {
-  return <p className="text-sm text-subtle-foreground">Loading…</p>;
+  return <SquareLoader />;
 }
 
 function findProposal(cycles: DecisionCycle[], agentId: "agent-a" | "agent-b") {
@@ -101,15 +104,18 @@ export function SimulationRail({ mode, scenarioId, seed, scenarios }: RailProps)
   const { rest, open: openWidth } = widths(viewport.width);
   const scenarioName = scenarios.find(s => s.id === scenarioId)?.name ?? scenarioId;
 
+  const wipe = useSquareWipe();
   const select = (value: string) => {
-    setTab(value);
+    if (value === active) return;
     // Statistics are for reading the run: hold it still while they are open.
     if (value === "stats" && session.store.getState().status === "running") void session.control("pause");
+    // The panel's content changes under a sweep of squares.
+    wipe.run(() => setTab(value));
   };
 
   return (
     <motion.div
-      className={cn("flex h-full min-h-0 flex-col transition-colors duration-500 lg:absolute lg:inset-y-0 lg:right-0 lg:z-30 lg:border-l", open ? "bg-background" : "bg-panel")}
+      className={cn("relative flex h-full min-h-0 flex-col overflow-hidden transition-colors duration-500 lg:absolute lg:inset-y-0 lg:right-0 lg:z-30 lg:border-l", open ? "bg-background" : "bg-panel")}
       initial={false}
       animate={wide ? { width: open ? openWidth : rest } : { width: "100%" }}
       transition={{ duration: reduced ? 0 : 0.7, ease: [0.16, 1, 0.3, 1] }}
@@ -125,7 +131,7 @@ export function SimulationRail({ mode, scenarioId, seed, scenarios }: RailProps)
             <TabsTrigger value="compare" className="flex-none px-2">Compare</TabsTrigger>
           </TabsList>
           {open ? (
-            <button type="button" onClick={() => setTab(primary)} className="mr-2 inline-flex h-8 shrink-0 items-center gap-1.5 px-2 text-sm text-muted-foreground hover:text-foreground" aria-label="Close statistics">
+            <button type="button" onClick={() => select(primary)} className="mr-2 inline-flex h-8 shrink-0 items-center gap-1.5 px-2 text-sm text-muted-foreground hover:text-foreground" aria-label="Close statistics">
               <X className="size-4" aria-hidden="true" />
               <span className="max-sm:hidden">Close</span>
             </button>
@@ -163,6 +169,7 @@ export function SimulationRail({ mode, scenarioId, seed, scenarios }: RailProps)
           </Suspense>
         </TabsContent>
       </Tabs>
+      <SquareWipe stage={wipe.stage} cell={34} className="top-11" />
     </motion.div>
   );
 }

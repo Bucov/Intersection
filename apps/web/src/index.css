@@ -245,6 +245,16 @@
     to { opacity: 1; transform: none; }
 }
 
+/* The transition wipe: squares land, then clear. */
+@keyframes wipe-in {
+    from { transform: scale(0); }
+    to { transform: scale(1.02); }
+}
+@keyframes wipe-out {
+    from { transform: scale(1.02); }
+    to { transform: scale(0); }
+}
+
 @keyframes square-blink {
     0%, 100% { opacity: 1; }
     50% { opacity: 0.25; }

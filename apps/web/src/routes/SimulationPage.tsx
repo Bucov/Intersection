@@ -37,6 +37,7 @@ export function SimulationPage() {
   const stage = useSceneStage("simulation");
   const intro = useStore(services.intro, s => s.phase);
   const revealed = intro === "handoff" || intro === "done";
+  const [arriving] = useState(intro !== "done");
   // Coming from Home, the camera starts moving first; panels follow it in.
   const delay = intro === "handoff" ? 0.7 : 0.35;
 
@@ -48,11 +49,11 @@ export function SimulationPage() {
 
   if (!mode) return null;
 
-  const enter = (axis: "x" | "y", distance: number, extra = 0): { initial: TargetAndTransition; animate: TargetAndTransition; exit: TargetAndTransition } => {
+  const enter = (axis: "x" | "y", distance: number, extra = 0): { initial: TargetAndTransition | false; animate: TargetAndTransition; exit: TargetAndTransition } => {
     const away = reduced ? 0 : distance;
     const at = (value: number) => (axis === "x" ? { x: value } : { y: value });
     return {
-      initial: { opacity: 0, ...at(away) },
+      initial: arriving ? { opacity: 0, ...at(away) } : false,
       animate: revealed ? { opacity: 1, ...at(0), transition: { duration: 0.65, delay: delay + extra, ease: EASE_OUT } } : { opacity: 0, ...at(away) },
       exit: { opacity: 0, ...at(away), transition: { duration: 0.35, ease: EASE_IN } },
     };

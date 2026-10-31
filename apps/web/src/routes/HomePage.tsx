@@ -19,6 +19,8 @@ export function HomePage() {
   const source = useStore(services.dataSource.store, s => s);
   const [selected, setSelected] = useState<ControllerMode | null>(null);
   const revealed = phase === "handoff" || phase === "done";
+  // After the intro, pages arrive under the square wipe; only the intro's handoff animates them in.
+  const [arriving] = useState(phase !== "done");
   const delay = phase === "handoff" ? 0.55 : 0.05;
   const timing = source.catalog?.config.signalTiming ?? DEFAULT_SIGNAL_TIMING;
   const s = (ms: number) => `${Math.round(ms / 1000)} s`;
@@ -59,12 +61,12 @@ export function HomePage() {
   };
 
   const side = (from: -1 | 1) => ({
-    initial: { opacity: 0, x: reduced ? 0 : from * 28 },
+    initial: arriving ? { opacity: 0, x: reduced ? 0 : from * 28 } : false,
     animate: revealed ? { opacity: 1, x: 0, transition: { duration: 0.8, delay: delay + 0.12, ease: EASE_OUT } } : { opacity: 0, x: reduced ? 0 : from * 28 },
     exit: { opacity: 0, x: reduced ? 0 : from * 56, transition: { duration: 0.42, ease: EASE_IN } },
   });
   const fade = {
-    initial: { opacity: 0, y: reduced ? 0 : 6 },
+    initial: arriving ? { opacity: 0, y: reduced ? 0 : 6 } : false,
     animate: revealed ? { opacity: 1, y: 0, transition: { duration: 0.6, delay, ease: EASE_OUT } } : { opacity: 0, y: reduced ? 0 : 6 },
     exit: { opacity: 0, y: reduced ? 0 : -6, transition: { duration: 0.3, ease: EASE_IN } },
   };
@@ -76,7 +78,7 @@ export function HomePage() {
         aria-hidden="true"
         className="pointer-events-none fixed inset-0 -z-10 max-xl:hidden"
         style={{ background: "radial-gradient(ellipse 36% 48% at 50% 53%, transparent 30%, var(--background) 80%)" }}
-        initial={{ opacity: 0 }}
+        initial={arriving ? { opacity: 0 } : false}
         animate={{ opacity: revealed ? 1 : 0, transition: { duration: 1.1, delay: phase === "handoff" ? 0.35 : 0, ease: EASE_OUT } }}
         exit={{ opacity: 0, transition: { duration: 0.4, ease: EASE_IN } }}
       />

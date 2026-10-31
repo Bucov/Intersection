@@ -32,6 +32,8 @@ interface HistoryFrame {
   phase: SignalPhase;
   clearanceBlocked: boolean;
   vehicles: Map<string, Recorded>;
+  completed: number;
+  waiting: number;
 }
 
 /** Keep one frame per this much simulation time; the scene interpolates between them. */
@@ -57,6 +59,8 @@ export class SessionHistory {
       t,
       phase: snapshot.signal.phase,
       clearanceBlocked: snapshot.signal.clearanceBlockedByVehicles,
+      completed: snapshot.metrics.completedVehicleCount,
+      waiting: snapshot.metrics.waitingVehicleCount,
       vehicles: new Map(snapshot.vehicles.map(v => [v.id, {
         id: v.id,
         type: v.type,
@@ -132,17 +136,27 @@ export class SessionHistory {
 
   /** The recorded signal phase at `t` (for the HUD while replaying). */
   phaseAt(t: number): SignalPhase | null {
+    return this.frameAt(t)?.phase ?? null;
+  }
+
+  /** Trips completed and vehicles waiting at `t`. */
+  countsAt(t: number): { completed: number; waiting: number } | null {
+    const frame = this.frameAt(t);
+    return frame ? { completed: frame.completed, waiting: frame.waiting } : null;
+  }
+
+  private frameAt(t: number): HistoryFrame | null {
     const frames = this.frames;
     if (!frames.length) return null;
     let lo = 0;
     let hi = frames.length - 1;
-    if (t >= frames[hi].t) return frames[hi].phase;
-    if (t <= frames[0].t) return frames[0].phase;
+    if (t >= frames[hi].t) return frames[hi];
+    if (t <= frames[0].t) return frames[0];
     while (hi - lo > 1) {
       const mid = (lo + hi) >> 1;
       if (frames[mid].t <= t) lo = mid;
       else hi = mid;
     }
-    return frames[lo].phase;
+    return frames[lo];
   }
 }

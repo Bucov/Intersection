@@ -286,6 +286,15 @@ Probabilities and progress as rows of 9px squares: JEV's choice distribution and
 ### Opening sequence (signature)
 "intersection" at poster scale and "by MAGI" on the empty room. One car drives up the northbound lane through a soft hole in the room-coloured mask that follows it; the camera cranes up behind it. The car breaks through the byline (letters pushed aside, blurred, faded) while the title lifts into the header slot. As the car nears the far side of the junction the mask opens outward from it, the fleet fades in, the camera pulls back to the Home framing and the page appears. Any key or click skips. Reduced motion, no WebGL or a scene that is not ready within 2.5s fall back to the title travelling over a fading room.
 
+### Square wipe (transitions)
+Every change of page and every switch of the rail's tabs goes through squares: room-coloured cells (52px across the window for pages, 34px inside the rail) land in a scattered diagonal sweep, about one in eight carrying a small square in a meaning colour, cover the area (330ms), the content swaps underneath, and the cells clear in the same sweep (380ms). Pages no longer slide in on their own after the intro; the opening sequence is the only other entrance. Reduced motion swaps instantly.
+
+### Square loader
+Loading and "working" states are three 7px squares (cyan, straw, violet) blinking in turn, never a spinner.
+
+### Comparison theater (Compare page)
+Both runs of a comparison as two 3D intersections side by side (16:9 each, Fixed-time left with the `chart-fixed` square, AI right with `chart-ai`), on one playback clock with Play/Pause, 1× to 8× and a strip of squares (each run's North/South light, Fixed-time above, AI below) to scrub. Each view shows its phase, trips completed and one small square per waiting vehicle. The simulation's side panel keeps the compact 2D view.
+
 ### Motion
 Entrances use `cubic-bezier(0.16, 1, 0.3, 1)` over 0.6 to 0.8s. Exits use `cubic-bezier(0.55, 0, 1, 0.45)` over 0.3 to 0.42s. The intro title travels with `cubic-bezier(0.55, 0, 0.15, 1)` over 1.05s. Reduced motion removes travel, waves and blinking.
 

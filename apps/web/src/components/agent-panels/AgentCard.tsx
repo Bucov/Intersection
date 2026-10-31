@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { AlertTriangle, CircleDot, LoaderCircle, Pause, Send } from "lucide-react";
+import { AlertTriangle, CircleDot, Pause, Send } from "lucide-react";
+import { SquareLoader } from "@/components/common/SquareLoader";
 import type { AgentId, AgentStatus, TrafficProposal } from "@intersection/shared";
 import { ProvenanceBadge } from "@/components/common/ProvenanceBadge";
 import { Square } from "@/components/common/Square";
@@ -15,7 +16,7 @@ const IDENTITY: Record<AgentId, { name: string; group: string; text: string }> =
 function statusLine(agent: AgentStatus | null): { icon: React.ReactNode; text: string } {
   if (!agent) return { icon: <CircleDot />, text: "Waiting for the session" };
   switch (agent.status) {
-    case "inference": return { icon: <LoaderCircle className="animate-spin motion-reduce:animate-none" />, text: "Observing and thinking…" };
+    case "inference": return { icon: <SquareLoader label="Inference running" className="mt-1.5" />, text: "Observing and thinking…" };
     case "proposal_pending": return { icon: <Send />, text: "Proposal sent, awaiting decision" };
     case "cooldown": return { icon: <Pause />, text: "Waiting for the next decision window" };
     case "error": return { icon: <AlertTriangle />, text: agent.message ?? "Inference failed" };

@@ -1,3 +1,4 @@
+import type { SessionHistory } from "@/state/replay";
 import type {
   ComparisonResponse,
   CreateComparisonRequest,
@@ -25,6 +26,11 @@ import type {
  * consume the same `SimulationSnapshot` / `ServerEvent` stream whichever one is
  * active. Nothing outside `src/transport` knows how the data is produced.
  */
+export interface ComparisonRecording {
+  traditional: SessionHistory;
+  ai: SessionHistory;
+}
+
 export interface IntersectionTransport {
   readonly source: DataSourceKind;
 
@@ -56,6 +62,8 @@ export interface IntersectionTransport {
 
   createComparison(request: CreateComparisonRequest): Promise<ComparisonResponse>;
   getComparison(comparisonId: string): Promise<ComparisonResponse>;
+  /** Offline demo only: both runs of a comparison, recorded as they were computed, for 3D playback. */
+  getComparisonRecording?(comparisonId: string): ComparisonRecording | null;
 
   dispose(): void;
 }
