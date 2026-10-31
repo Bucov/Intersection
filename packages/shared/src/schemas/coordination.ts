@@ -151,6 +151,9 @@ export const ArbitrationRecordSchema = z.object({
     ctx.addIssue({ code: "custom", path: ["result"], message: "Distribution must cover exactly the eligible actions" });
 });
 export const DecisionOutcomeSchema = z.object({
+  realizedExtension: z.boolean().optional(),
+  decisionSource: z.enum(["agreement", "jev", "fallback", "single_agent"]).optional(),
+  requestedGreenSeconds: z.number().positive().optional(),
   commandId: IdSchema, correlationId: IdSchema,
   proposalIds: z.array(IdSchema).max(2), arbitrationId: IdSchema.nullable(),
   status: z.enum(["accepted", "rejected", "duplicate", "unnecessary"]),

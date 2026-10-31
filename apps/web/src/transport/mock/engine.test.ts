@@ -240,3 +240,19 @@ function alongTravel(v: { approach: string; position: { x: number; z: number } }
     default: return v.position.x;
   }
 }
+
+
+it("publishes lifetime decision counters across snapshots and clears on reset", () => {
+  const scenario = SCENARIO_CATALOG.find(s => s.id === "simultaneous-proposals")!;
+  const run = createRun(scenario, "ai");
+  run.start(); run.run(40);
+  const stats = run.sim.snapshot().decisionStats!;
+  expect(stats.jev.requests).toBeGreaterThan(0);
+  expect(stats.jev.terminal).toBeLessThanOrEqual(stats.jev.requests);
+  expect(stats.accepted.jev + stats.accepted.agreement + stats.accepted.fallback).toBeGreaterThan(0);
+  expect(run.sim.snapshot().decisionStats).toEqual(stats);
+  run.sim.control("pause", 0);
+  expect(run.sim.snapshot().decisionStats).toEqual(stats);
+  run.sim.control("reset", 0);
+  expect(run.sim.snapshot().decisionStats?.accepted).toEqual({ jev: 0, agreement: 0, fallback: 0 });
+});

@@ -18,7 +18,7 @@ it('preserves null adapter confidence and probabilities, then falls back',async(
 });
 it('rejects an adapter selecting an ID outside the stored candidate set',async()=>{
  const provider:ArbitrationProvider<Observation,Proposal>={arbitrate:async(r,o)=>({...await new MockJevAdapter({stateSchema:ObservationSchema,proposalSchema:ProposalSchema}).arbitrate(r,o),status:'selected',selectedCandidateId:'forged'})};
- const {entry,c}=setup(provider);await until(()=>c.cycle===null);const events=entry.sim.drain();expect(events.some(e=>e.type==='jev.arbitration'&&e.payload.bridgeReason==='invalid_response')).toBe(true);expect(events.some(e=>e.type==='decision.outcome'&&e.payload.status==='accepted')).toBe(false);
+ const {entry,c}=setup(provider);await until(()=>c.cycle===null);const events=entry.sim.drain();expect(events.some(e=>e.type==='jev.arbitration'&&e.payload.bridgeReason==='invalid_response')).toBe(true);expect(events.some(e=>e.type==='decision.outcome'&&e.payload.decisionSource!=='fallback'&&e.payload.status==='accepted')).toBe(false);
 });
 it('rechecks queue drift at action time even when decision revision still matches',async()=>{
  const provider=new MockJevAdapter({stateSchema:ObservationSchema,proposalSchema:ProposalSchema,fixture:'agent-a',latencyMs:60});const {ai,entry,c}=setup(provider);await until(()=>ai.bridge.pendingCount===1);

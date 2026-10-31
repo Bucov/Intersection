@@ -1,3 +1,4 @@
+import { DecisionStatsCollector } from "@intersection/shared";
 /**
  * Offline demo simulation.
  *
@@ -192,6 +193,7 @@ export interface EventMeta {
 }
 
 export class MockSimulation {
+  private stats = new DecisionStatsCollector();
   readonly sessionId: string;
   readonly mode: ControllerMode;
   readonly scenarioId: ScenarioId;
@@ -494,6 +496,7 @@ export class MockSimulation {
       type,
       payload,
     } as unknown as EventOf<T>;
+    this.stats.observe(event);
     this.outbox.push(event);
     if (this.retainEvents > 0 && type !== "simulation.snapshot") {
       this.history.push(event);
@@ -526,6 +529,7 @@ export class MockSimulation {
       this.adaptive?.discardOutstanding("completed");
       this.setStatus("completed");
       this.emitMetrics(true);
+      this.broadcastSnapshot();
     }
   }
 
@@ -861,6 +865,7 @@ export class MockSimulation {
   private changePhase(next: SignalPhase, T: number, reason: PhaseChangeReason) {
     const s = this.signal;
     const previousPhase = s.phase;
+    const appliedCommandId = s.activeCommandId;
     if (previousPhase === "NS_GREEN" || previousPhase === "EW_GREEN") {
       const group: MovementGroup = previousPhase === "NS_GREEN" ? "NS" : "EW";
       this.servedAt[group] = T;
@@ -878,7 +883,7 @@ export class MockSimulation {
     else if (next === "EW_YELLOW") s.nextGreen = "NS_GREEN";
     this.signalChanges++;
     this.bumpVersion();
-    this.emit("signal.phase_changed", { previousPhase, signal: this.signalState(), reason }, {
+    this.emit("signal.phase_changed", { previousPhase, signal: this.signalState(), reason, commandId: appliedCommandId }, {
       source: this.mode === "ai" ? "safety" : "controller",
       provenance: "deterministic",
       summary: `${phaseLabel(previousPhase)} → ${phaseLabel(next)} (${reasonLabel(reason)})`,
@@ -907,6 +912,7 @@ export class MockSimulation {
   // State builders
 
   private buildWorld() {
+    this.stats = new DecisionStatsCollector(this.confidencePolicy);
     this.time = 0;
     this.lanes = { north: [], south: [], east: [], west: [] };
     this.backlog = { north: [], south: [], east: [], west: [] };
@@ -1089,6 +1095,7 @@ export class MockSimulation {
       geometry: DEFAULT_GEOMETRY,
     };
     return {
+      decisionStats: structuredClone(this.stats.value),
       protocolVersion: PROTOCOL_VERSION,
       sessionId: this.sessionId,
       generation: this.gen,

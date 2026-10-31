@@ -98,7 +98,7 @@ for (const [fixture, phase] of [
       expect(
         events.some(
           (e) =>
-            e.type === "decision.outcome" && e.payload.status === "accepted",
+            e.type === "decision.outcome" && e.payload.decisionSource !== "fallback" && e.payload.status === "accepted",
         ),
       ).toBe(true);
     else
@@ -112,6 +112,17 @@ for (const [fixture, phase] of [
     C.SessionResponseSchema.parse(
       (await app.inject(`/api/sessions/${id}`)).json(),
     );
+    const stats = entry.sim.snapshot().decisionStats!;
+    expect(stats.jev.requests).toBe(1);
+    expect(stats.jev.terminal).toBe(1);
+    expect(stats.accepted.jev).toBe(fixture.startsWith("agent-") ? 1 : 0);
+    expect(stats.fallback.invocations).toBe(fixture.startsWith("agent-") ? 0 : 1);
+    const checkpoint = (await app.inject(`/api/sessions/${id}`)).json().snapshot.decisionStats;
+    expect(checkpoint).toEqual(stats);
+    entry.sim.control("pause", 0);
+    expect(entry.sim.snapshot().decisionStats).toEqual(stats);
+    entry.sim.control("reset", 0);
+    expect(entry.sim.snapshot().decisionStats?.jev.requests).toBe(0);
     ws.terminate();
   });
 it("discards stale bridge completion when decision revision changes but ticks alone remain current", async () => {
@@ -140,7 +151,7 @@ it("discards stale bridge completion when decision revision changes but ticks al
   ).toBe(true);
   expect(
     events.some(
-      (e) => e.type === "decision.outcome" && e.payload.status === "accepted",
+      (e) => e.type === "decision.outcome" && e.payload.decisionSource !== "fallback" && e.payload.status === "accepted",
     ),
   ).toBe(false);
 });
@@ -166,10 +177,12 @@ it("bypasses JEV on effective agreement while retaining FSM validation", async (
   sessions.flush(entry);
   expect(
     events.some(
-      (e) => e.type === "decision.outcome" && e.payload.status === "accepted",
+      (e) => e.type === "decision.outcome" && e.payload.decisionSource !== "fallback" && e.payload.status === "accepted",
     ),
   ).toBe(true);
   expect(events.some((e) => e.type === "jev.arbitration")).toBe(false);
+  expect(entry.sim.snapshot().decisionStats?.accepted.agreement).toBe(1);
+  expect(entry.sim.snapshot().decisionStats?.agents.map(a => a.agreement)).toEqual([1, 1]);
 });
 it("reset prevents old agent and bridge callbacks from repopulating the new generation", async () => {
   const { sessions, ai, id, entry, events } = await setup(

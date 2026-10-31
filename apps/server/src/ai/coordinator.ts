@@ -559,6 +559,7 @@ export class Coordinator implements Coordination {
     return true;
   }
   private apply(proposal: TrafficProposal, c: Cycle) {
+    const before = this.sim.signalView();
     const fresh = this.fresh(c),
       valid =
         TrafficProposalSchema.safeParse(proposal).success &&
@@ -577,6 +578,9 @@ export class Coordinator implements Coordination {
     this.sim.emit(
       "decision.outcome",
       {
+        realizedExtension: at !== null && before.phase === proposal.requestedPhase && at > (before.plannedEnd ?? before.earliestEnd),
+        decisionSource: c.record ? "jev" : "agreement",
+        requestedGreenSeconds: proposal.requestedGreenSeconds,
         commandId: c.id,
         correlationId: c.id,
         proposalIds: [...c.proposals.values()].map((p) => p.proposalId),
@@ -645,6 +649,7 @@ export class Coordinator implements Coordination {
             ? "NS_GREEN"
             : "EW_GREEN";
     const id = `${c?.id ?? `fallback-${++this.counter}`}-fallback`;
+    const before = this.sim.signalView();
     const at = this.sim.requestGreen(
       phase,
       this.sim.timing.minimumGreenMs,
@@ -656,7 +661,7 @@ export class Coordinator implements Coordination {
       {
         arbitrationId: c?.record?.arbitrationId ?? null,
         reason,
-        selectedPhase: at === null ? "HOLD" : phase,
+        selectedPhase: phase,
         policy: "emergency-fairness-v1",
       },
       {
@@ -666,6 +671,15 @@ export class Coordinator implements Coordination {
         correlationId: c?.id ?? id,
       },
     );
+    this.sim.emit("decision.outcome", {
+      realizedExtension: at !== null && before.phase === phase && at > (before.plannedEnd ?? before.earliestEnd),
+      decisionSource: "fallback", requestedGreenSeconds: this.sim.timing.minimumGreenMs / 1000,
+      commandId: id, correlationId: c?.id ?? id, proposalIds: [], arbitrationId: null,
+      status: at === null ? "rejected" : "accepted", requestedPhase: phase,
+      reason: at === null ? "unsafe_transition" : "authorized",
+      committedStateVersion: at === null ? null : this.sim.stateVersion,
+      scheduledAfterSimMs: at, summary: "Fallback service request outcome.",
+    }, { source: "safety", provenance: "deterministic", correlationId: c?.id ?? id, summary: "Fallback service request outcome." });
     this.trace(id, phase, at !== null, reason);
   }
   private fail(reason: FallbackReason) {

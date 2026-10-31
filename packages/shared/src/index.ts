@@ -45,3 +45,5 @@ export type ClientMessage =
   | { type: "simulation:start" }
   | { type: "simulation:pause" }
   | { type: "simulation:reset" };
+
+export * from './decisionStats.js';

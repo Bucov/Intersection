@@ -1,3 +1,4 @@
+import { DecisionStatsSchema } from '../decisionStats.js';
 import { z } from "zod";
 import { ApproachCountsSchema, ControllerModeSchema, CounterSchema, DemoModeSchema, GeometrySchema, IdSchema, NonnegativeSchema, ScenarioIdSchema, ScenarioParametersSchema, SignalStateSchema, SignalTimingSchema, SimTimeSchema, VehicleStateSchema } from "./domain.js";
 import { AgentStatusSchema, ArbitrationRecordSchema, ProviderStatusSchema } from "./coordination.js";
@@ -60,6 +61,7 @@ export const JevStatusSchema = z.object({
 }).refine(s => (s.status === "arbitrating") === (s.pendingArbitrationId !== null), "Arbitrating requires a pending ID");
 
 export const SimulationSnapshotSchema = z.object({
+  decisionStats: DecisionStatsSchema.optional(),
   protocolVersion: z.literal(1), sessionId: IdSchema, generation: CounterSchema,
   stateVersion: CounterSchema, sequence: CounterSchema,
   decisionStateVersion: CounterSchema.optional(), snapshotSequence: CounterSchema.optional(), eventSequence: CounterSchema.optional(),

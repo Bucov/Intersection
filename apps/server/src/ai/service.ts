@@ -70,6 +70,8 @@ export class AIService {
   readonly coordinators = new Map<string, Coordinator>();
   readonly tasks = new Map<string, RunnerTask>();
   readonly producers = new Map<string, RunnerTask>();
+  // Logical decision ownership ends before the physical Mozaik loop necessarily does.
+  private readonly loops = new Map<string, RunnerTask>();
   readonly bridge: ReturnType<typeof createJevBridge<Observation, Proposal>>;
   activeInference = 0;
   disposed = false;
@@ -216,7 +218,13 @@ export class AIService {
             try {
               if (event.type === "model.answer") {
                 const task = this.producers.get(event.producerId);
-                if (task) task.coordinator.answer(task, event.payload);
+                try {
+                  if (task) task.coordinator.answer(task, event.payload);
+                } finally {
+                  // Core 4.1 publishes to our handlers BEFORE looking up the agent
+                  // for cloud telemetry. Keep it joined through that synchronous tail.
+                  queueMicrotask(() => this.retireLoop(event.producerId));
+                }
               } else if (event.type !== events.requested) {
                 const parsed = eventPayloadSchema.safeParse(event.payload);
                 if (parsed.success)
@@ -280,6 +288,7 @@ export class AIService {
       };
       this.tasks.set(task.contextId, task);
       this.producers.set(participant.getId(), task);
+      this.loops.set(participant.getId(), task);
       this.runtime.join(participant);
       tasks.push(task);
     }
@@ -313,8 +322,21 @@ export class AIService {
     for (const [id, task] of this.producers)
       if (task.coordinator === coordinator && task.cycleId === cycleId) {
         this.producers.delete(id);
-        this.runtime.leave(task.participant);
+        // A timed-out inference may still publish completed/model.answer later.
+        // Stop routing its answer, but retire its participant only after model.answer.
       }
+  }
+  private retireLoop(id: string) {
+    const task = this.loops.get(id);
+    if (!task) return;
+    this.runtime.leave(task.participant);
+    this.loops.delete(id);
+    this.producers.delete(id);
+    if (this.disposed && this.loops.size === 0) this.retireObserver();
+  }
+  private retireObserver() {
+    this.runtime.leave(this.participant);
+    this.participant.setHandlers([]);
   }
   providers(): [ProviderStatus, ProviderStatus] {
     const reason = this.config.agents
@@ -352,8 +374,8 @@ export class AIService {
     this.bridge.dispose();
     for (const c of this.coordinators.values()) c.dispose();
     this.coordinators.clear();
-    this.runtime.leave(this.participant);
-    this.participant.setHandlers([]);
+    this.producers.clear();
+    if (this.loops.size === 0) this.retireObserver();
   }
 }
 // Plain JSON Schema shared by both providers; Gemini's responseSchema rejects

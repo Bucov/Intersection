@@ -173,7 +173,7 @@ it("deadline falls back while physical runner retains global capacity; late outp
     entry.sim
       .drain()
       .some(
-        (e) => e.type === "decision.outcome" && e.payload.status === "accepted",
+        (e) => e.type === "decision.outcome" && e.payload.decisionSource !== "fallback" && e.payload.status === "accepted",
       ),
   ).toBe(false);
 });
@@ -200,3 +200,42 @@ it("traditional sessions never allocate agents or call providers", async () => {
   expect(ai.coordinators.size).toBe(0);
   expect(ai.bridge.activeCount).toBe(0);
 });
+
+for (const lifecycle of ['agreement', 'timeout', 'reset', 'close'] as const)
+  it(`keeps ${lifecycle} loop participants through final publication, then releases them`, async () => {
+    let release!: () => void;
+    const barrier = new Promise<void>(r => { release = r; });
+    const tasks: RunnerTask[] = [];
+    const ai = new AIService({ ...readConfig({}), deadlineMs: lifecycle === 'timeout' ? 25 : 1000 }, async (_input, task) => {
+      tasks.push(task);
+      await barrier;
+      const result = output(task);
+      // Agreement completes synchronously inside the second model.answer handler.
+      result.items = [ModelMessageItem.rehydrate({ text: JSON.stringify({ requestedPhase: 'NS_GREEN', requestedGreenSeconds: 10, summary: 'Same plan.' }) })];
+      return result;
+    });
+    services.push(ai);
+    const runtime = ai.runtime.resolveRuntime();
+    const publish = runtime.publish.bind(runtime);
+    const publications: { type: string; present: boolean }[] = [];
+    runtime.publish = event => {
+      publish(event);
+      if (event.type === 'inference.completed' || event.type === 'model.answer') {
+        let present = true;
+        try { runtime.getParticipant(event.producerId); } catch { present = false; }
+        publications.push({ type: event.type, present });
+      }
+    };
+    const { entry, c } = session(ai);
+    await until(() => tasks.length === 2);
+    if (lifecycle === 'timeout') await until(() => c.cycle === null);
+    if (lifecycle === 'reset') entry.sim.control('reset', 0);
+    if (lifecycle === 'close') ai.close();
+    release();
+    await until(() => publications.filter(p => p.type === 'model.answer').length === 2);
+    expect(publications).toHaveLength(4);
+    expect(publications.every(p => p.present)).toBe(true);
+    expect(ai.producers.size).toBe(0);
+    for (const task of tasks) expect(() => ai.runtime.resolveParticipant(task.participant.getId())).toThrow();
+    if (lifecycle !== 'agreement') expect(entry.sim.snapshot().decisionStats?.accepted.agreement).toBe(0);
+  });

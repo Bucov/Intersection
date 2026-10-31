@@ -21,3 +21,17 @@ for(const scenario of ['simultaneous-proposals','jev-uncertainty','jev-failure']
 test('browser compares measured independent sessions and renders the honest limitations',async({page})=>{
  const {errors}=capture(page);await page.goto('/simulate/traditional?skipIntro');await expect(visible(page,'session-status')).toHaveText('Running');await page.getByRole('tab',{name:'Compare'}).click();await page.getByRole('button',{name:'Run comparison'}).click();const panel=page.getByTestId('comparison');await expect(panel).toContainText('Limitations');await expect(panel).toContainText('actual adapter mock choices');await expect(panel.getByRole('rowheader',{name:'Completed trips',exact:true})).toBeVisible();expect(errors).toEqual([]);
 });
+
+test('Decision Stats reports authoritative backend totals and resets them', async ({page}) => {
+ await page.goto('/simulate/ai?skipIntro&scenario=simultaneous-proposals');
+ await page.getByRole('tab',{name:'Decision Stats',exact:true}).click();
+ await expect(page.getByRole('heading',{name:'Decision sources'})).toBeVisible();
+ await expect(page.getByText('1 accepted decisions from the three sources',{exact:false})).toBeVisible();
+ await page.getByTestId('playback').click();
+ const sources=await page.getByRole('img',{name:/Deterministic fallback:/}).getAttribute('aria-label');
+ await page.getByRole('tab',{name:'Metrics',exact:true}).click();
+ await page.getByRole('tab',{name:'Decision Stats',exact:true}).click();
+ await expect(page.getByRole('img',{name:/Deterministic fallback:/})).toHaveAttribute('aria-label',sources!);
+ await page.getByTestId('reset').click();
+ await expect(page.getByText('0 accepted decisions from the three sources',{exact:false})).toBeVisible();
+});

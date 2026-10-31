@@ -182,3 +182,13 @@ Comparisons use isolated sessions with matching seed, scenario and horizon. Live
 | Session capacity reached | Restart the local server; sessions are in memory and are lost on restart. |
 
 For code-level details, start with `apps/server/src/ai/config.ts`, `apps/server/src/ai/service.ts`, `apps/server/src/app.ts`, `apps/server/src/simulation/engine.ts`, and `apps/web/src/transport/WebSocketIntersectionTransport.ts`. API schemas are documented in `docs/API_CONTRACT.md`.
+
+## Live stream disconnects with `Participant … not found`
+
+A reproducible Mozaik core 4.1.0 lifecycle race can terminate the server when cloud streaming is enabled. Core publishes a model event to application handlers, then looks up its producer to attach cloud telemetry. Completing a decision inside that handler used to remove the producer immediately. Likewise, a timeout/reset could remove a producer while its live inference was still running. The later telemetry lookup then threw an unhandled `Participant … not found` error, terminating Node and dropping all WebSocket connections. This is independent of the user's internet connection.
+
+The AI service now separates logical decision ownership from physical agent-loop lifetime. Finished/cancelled rounds stop accepting answers immediately, while the Mozaik participant stays joined through its final `model.answer` publication. Cleanup runs in a microtask after the publisher's synchronous telemetry tail. The shutdown observer remains until outstanding loops finish. The fix does not change decision deadlines, stale-result checks, signal safety, or model configuration.
+
+After updating, restart the backend (`npm run dev:server`; production users must rebuild before restarting). Existing sessions were in memory, so start a new simulation if the old process crashed. As an immediate workaround on an older checkout, set `MOZAIK_CLOUD=off` in `apps/server/.env` and restart the backend. This disables only optional dashboard streaming; live proposal agents and JEV can stay enabled.
+
+The browser's generic “live event stream was interrupted” message alone cannot identify every disconnect. If it persists after this fix, capture the backend terminal error and the WebSocket close details in browser DevTools. A process restart loses sessions; a proxy/network interruption may leave the session available through `GET /api/sessions/:id`. Check `GET /api/health` for uptime. Avoid sharing API keys or complete environment files when reporting the failure.

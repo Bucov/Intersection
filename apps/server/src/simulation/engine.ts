@@ -1,3 +1,4 @@
+import { DecisionStatsCollector } from "@intersection/shared";
 /** Authoritative fixed-step engine, adapted from the existing frontend engine.
  * Controller hooks are synchronous; provider work runs outside physics steps. */
 import {
@@ -250,6 +251,7 @@ export interface EventMeta {
 }
 
 export class Simulation {
+  private stats = new DecisionStatsCollector();
   readonly sessionId: string;
   readonly mode: ControllerMode;
   readonly scenarioId: ScenarioId;
@@ -761,6 +763,7 @@ export class Simulation {
       type,
       payload,
     } as unknown as EventOf<T>;
+    this.stats.observe(event);
     this.outbox.push(event);
     if (this.outbox.length > 4000) this.outbox.shift();
     if (this.retainEvents > 0) {
@@ -801,6 +804,7 @@ export class Simulation {
       this.adaptive?.discardOutstanding("completed");
       this.setStatus("completed");
       this.emitMetrics(true);
+      this.broadcastSnapshot();
     }
   }
 
@@ -1354,6 +1358,7 @@ export class Simulation {
   // State builders
 
   private buildWorld() {
+    this.stats = new DecisionStatsCollector(this.confidencePolicy);
     this.time = 0;
     this.lanes = { north: [], south: [], east: [], west: [] };
     this.backlog = { north: [], south: [], east: [], west: [] };
@@ -1601,6 +1606,7 @@ export class Simulation {
       geometry: DEFAULT_GEOMETRY,
     };
     return {
+      decisionStats: structuredClone(this.stats.value),
       protocolVersion: PROTOCOL_VERSION,
       sessionId: this.sessionId,
       generation: this.gen,

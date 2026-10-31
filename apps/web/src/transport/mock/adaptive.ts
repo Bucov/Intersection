@@ -595,6 +595,9 @@ export class MockAdaptiveController {
       this.sim.safetyRejections += 1;
     }
     const payload: DecisionOutcome = {
+      realizedExtension: decision.status === "accepted" && target === view.phase && scheduledAfterSimMs !== null && scheduledAfterSimMs > (view.plannedEnd ?? view.earliestEnd),
+      decisionSource: reason === "fallback" ? "fallback" : arbitrationId ? "jev" : proposalIds.length === 2 ? "agreement" : "single_agent",
+      requestedGreenSeconds: seconds,
       commandId,
       correlationId: cycle.correlationId,
       proposalIds: decision.proposalIds,

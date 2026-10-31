@@ -1,3 +1,4 @@
+import { DecisionStatsPanel } from "@/components/decision-stats/DecisionStatsPanel";
 import { Suspense, lazy, useState } from "react";
 import type { ControllerMode, ScenarioDefinition, ScenarioId } from "@intersection/shared";
 import { useServices } from "@/app/services";
@@ -75,9 +76,10 @@ export function SimulationRail({ mode, scenarioId, seed, scenarios }: RailProps)
 
   return (
     <Tabs value={active} onValueChange={value => setTab(String(value))} className="flex h-full min-h-0 flex-col gap-0">
-      <TabsList variant="line" className="h-11 w-full shrink-0 justify-start gap-1 rounded-none border-b px-3">
+      <TabsList variant="line" className="h-11 w-full overflow-x-auto shrink-0 justify-start gap-1 rounded-none border-b px-3">
         <TabsTrigger value={primary} className="flex-none px-2.5">{mode === "ai" ? "Decisions" : "Controller"}</TabsTrigger>
         <TabsTrigger value="transcript" className="flex-none px-2.5">{mode === "ai" ? "Transcript" : "Events"}</TabsTrigger>
+        <TabsTrigger value="stats" className="flex-none px-2.5">Decision Stats</TabsTrigger>
         <TabsTrigger value="metrics" className="flex-none px-2.5">Metrics</TabsTrigger>
         <TabsTrigger value="compare" className="flex-none px-2.5">Compare</TabsTrigger>
       </TabsList>
@@ -87,6 +89,7 @@ export function SimulationRail({ mode, scenarioId, seed, scenarios }: RailProps)
       <TabsContent value="transcript" className="flex min-h-0 flex-1 flex-col pt-3">
         <Transcript />
       </TabsContent>
+      <TabsContent value="stats" className="min-h-0 flex-1 overflow-y-auto p-4"><DecisionStatsPanel /></TabsContent>
       <TabsContent value="metrics" className="min-h-0 flex-1 overflow-y-auto p-4">
         <Suspense fallback={<TabLoading />}>
           <MetricsPanel mode={mode} />
