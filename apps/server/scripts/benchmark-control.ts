@@ -11,6 +11,7 @@ for (const scenarioId of ['normal-traffic', 'rush-hour', 'reverse-rush', 'sudden
     const sides = [];
     for (const mode of ['traditional', 'ai'] as const) {
       const service = new AIService(readConfig({ DEMO_MODE: 'live', JEV_MODE: 'mock' }));
+      service.jevUnavailable = "Benchmark disables JEV to isolate deterministic backup.";
       const sim = new Simulation({ sessionId: 'benchmark', mode, scenarioId: SCENARIO_CATALOG.find(s => s.id === scenarioId)!.id,
         parameters: SCENARIO_CATALOG.find(s => s.id === scenarioId)!.defaults, signalTiming: DEFAULT_SIGNAL_TIMING, seed, demoMode: 'live', jevMode: 'mock' });
       const entry: ManagedSession = { sim, accumulator: 0, readOnly: false, listeners: new Set() };

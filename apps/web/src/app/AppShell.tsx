@@ -7,6 +7,7 @@ import { AboutPage } from "@/routes/AboutPage";
 import { HomePage } from "@/routes/HomePage";
 import { NotFoundPage } from "@/routes/NotFoundPage";
 import { SettingsPage } from "@/routes/SettingsPage";
+import { ComparisonPage } from "@/routes/ComparisonPage";
 import { SimulationPage } from "@/routes/SimulationPage";
 import { useServices } from "./services";
 
@@ -42,6 +43,7 @@ export function AppShell() {
         <Routes location={location} key={sectionOf(location.pathname)}>
           <Route path="/" element={<HomePage />} />
           <Route path="/simulate/:mode" element={<SimulationPage />} />
+          <Route path="/comparison" element={<ComparisonPage />} />
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="*" element={<NotFoundPage />} />

@@ -7,6 +7,7 @@ import { ConnectionStatus } from "./ConnectionStatus";
 
 const LINKS = [
   { to: "/", label: "Home", end: true },
+  { to: "/comparison", label: "Compare", end: false },
   { to: "/settings", label: "Settings", end: false },
   { to: "/about", label: "About", end: false },
 ] as const;

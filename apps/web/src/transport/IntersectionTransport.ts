@@ -49,6 +49,8 @@ export interface IntersectionTransport {
   /** Ask for a fresh checkpoint after a sequence gap or an incompatible event. */
   requestSnapshot(): void;
 
+  getSnapshot?(sessionId: string): Promise<SimulationSnapshot>;
+
   getEvents(sessionId: string, query?: EventsQuery): Promise<EventsResponse>;
   getMetrics(sessionId: string, query?: MetricsQuery): Promise<MetricsResponse>;
 

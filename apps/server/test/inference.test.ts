@@ -122,8 +122,8 @@ for (const status of [429, 503])
     expect(
       events.some(
         (e) =>
-          e.type === "arbitration.fallback" &&
-          e.payload.reason ===
+          e.type === "jev.arbitration" &&
+          e.payload.recoveryReason ===
             (status === 429 ? "rate_limit" : "provider_error"),
       ),
     ).toBe(true);
@@ -147,8 +147,8 @@ it("contains invalid JSON and one-agent failure", async () => {
       .drain()
       .some(
         (e) =>
-          e.type === "arbitration.fallback" &&
-          e.payload.reason === "invalid_response",
+          e.type === "jev.arbitration" &&
+          e.payload.recoveryReason === "invalid_response",
       ),
   ).toBe(true);
 });
@@ -165,7 +165,7 @@ it("deadline falls back while physical runner retains global capacity; late outp
   expect(ai.activeInference).toBe(2);
   expect(entry.sim.snapshot().metrics.deadlineMissCount).toBe(1);
   const other = session(ai);
-  expect(other.c.cycle).toBeNull();
+  await until(() => other.c.cycle === null);
   expect(ai.activeInference).toBe(2);
   for (const release of releases) release();
   await until(() => ai.activeInference === 0);
@@ -173,7 +173,7 @@ it("deadline falls back while physical runner retains global capacity; late outp
     entry.sim
       .drain()
       .some(
-        (e) => e.type === "decision.outcome" && e.payload.decisionSource !== "fallback" && e.payload.status === "accepted",
+        (e) => e.type === "decision.outcome" && e.payload.decisionSource === "agreement" && e.payload.status === "accepted",
       ),
   ).toBe(false);
 });

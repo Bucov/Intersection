@@ -116,6 +116,11 @@ export class WebSocketIntersectionTransport implements IntersectionTransport {
     return { config, scenarios: scenarios.scenarios, health };
   }
 
+  async getSnapshot(sessionId: string): Promise<SimulationSnapshot> {
+    const response = await requestJson(this.fetchImpl, this.baseUrl, `/api/sessions/${encodeURIComponent(sessionId)}`, { schema: SessionResponseSchema });
+    return response.snapshot;
+  }
+
   async createSession(request: CreateSessionRequest): Promise<SimulationSnapshot> {
     const response = await requestJson(this.fetchImpl, this.baseUrl, "/api/sessions", { method: "POST", body: request, schema: SessionResponseSchema });
     return response.snapshot;

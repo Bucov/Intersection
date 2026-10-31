@@ -43,7 +43,7 @@ export function JevPanel({ cycle, jevModel }: { cycle: DecisionCycle | null; jev
             <span className="size-2 rounded-full bg-jev" aria-hidden="true" />
             JEV arbitration
           </h3>
-          <p className="text-xs text-subtle-foreground">Recommends a plan when the agents disagree</p>
+          <p className="text-xs text-subtle-foreground">Chooses a safe action when agents disagree or fail</p>
         </div>
         <div className="flex shrink-0 items-center gap-1.5">
           {provenance ? <ProvenanceBadge provenance={provenance} /> : null}
@@ -52,7 +52,7 @@ export function JevPanel({ cycle, jevModel }: { cycle: DecisionCycle | null; jev
 
       <p className={cn("w-fit rounded-full border px-2.5 py-0.5 text-xs font-medium", TONE[state.tone])} role="status" data-testid="jev-state">{state.label}</p>
 
-      {arbitration && a && b ? (
+      {arbitration?.recoveryReason ? <p className="text-sm">An agent could not provide a plan ({humanize(arbitration.recoveryReason)}). JEV is reviewing the current traffic.</p> : arbitration && a && b ? (
         <p className="text-[0.8125rem] leading-snug text-muted-foreground">
           Called because Agent A asked for <span className="text-foreground">{phaseName(a.requestedPhase)} for {a.requestedGreenSeconds} s</span> and Agent B asked for{" "}
           <span className="text-foreground">{phaseName(b.requestedPhase)} for {b.requestedGreenSeconds} s</span>. One plan can be scheduled.
@@ -63,8 +63,9 @@ export function JevPanel({ cycle, jevModel }: { cycle: DecisionCycle | null; jev
         <p className="text-[0.8125rem] leading-snug text-muted-foreground">JEV is called when Agent A and Agent B propose different service plans.</p>
       )}
 
+      {arbitration?.controllerActions ? <ul className="space-y-2 text-sm" aria-label="Available controller actions">{arbitration.controllerActions.map(action => <li key={action.id}>{raw?.selectedCandidateId === action.id ? <strong>Selected: {action.label}</strong> : action.label} {raw?.probabilities?.[action.id] !== undefined ? <span className="font-mono text-xs">{formatPercent(raw.probabilities[action.id])}</span> : null}</li>)}</ul> : null}
       {raw?.measurements === "synthetic" ? <p className="text-xs text-subtle-foreground">Synthetic confidence and probabilities from the adapter mock.</p> : null}
-      {raw && !result && arbitration?.status === "completed" ? <p className="text-[0.8125rem] text-muted-foreground">{raw.status === "abstained" ? "JEV abstained. " : "A recommendation was returned. "}Confidence: {raw.confidence === null ? "unavailable" : formatPercent(raw.confidence)}. {raw.probabilities === null ? "Choice probabilities unavailable." : `Candidate probabilities: ${Object.entries(raw.probabilities).map(([id, p]) => `${id === a?.proposalId ? "Agent A" : "Agent B"} ${formatPercent(p)}`).join(", ")}; abstain ${raw.abstainProbability === null ? "unavailable" : formatPercent(raw.abstainProbability)}.`}</p> : null}
+      {raw && !result && !arbitration?.controllerActions && arbitration?.status === "completed" ? <p className="text-[0.8125rem] text-muted-foreground">{raw.status === "abstained" ? "JEV abstained. " : "A recommendation was returned. "}Confidence: {raw.confidence === null ? "unavailable" : formatPercent(raw.confidence)}. {raw.probabilities === null ? "Choice probabilities unavailable." : `Candidate probabilities: ${Object.entries(raw.probabilities).map(([id, p]) => `${arbitration?.controllerActions?.find(action => action.id === id)?.label ?? (id === a?.proposalId ? "Agent A" : "Agent B")} ${formatPercent(p)}`).join(", ")}; abstain ${raw.abstainProbability === null ? "unavailable" : formatPercent(raw.abstainProbability)}.`}</p> : null}
       {result && cycle ? (
         <>
           <ul className="flex flex-col gap-1.5" aria-label="Choice distribution">

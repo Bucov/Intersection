@@ -94,7 +94,7 @@ for (const [fixture, phase] of [
         C.ServerEventSchema.safeParse(e).success,
         `${e.type}: ${JSON.stringify(C.ServerEventSchema.safeParse(e))}`,
       ).toBe(true);
-    if (fixture.startsWith("agent-"))
+    if (fixture.startsWith("agent-") || fixture === "low-confidence")
       expect(
         events.some(
           (e) =>
@@ -115,8 +115,8 @@ for (const [fixture, phase] of [
     const stats = entry.sim.snapshot().decisionStats!;
     expect(stats.jev.requests).toBe(1);
     expect(stats.jev.terminal).toBe(1);
-    expect(stats.accepted.jev).toBe(fixture.startsWith("agent-") ? 1 : 0);
-    expect(stats.fallback.invocations).toBe(fixture.startsWith("agent-") ? 0 : 1);
+    expect(stats.accepted.jev).toBe((fixture.startsWith("agent-") || fixture === "low-confidence") ? 1 : 0);
+    expect(stats.fallback.invocations).toBe((fixture.startsWith("agent-") || fixture === "low-confidence") ? 0 : 1);
     const checkpoint = (await app.inject(`/api/sessions/${id}`)).json().snapshot.decisionStats;
     expect(checkpoint).toEqual(stats);
     entry.sim.control("pause", 0);

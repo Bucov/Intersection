@@ -52,6 +52,7 @@ function DecisionsTab() {
           Deterministic fallback in control{view.controller.reason ? `: ${view.controller.reason}` : ""}. Rules, not models, are choosing phases.
         </p>
       ) : null}
+      <p className="text-sm leading-relaxed">Two agents inspect the same traffic at the same time. They plan service for North/South and East/West. JEV resolves disagreements or failed requests; the safety controller enforces green limits and clearance before lights change.</p>
       <DecisionRound cycle={view.cycle} agents={view.agents} timing={view.timing} />
       <div className="grid grid-cols-2 gap-3" aria-label="The two agents, working independently">
         <AgentCard agentId="agent-a" agent={view.agents?.[0] ?? null} proposal={view.a?.proposal ?? null} verdict={agentVerdict(view.a?.cycle ?? null, "agent-a")} />
@@ -70,7 +71,7 @@ interface RailProps {
 }
 
 export function SimulationRail({ mode, scenarioId, seed, scenarios }: RailProps) {
-  const [tab, setTab] = useState<string>(mode === "ai" ? "decisions" : "controller");
+  const [tab, setTab] = useState<string>(new URLSearchParams(window.location.search).has("comparison") ? "compare" : mode === "ai" ? "decisions" : "controller");
   const primary = mode === "ai" ? "decisions" : "controller";
   const active = tab === "decisions" || tab === "controller" ? primary : tab;
 

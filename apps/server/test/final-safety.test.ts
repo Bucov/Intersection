@@ -40,7 +40,7 @@ for (const confidence of [0.59, 0.6, 0.7, 0.85]) it(`handles selected reference 
  const provider: ArbitrationProvider<Observation,Proposal> = { arbitrate: async(r,o) => ({...await new MockJevAdapter({stateSchema:ObservationSchema,proposalSchema:ProposalSchema,fixture:'agent-a'}).arbitrate(r,o), confidence, probabilities:null, abstainProbability:null}) };
  const runner: AgentRunner = async (_input,task) => ({items:[ModelMessageItem.rehydrate({text:JSON.stringify({requestedPhase:task.agentId==='agent-a'?task.observation.referencePlan!.requestedPhase:'EW_GREEN',requestedGreenSeconds:task.observation.referencePlan!.requestedGreenSeconds,summary:'Measured service plan.'})})],tokenUsage:undefined,rowResponse:null});
  const {entry,c}=setup(provider,runner); await until(()=>c.cycle===null);
- expect(entry.sim.snapshot().decisionStats?.accepted.jev).toBe(confidence>=0.6?1:0);
+ expect(entry.sim.snapshot().decisionStats?.accepted.jev).toBe(1);
 });
 it('defers a medium-confidence selection that disagrees with the reference direction',async()=>{
  const provider: ArbitrationProvider<Observation,Proposal> = { arbitrate: async(r,o) => ({...await new MockJevAdapter({stateSchema:ObservationSchema,proposalSchema:ProposalSchema,fixture:'agent-b'}).arbitrate(r,o), confidence:0.7, probabilities:null, abstainProbability:null}) };

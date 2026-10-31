@@ -35,3 +35,20 @@ test('Decision Stats reports authoritative backend totals and resets them', asyn
  await page.getByTestId('reset').click();
  await expect(page.getByText('0 accepted decisions from the three sources',{exact:false})).toBeVisible();
 });
+
+test('comparison survives navigation and has a separate live view', async ({page,request}) => {
+ const response=await request.post('http://127.0.0.1:3011/api/comparisons',{data:{requestId:'live-view-test',scenarioId:'simultaneous-proposals',seed:2026,durationMs:60000,execution:'realtime',speedMultiplier:1}});
+ expect(response.ok()).toBe(true);
+ const comparison=await response.json();
+ await page.goto(`/comparison?skipIntro&comparison=${comparison.comparisonId}`);
+ await expect(page.getByRole('region',{name:'Live intersections'})).toBeVisible();
+ await expect(page.getByRole('img',{name:'AI live vehicle positions'})).toBeVisible();
+ await expect.poll(()=>page.getByRole('img',{name:'AI live vehicle positions'}).locator('rect').count()).toBeGreaterThan(0);
+ await page.screenshot({path:'/tmp/intersection-comparison-desktop.png'});
+ await page.goto('/about?skipIntro');
+ await page.goto('/comparison?skipIntro');
+ await expect(page.getByRole('img',{name:'Fixed live vehicle positions'})).toBeVisible();
+ await page.setViewportSize({width:390,height:844});
+ await page.screenshot({path:'/tmp/intersection-comparison-mobile.png',fullPage:true});
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth)).toBe(true);
+});

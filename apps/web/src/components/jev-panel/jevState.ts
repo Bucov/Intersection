@@ -47,6 +47,12 @@ export function jevState(cycle: DecisionCycle | null): JevState {
       return { kind: "provider-error", label: "Provider error ⋅ fallback used", tone: "warning" };
     case "completed": {
       const result = arbitration.result;
+      if (arbitration.controllerActions && arbitration.adapterResult?.status === "selected") {
+        if (decision?.status === "accepted" && decision.decisionSource === "jev") return { kind: "accepted", label: "JEV action accepted", tone: "positive" };
+        if (cycle.fallback) return { kind: "fallback", label: "Fallback rules decided", tone: "warning" };
+        if (decision?.status === "rejected") return { kind: "safety-rejected", label: "Rejected by the safety gate", tone: "negative" };
+        return { kind: "received", label: "JEV action received", tone: "neutral" };
+      }
       if (!result) return { kind: "fallback", label: arbitration.adapterResult?.status === "abstained" ? "JEV abstained ⋅ fallback used" : "Measurements unavailable ⋅ fallback used", tone: "warning" };
       if (decision?.status === "rejected") return { kind: "safety-rejected", label: "Rejected by the safety gate", tone: "negative" };
       if (result.confidenceBand === "low") return { kind: "low-confidence", label: "Low confidence ⋅ fallback used", tone: "warning" };

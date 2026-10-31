@@ -111,6 +111,8 @@ export const AdapterResultSchema = z.object({
   errorCode: z.string().optional(),
 });
 export const ArbitrationRecordSchema = z.object({
+  controllerActions: z.array(z.object({ id: IdSchema, label: z.string(), requestedPhase: GreenPhaseSchema, requestedGreenSeconds: NonnegativeSchema })).optional(),
+  recoveryReason: FallbackReasonSchema.optional(),
   adapterResult: AdapterResultSchema.optional(),
   bridgePhase: z.enum(["started", "completed", "abstained", "failed", "timed_out", "discarded"]).optional(),
   bridgeReason: z.string().optional(),

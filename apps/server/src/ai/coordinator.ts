@@ -34,6 +34,8 @@ interface Cycle {
   record: ArbitrationRecord | null;
   timer: ReturnType<typeof setTimeout>;
   executed: boolean;
+  actions?: Map<string, TrafficProposal>;
+  recoveryReason?: FallbackReason;
 }
 export class Coordinator implements Coordination {
   cycle: Cycle | null = null;
@@ -151,10 +153,7 @@ export class Coordinator implements Coordination {
     this.due = false;
     this.nextAt = this.sim.now() + 8000;
     const unavailable = this.service.config.agents.some((a) => a.reason);
-    if (unavailable) {
-      this.fallback("missing_credentials", null);
-      return;
-    }
+
     this.sim.invalidateDecisions();
     const id = `g${this.sim.generation}-cycle-${++this.counter}`;
     const snapshot = this.sim.snapshot();
@@ -164,6 +163,8 @@ export class Coordinator implements Coordination {
       timing: this.sim.timing,
       ns: this.sim.observe("NS"),
       ew: this.sim.observe("EW"),
+      vehicles: snapshot.vehicles,
+      upstreamBacklog: snapshot.metrics.upstreamBacklogByApproach,
       occupiedVehicleCount: snapshot.occupiedVehicleIds.length,
       referencePlan: this.referencePlan(),
       committedGreenUntilSimMs: view.plannedEnd,
@@ -187,6 +188,7 @@ export class Coordinator implements Coordination {
       timer,
       executed: false,
     };
+    if (unavailable) { this.fail("missing_credentials"); return; }
     if (!this.service.launch(this, id, observation))
       this.fail("provider_error");
   }
@@ -241,7 +243,7 @@ export class Coordinator implements Coordination {
   }
   answer(task: RunnerTask, payload: unknown) {
     const c = this.cycle;
-    if (!c || !this.owns(task)) return;
+    if (!c || !this.owns(task) || c.record) return;
     if (task.error) {
       this.fail(
         task.error === "rate_limit"
@@ -313,7 +315,7 @@ export class Coordinator implements Coordination {
     });
     if (c.proposals.size === 2) this.decide(c);
   }
-  private decide(c: Cycle) {
+  private decide(c: Cycle, recovery = false) {
     const a = c.proposals.get("agent-a")!,
       b = c.proposals.get("agent-b")!;
     if (!this.fresh(c)) {
@@ -324,14 +326,14 @@ export class Coordinator implements Coordination {
     // Equal phase and duration produce the same effective request. Different durations
     // are competing plans too, even if both recommend the currently green group.
     if (
-      a.requestedPhase === b.requestedPhase &&
+      !recovery && a.requestedPhase === b.requestedPhase &&
       a.requestedGreenSeconds === b.requestedGreenSeconds
     ) {
       this.apply(a, c);
       this.finish();
       return;
     }
-    this.sim.emit(
+    if (!recovery) this.sim.emit(
       "arbitration.conflict",
       {
         proposalIds: [a.proposalId, b.proposalId],
@@ -348,8 +350,30 @@ export class Coordinator implements Coordination {
         correlationId: c.id,
       },
     );
+    const view = this.sim.signalView();
+    const latest = this.sim.snapshot();
+    c.observation = freezeObservation({ ...c.observation, simulationTimeMs: this.sim.now(),
+      signal: latest.signal, vehicles: latest.vehicles, upstreamBacklog: latest.metrics.upstreamBacklogByApproach,
+      occupiedVehicleCount: latest.occupiedVehicleIds.length, committedGreenUntilSimMs: view.plannedEnd,
+      ns: this.sim.observe("NS"), ew: this.sim.observe("EW"), referencePlan: this.referencePlan(),
+      agentPlans: [a, b].filter(p => !p.proposalId.endsWith("-recovery")).map(p => ({ requestedPhase: p.requestedPhase, requestedGreenSeconds: p.requestedGreenSeconds, summary: p.rationale })),
+    });
+    const current = view.phase === "EW_GREEN" ? "EW_GREEN" : "NS_GREEN";
+    const seconds = this.referencePlan().requestedGreenSeconds;
+    const make = (id: string, phase: GreenPhase, duration: number, label: string) => ({ ...a, proposalId: `${c.id}-${id}`, requestedPhase: phase, requestedGreenSeconds: duration, rationale: label });
+    const actions = [
+      make("schedule-ns", "NS_GREEN", seconds, "Schedule North/South service after required clearance"),
+      make("schedule-ew", "EW_GREEN", seconds, "Schedule East/West service after required clearance"),
+      make("keep-plan", current, Math.max(1, Math.ceil(((view.plannedEnd ?? view.startedAt + this.sim.timing.fixedGreenMs) - this.sim.now()) / 1000)), "Keep the existing schedule plan"),
+    ];
+    const remaining = ((view.latestEnd ?? this.sim.now()) - this.sim.now()) / 1000;
+    const extension = Math.min(remaining, ((view.plannedEnd ?? view.earliestEnd) - this.sim.now()) / 1000 + 5);
+    if (extension >= this.sim.timing.minimumGreenMs / 1000 && Math.floor(extension) > ((view.plannedEnd ?? view.earliestEnd) - this.sim.now()) / 1000) actions.push(make("extend-green", current, Math.floor(extension), "Extend the current green briefly, within its limits"));
+    c.actions = new Map(actions.map(p => [p.proposalId, p]));
     const now = new Date().toISOString();
     c.record = {
+      recoveryReason: c.recoveryReason,
+      controllerActions: actions.map(p => ({ id: p.proposalId, label: p.rationale, requestedPhase: p.requestedPhase, requestedGreenSeconds: p.requestedGreenSeconds })),
       arbitrationId: `${c.id}-jev`,
       correlationId: c.id,
       sessionId: this.sim.sessionId,
@@ -396,10 +420,10 @@ export class Coordinator implements Coordination {
         generation: c.generation,
         stateVersion: c.revision,
         state: c.observation,
-        candidates: [a, b].map((p) => ({
+        candidates: actions.map((p) => ({
           id: p.proposalId,
           producerId: p.agentId,
-          label: `${p.requestedPhase === "NS_GREEN" ? "North/South" : "East/West"} service for ${p.requestedGreenSeconds} seconds: ${p.rationale}`,
+          label: p.rationale + (p.proposalId.endsWith("keep-plan") ? ". Do not change the committed timing." : ` (${p.requestedGreenSeconds} seconds of service).`),
           proposal: {
             requestedPhase: p.requestedPhase,
             requestedGreenSeconds: p.requestedGreenSeconds,
@@ -505,17 +529,14 @@ export class Coordinator implements Coordination {
           } satisfies ArbitrationResult;
       }
       if (r.status === "abstained") reason = "no_valid_proposal";
-      else if (
-        confidence === null ||
-        confidence < this.sim.confidencePolicy.mediumThreshold
-      )
-        reason = "low_confidence";
+      else if (confidence === null) reason = "low_confidence";
       else if (confidence < this.sim.confidencePolicy.highThreshold) {
-        const selected = [...c.proposals.values()].find(p => p.proposalId === r.selectedCandidateId);
+        const selected = [...(c.actions ?? c.proposals).values()].find(p => p.proposalId === r.selectedCandidateId);
         const reference = this.referencePlan();
-        // Medium confidence is usable when independent numeric evidence agrees.
+        // Probability is distributed over several safe actions. Numeric evidence,
+        // not confidence concentration alone, validates a lower-confidence choice.
         if (!selected || selected.requestedPhase !== reference.requestedPhase || Math.abs(selected.requestedGreenSeconds - reference.requestedGreenSeconds) > 5)
-          reason = "medium_confidence_deferred";
+          reason = confidence < this.sim.confidencePolicy.mediumThreshold ? "low_confidence" : "medium_confidence_deferred";
       }
     }
     record.fallbackReason = reason;
@@ -530,10 +551,22 @@ export class Coordinator implements Coordination {
       this.finish();
       return;
     }
-    const proposal = [...c.proposals.values()].find(
+    const proposal = [...(c.actions ?? c.proposals).values()].find(
       (p) => p.proposalId === r?.selectedCandidateId,
     );
     if (!proposal) this.fallback("no_valid_proposal", c);
+    else if (proposal.proposalId.endsWith("keep-plan") && this.fresh(c)) {
+      c.executed = true;
+      this.sim.setActiveController("adaptive", null);
+      this.sim.emit("decision.outcome", {
+        realizedExtension: false, decisionSource: "jev", requestedGreenSeconds: proposal.requestedGreenSeconds,
+        commandId: c.id, correlationId: c.id, proposalIds: [], arbitrationId: record.arbitrationId,
+        status: "accepted", requestedPhase: proposal.requestedPhase, reason: "authorized",
+        committedStateVersion: this.sim.stateVersion, scheduledAfterSimMs: this.sim.now(),
+        summary: "JEV retained the existing schedule without changing signal timing.",
+      }, { source: "safety", provenance: "deterministic", correlationId: c.id, summary: "Existing schedule retained." });
+      this.trace(c.id, proposal.requestedPhase, true, "keep_existing_plan");
+    }
     else this.apply(proposal, c);
     this.finish();
   }
@@ -575,7 +608,7 @@ export class Coordinator implements Coordination {
     const fresh = this.fresh(c),
       valid =
         TrafficProposalSchema.safeParse(proposal).success &&
-        c.proposals.get(proposal.agentId)?.proposalId === proposal.proposalId;
+        (c.actions?.has(proposal.proposalId) || c.proposals.get(proposal.agentId)?.proposalId === proposal.proposalId);
     const at =
       fresh && valid
         ? this.sim.requestGreen(
@@ -692,6 +725,29 @@ export class Coordinator implements Coordination {
   private fail(reason: FallbackReason) {
     const c = this.cycle;
     if (!c) return;
+    if (!c.record && this.sim.signalView().phase.endsWith("_GREEN") && !this.service.jevUnavailable) {
+      c.recoveryReason = reason;
+      clearTimeout(c.timer);
+      this.service.release(this, c.id);
+      c.deadline = Date.now() + this.service.config.arbitrationTimeoutMs + 100;
+      c.revision = this.sim.decisionStateVersion;
+      const snapshot = this.sim.snapshot();
+      c.observation = freezeObservation({ ...c.observation, simulationTimeMs: this.sim.now(), signal: snapshot.signal, vehicles: snapshot.vehicles, upstreamBacklog: snapshot.metrics.upstreamBacklogByApproach, ns: this.sim.observe("NS"), ew: this.sim.observe("EW"), referencePlan: this.referencePlan() });
+      for (const agentId of ["agent-a", "agent-b"] as const) {
+        if (!c.proposals.has(agentId)) c.proposals.set(agentId, {
+          proposalId: `${c.id}-${agentId}-recovery`, correlationId: c.id, agentId, sessionId: this.sim.sessionId,
+          generation: c.generation, stateVersion: this.sim.stateVersion, createdAtSimMs: this.sim.now(), expiresAtSimMs: this.sim.now() + 12000,
+          createdAtWallTime: new Date().toISOString(), deadlineWallTime: new Date(c.deadline).toISOString(),
+          requestedPhase: agentId === "agent-a" ? "NS_GREEN" : "EW_GREEN", requestedGreenSeconds: this.sim.timing.minimumGreenMs / 1000,
+          urgency: "normal", observations: { ...this.sim.observe(agentId === "agent-a" ? "NS" : "EW") },
+          rationale: `Controller recovery candidate: ${reason}; no agent proposal available.`, provenance: "mock",
+        });
+      }
+      c.timer = setTimeout(() => this.cycle === c && this.fail("timeout"), this.service.config.arbitrationTimeoutMs + 100);
+      c.timer.unref();
+      this.decide(c, true);
+      return;
+    }
     if (c.record) {
       c.record.status = reason === "stale_result" ? "stale" : "failed";
       c.record.completedAtWallTime = new Date().toISOString();
