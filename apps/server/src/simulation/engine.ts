@@ -343,10 +343,12 @@ export class Simulation {
       return null;
     const latest = s.startedAt + this.timing.maximumGreenMs;
     const earliest = s.startedAt + this.timing.minimumGreenMs;
+    const urgent = this.observe(target === "NS_GREEN" ? "NS" : "EW").emergencyCount > 0;
+    const committedEnd = urgent ? earliest : s.plannedEnd?.at ?? earliest;
     const at =
       target === s.phase
-        ? Math.min(latest, Math.max(earliest, this.time + durationMs))
-        : Math.max(earliest, this.time + STEP_MS);
+        ? Math.min(latest, Math.max(earliest, s.plannedEnd?.at ?? earliest, this.time + durationMs))
+        : Math.max(earliest, this.time + STEP_MS, committedEnd);
     if (at > latest) return null;
     const reason = fallback ? "fallback" : "adaptive_command";
     if (target === s.phase) this.extendGreen(at, commandId, reason);

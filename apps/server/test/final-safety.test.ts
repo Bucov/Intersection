@@ -1,14 +1,15 @@
 import {afterEach,expect,it,vi} from 'vitest';
 import {MockJevAdapter,type ArbitrationProvider} from 'mozaik-jev-adapter';
 import {ServerEventSchema} from '@intersection/shared';
-import {AIService} from '../src/ai/service.js';
+import {AIService,type AgentRunner} from '../src/ai/service.js';
+import {ModelMessageItem} from '@mozaik-ai/core';
 import {readConfig} from '../src/ai/config.js';
 import {ObservationSchema,ProposalSchema,type Observation,type Proposal} from '../src/ai/schemas.js';
 import {Sessions} from '../src/sessions.js';
 const resources:AIService[]=[];afterEach(()=>{for(const s of resources.splice(0))s.close();vi.unstubAllEnvs();});
 const sleep=(ms:number)=>new Promise(r=>setTimeout(r,ms));
 async function until(fn:()=>boolean){for(let i=0;i<100;i++){if(fn())return;await sleep(5);}throw Error('cycle did not finish');}
-function setup(provider?:ArbitrationProvider<Observation,Proposal>){const ai=new AIService({...readConfig({}),mockLatencyMs:0},undefined,provider);resources.push(ai);const pool=new Sessions();const entry=pool.create({requestId:'x',mode:'ai',scenarioId:'simultaneous-proposals',seed:7,autoStart:false,speedMultiplier:1});ai.attach(entry);entry.sim.control('start',0);pool.tick(100);return {ai,entry,c:ai.coordinators.get(entry.sim.sessionId)!};}
+function setup(provider?:ArbitrationProvider<Observation,Proposal>,runner?:AgentRunner){const ai=new AIService({...readConfig({}),mockLatencyMs:0},runner,provider);resources.push(ai);const pool=new Sessions();const entry=pool.create({requestId:'x',mode:'ai',scenarioId:'simultaneous-proposals',seed:7,autoStart:false,speedMultiplier:1});ai.attach(entry);entry.sim.control('start',0);pool.tick(100);return {ai,entry,c:ai.coordinators.get(entry.sim.sessionId)!};}
 it('catches missing live TypeSafe constructor credentials without disabling the simulation',()=>{
  vi.stubEnv('TYPESAFE_API_KEY','');const ai=new AIService({...readConfig({}),jevMode:'live'});resources.push(ai);expect(ai.jevUnavailable).toMatch(/TYPESAFE_API_KEY/);expect(ai.providers()[1].status).toBe('missing_credentials');
 });
@@ -33,4 +34,17 @@ it('holds all-red while a vehicle footprint remains in the intersection',()=>{
  sim.requestGreen('EW_GREEN',8000,'clearance-test');let held=false;
  for(let i=0;i<600;i++){sim.advance(1);const s=sim.snapshot();if(s.signal.clearanceBlockedByVehicles){held=true;expect(s.signal.phase).toBe('ALL_RED');expect(s.occupiedVehicleIds.length).toBeGreaterThan(0);}sim.drain();}
  expect(held).toBe(true);
+});
+
+for (const confidence of [0.59, 0.6, 0.7, 0.85]) it(`handles selected reference plan at confidence ${confidence}`, async () => {
+ const provider: ArbitrationProvider<Observation,Proposal> = { arbitrate: async(r,o) => ({...await new MockJevAdapter({stateSchema:ObservationSchema,proposalSchema:ProposalSchema,fixture:'agent-a'}).arbitrate(r,o), confidence, probabilities:null, abstainProbability:null}) };
+ const runner: AgentRunner = async (_input,task) => ({items:[ModelMessageItem.rehydrate({text:JSON.stringify({requestedPhase:task.agentId==='agent-a'?task.observation.referencePlan!.requestedPhase:'EW_GREEN',requestedGreenSeconds:task.observation.referencePlan!.requestedGreenSeconds,summary:'Measured service plan.'})})],tokenUsage:undefined,rowResponse:null});
+ const {entry,c}=setup(provider,runner); await until(()=>c.cycle===null);
+ expect(entry.sim.snapshot().decisionStats?.accepted.jev).toBe(confidence>=0.6?1:0);
+});
+it('defers a medium-confidence selection that disagrees with the reference direction',async()=>{
+ const provider: ArbitrationProvider<Observation,Proposal> = { arbitrate: async(r,o) => ({...await new MockJevAdapter({stateSchema:ObservationSchema,proposalSchema:ProposalSchema,fixture:'agent-b'}).arbitrate(r,o), confidence:0.7, probabilities:null, abstainProbability:null}) };
+ const {entry,c}=setup(provider);await until(()=>c.cycle===null);
+ expect(entry.sim.snapshot().decisionStats?.accepted.jev).toBe(0);
+ expect(entry.sim.drain().some(e=>e.type==='arbitration.fallback'&&e.payload.reason==='medium_confidence_deferred')).toBe(true);
 });

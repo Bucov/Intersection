@@ -1,3 +1,4 @@
+import { createSeed } from "@/lib/ids";
 import { useEffect } from "react";
 import { useNavigate } from "react-router";
 import { Pause, Play, RotateCcw } from "lucide-react";
@@ -32,7 +33,7 @@ export function ControlBar({ mode, scenarioId, seed, scenarios }: ControlBarProp
     : state.status === "paused"
       ? { label: "Resume", icon: <Play />, run: () => services.session.control("resume") }
       : state.status === "completed"
-        ? { label: "Run again", icon: <RotateCcw />, run: async () => { if (await services.session.control("reset")) await services.session.control("start"); } }
+        ? { label: "Run again", icon: <RotateCcw />, run: () => navigate(`/simulate/${mode}?scenario=${scenarioId}&seed=${createSeed()}`, { replace: true }) }
         : { label: "Start", icon: <Play />, run: () => services.session.control("start") };
 
   // Space toggles play/pause for presenters, unless focus is in a form control.
@@ -49,7 +50,7 @@ export function ControlBar({ mode, scenarioId, seed, scenarios }: ControlBarProp
   });
 
   const go = (nextMode: ControllerMode, nextScenario: ScenarioId) =>
-    navigate(`/simulate/${nextMode}?scenario=${nextScenario}&seed=${seed}`, { replace: true });
+    navigate(`/simulate/${nextMode}?scenario=${nextScenario}&seed=${nextScenario === scenarioId ? seed : createSeed()}`, { replace: true });
 
   const current = scenarios.find(s => s.id === scenarioId);
 

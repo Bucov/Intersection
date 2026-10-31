@@ -1,3 +1,4 @@
+import { trafficPlan } from "./trafficPolicy.js";
 import { SemanticEvent } from "@mozaik-ai/core";
 import {
   events,
@@ -143,6 +144,10 @@ export class Coordinator implements Coordination {
       !this.sim.signalView().phase.endsWith("_GREEN")
     )
       return;
+    const view = this.sim.signalView();
+    const opposite = this.sim.observe(view.phase === "NS_GREEN" ? "EW" : "NS");
+    // Let committed batches discharge traffic; prepare the next plan near their end.
+    if (view.pendingSwitch || (view.plannedEnd !== null && this.sim.now() < view.plannedEnd - 6000 && opposite.emergencyCount === 0)) return;
     this.due = false;
     this.nextAt = this.sim.now() + 8000;
     const unavailable = this.service.config.agents.some((a) => a.reason);
@@ -160,6 +165,8 @@ export class Coordinator implements Coordination {
       ns: this.sim.observe("NS"),
       ew: this.sim.observe("EW"),
       occupiedVehicleCount: snapshot.occupiedVehicleIds.length,
+      referencePlan: this.referencePlan(),
+      committedGreenUntilSimMs: view.plannedEnd,
     });
     const timer = setTimeout(() => {
       if (this.cycle?.id === id) {
@@ -503,8 +510,13 @@ export class Coordinator implements Coordination {
         confidence < this.sim.confidencePolicy.mediumThreshold
       )
         reason = "low_confidence";
-      else if (confidence < this.sim.confidencePolicy.highThreshold)
-        reason = "medium_confidence_deferred";
+      else if (confidence < this.sim.confidencePolicy.highThreshold) {
+        const selected = [...c.proposals.values()].find(p => p.proposalId === r.selectedCandidateId);
+        const reference = this.referencePlan();
+        // Medium confidence is usable when independent numeric evidence agrees.
+        if (!selected || selected.requestedPhase !== reference.requestedPhase || Math.abs(selected.requestedGreenSeconds - reference.requestedGreenSeconds) > 5)
+          reason = "medium_confidence_deferred";
+      }
     }
     record.fallbackReason = reason;
     this.jev = {
@@ -634,25 +646,20 @@ export class Coordinator implements Coordination {
     });
     if (this.decisionTrace.length > 2000) this.decisionTrace.shift();
   }
+  private referencePlan() {
+    const view = this.sim.signalView();
+    return trafficPlan({ simulationTimeMs: this.sim.now(), phase: view.phase, phaseStartedAtSimMs: view.startedAt,
+      timing: this.sim.timing, ns: this.sim.observe("NS"), ew: this.sim.observe("EW") });
+  }
   private fallback(reason: FallbackReason, c: Cycle | null) {
     this.sim.setActiveController("deterministic_fallback", reason);
-    const ns = this.sim.observe("NS"),
-      ew = this.sim.observe("EW");
-    let phase: GreenPhase;
-    if (ns.emergencyCount !== ew.emergencyCount)
-      phase = ns.emergencyCount > ew.emergencyCount ? "NS_GREEN" : "EW_GREEN";
-    else
-      phase =
-        ns.maxWaitSeconds === ew.maxWaitSeconds
-          ? this.sim.signalView().nextGreen
-          : ns.maxWaitSeconds > ew.maxWaitSeconds
-            ? "NS_GREEN"
-            : "EW_GREEN";
+    const plan = this.referencePlan();
+    const phase = plan.requestedPhase;
     const id = `${c?.id ?? `fallback-${++this.counter}`}-fallback`;
     const before = this.sim.signalView();
     const at = this.sim.requestGreen(
       phase,
-      this.sim.timing.minimumGreenMs,
+      plan.requestedGreenSeconds * 1000,
       id,
       true,
     );
@@ -662,7 +669,7 @@ export class Coordinator implements Coordination {
         arbitrationId: c?.record?.arbitrationId ?? null,
         reason,
         selectedPhase: phase,
-        policy: "emergency-fairness-v1",
+        policy: "demand-batches-v2",
       },
       {
         source: "controller",
@@ -673,7 +680,7 @@ export class Coordinator implements Coordination {
     );
     this.sim.emit("decision.outcome", {
       realizedExtension: at !== null && before.phase === phase && at > (before.plannedEnd ?? before.earliestEnd),
-      decisionSource: "fallback", requestedGreenSeconds: this.sim.timing.minimumGreenMs / 1000,
+      decisionSource: "fallback", requestedGreenSeconds: plan.requestedGreenSeconds,
       commandId: id, correlationId: c?.id ?? id, proposalIds: [], arbitrationId: null,
       status: at === null ? "rejected" : "accepted", requestedPhase: phase,
       reason: at === null ? "unsafe_transition" : "authorized",

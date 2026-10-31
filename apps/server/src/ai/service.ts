@@ -1,3 +1,4 @@
+import { agentInstructions } from "./trafficPolicy.js";
 import {
   createAgent,
   createHuman,
@@ -268,7 +269,7 @@ export class AIService {
       const participant = createAgent({
         name: `${agentId}-${cycleId}`,
         capabilities: [],
-        instruction: `You propose traffic service for ${i === 0 ? "North/South" : "East/West"}, considering both groups, emergency demand and starvation. Return only JSON with requestedPhase (NS_GREEN or EW_GREEN), requestedGreenSeconds (whole seconds within timing limits), and summary (brief public rationale). Never change signals.`,
+        instruction: agentInstructions(i === 0 ? "North/South" : "East/West"),
         tools: [],
         handlers: [],
       });

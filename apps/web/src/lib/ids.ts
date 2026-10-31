@@ -14,5 +14,5 @@ export function createRequestId(prefix: string): string {
 
 /** Unsigned 32-bit seed. */
 export function createSeed(): number {
-  return Math.floor(Math.random() * 0xffff_ffff) >>> 0;
+  return crypto.getRandomValues(new Uint32Array(1))[0];
 }

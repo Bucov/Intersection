@@ -44,7 +44,7 @@ export const ServerEventSchema = z.discriminatedUnion("type", [
   z.object({ ...EventEnvelopeShape, type: z.literal("agent.proposal"), payload: TrafficProposalSchema }),
   z.object({ ...EventEnvelopeShape, type: z.literal("arbitration.conflict"), payload: z.object({ proposalIds: z.tuple([IdSchema, IdSchema]), reason: z.enum(["mutually_exclusive_phases", "different_service_plans"]) }) }),
   z.object({ ...EventEnvelopeShape, type: z.literal("jev.arbitration"), payload: ArbitrationRecordSchema }),
-  z.object({ ...EventEnvelopeShape, type: z.literal("arbitration.fallback"), payload: z.object({ arbitrationId: IdSchema.nullable(), reason: FallbackReasonSchema, selectedPhase: z.enum(["NS_GREEN", "EW_GREEN", "HOLD"]), policy: z.literal("emergency-fairness-v1") }) }),
+  z.object({ ...EventEnvelopeShape, type: z.literal("arbitration.fallback"), payload: z.object({ arbitrationId: IdSchema.nullable(), reason: FallbackReasonSchema, selectedPhase: z.enum(["NS_GREEN", "EW_GREEN", "HOLD"]), policy: z.enum(["emergency-fairness-v1", "demand-batches-v2"]) }) }),
   z.object({ ...EventEnvelopeShape, type: z.literal("decision.outcome"), payload: DecisionOutcomeSchema }),
   z.object({ ...EventEnvelopeShape, type: z.literal("simulation.metrics"), payload: TrafficMetricsSchema }),
   z.object({ ...EventEnvelopeShape, type: z.literal("simulation.error"), payload: ErrorDetailSchema }),

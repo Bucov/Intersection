@@ -169,3 +169,27 @@ it("serves an accepted opposite-group duration after full clearance and reports 
       ),
   ).toBe(true);
 });
+
+it('honors a committed green batch when a later ordinary request asks to switch', () => {
+  const s = new Simulation({ sessionId: 'batch', mode: 'ai', seed: 42, scenarioId: 'normal-traffic',
+    parameters: { ...SCENARIO_CATALOG[0].defaults, initialGreen: 'EW_GREEN', vehicleMix: { car: 1, van: 0, bus_truck: 0, ambulance: 0, police: 0 } },
+    signalTiming: DEFAULT_SIGNAL_TIMING });
+  s.control('start', 0);
+  // Commit 25 seconds before accepting another ordinary request.
+  expect(s.requestGreen('EW_GREEN', 25000, 'batch')).toBe(25000);
+  s.advance(100);
+  // Request the same direction again with a shorter duration: cannot shorten the batch.
+  expect(s.requestGreen('EW_GREEN', 8000, 'shorter')).toBe(25000);
+  expect(s.requestGreen('NS_GREEN', 15000, 'next-batch')).toBe(25000);
+  s.advance(149);
+  expect(s.snapshot().signal.phase).toBe('EW_GREEN');
+  s.advance(1);
+  expect(s.snapshot().signal.phase).toBe('EW_YELLOW');
+});
+
+it('allows emergency priority to interrupt a batch through the normal clearance path', () => {
+  const s = make(42, 'ai'); s.control('start', 0);
+  s.requestGreen('EW_GREEN', 25000, 'ordinary-batch'); s.advance(100);
+  expect(s.requestGreen('NS_GREEN', 15000, 'emergency')).toBe(10100);
+  s.advance(1); expect(s.snapshot().signal.phase).toBe('EW_YELLOW');
+});

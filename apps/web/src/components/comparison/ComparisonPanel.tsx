@@ -6,7 +6,7 @@ import { ProvenanceBadge } from "@/components/common/ProvenanceBadge";
 import { TimeSeriesChart } from "@/components/metrics/TimeSeriesChart";
 import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { createRequestId } from "@/lib/ids";
+import { createRequestId, createSeed } from "@/lib/ids";
 import { formatClock, formatCount, formatRate, formatSeconds } from "@/lib/format";
 import { isTransportError } from "@/transport/IntersectionTransport";
 import { useStore } from "@/state/store";
@@ -54,6 +54,7 @@ const queueTotal = (m: TrafficMetrics) => m.waitingVehicleCount;
 export function ComparisonPanel({ scenarioId, seed, scenarios }: { scenarioId: ScenarioId; seed: number; scenarios: readonly ScenarioDefinition[] }) {
   const services = useServices();
   const source = useStore(services.dataSource.store, s => s);
+  const [comparisonSeed, setComparisonSeed] = useState(seed);
   const [phase, setPhase] = useState<Phase>({ kind: "idle" });
   const [durationMs, setDurationMs] = useState(120_000);
   const cancelled = useRef(false);
@@ -75,12 +76,14 @@ export function ComparisonPanel({ scenarioId, seed, scenarios }: { scenarioId: S
 
   const run = async () => {
     const transport = services.dataSource.transport();
+    const freshSeed = createSeed();
+    setComparisonSeed(freshSeed);
     setPhase({ kind: "running", comparison: null });
     try {
       let comparison = await transport.createComparison({
         requestId: createRequestId("compare"),
         scenarioId,
-        seed,
+        seed: freshSeed,
         durationMs: effectiveDuration,
         execution,
         speedMultiplier: execution === "accelerated_mock" ? 20 : 1,
@@ -118,7 +121,7 @@ export function ComparisonPanel({ scenarioId, seed, scenarios }: { scenarioId: S
         <div>
           <h3 className="text-[0.9375rem] font-semibold">Fixed-time vs AI</h3>
           <p className="mt-1 text-[0.8125rem] leading-snug text-muted-foreground">
-            Runs both controllers on {scenario?.name ?? "this scenario"} with seed {seed}: identical arrivals, initial queues and safety timings, in two isolated sessions.
+            Runs both controllers on {scenario?.name ?? "this scenario"} with seed {comparisonSeed}: identical arrivals, initial queues and safety timings, in two isolated sessions.
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">

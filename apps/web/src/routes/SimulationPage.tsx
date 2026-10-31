@@ -1,4 +1,5 @@
-import { useEffect } from "react";
+import { createSeed } from "@/lib/ids";
+import { useEffect, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router";
 import { motion, useReducedMotion, type TargetAndTransition } from "motion/react";
 import { SCENARIO_CATALOG, type ControllerMode } from "@intersection/shared";
@@ -16,9 +17,9 @@ import { useStore } from "@/state/store";
 const EASE_OUT = [0.16, 1, 0.3, 1] as const;
 const EASE_IN = [0.55, 0, 1, 0.45] as const;
 
-function parseSeed(value: string | null): number {
+function parseSeed(value: string | null, fallback: number): number {
   const seed = Number(value);
-  return value !== null && Number.isInteger(seed) && seed >= 0 && seed <= 0xffff_ffff ? seed : 42;
+  return value !== null && Number.isInteger(seed) && seed >= 0 && seed <= 0xffff_ffff ? seed : fallback;
 }
 
 export function SimulationPage() {
@@ -31,7 +32,8 @@ export function SimulationPage() {
   const scenarios = useStore(services.dataSource.store, s => s.catalog?.scenarios ?? SCENARIO_CATALOG);
   const requested = search.get("scenario");
   const scenario = scenarios.find(s => s.id === requested && mode !== null && s.supportedModes.includes(mode)) ?? scenarios.find(s => s.id === "normal-traffic") ?? scenarios[0];
-  const seed = parseSeed(search.get("seed"));
+  const [randomSeed] = useState(createSeed);
+  const seed = parseSeed(search.get("seed"), randomSeed);
   const stage = useSceneStage("simulation");
   const intro = useStore(services.intro, s => s.phase);
   const revealed = intro === "handoff" || intro === "done";

@@ -13,19 +13,22 @@ export const ObservationSchema = z.object({
   simulationTimeMs: z.number().int().nonnegative(),
   signal: SignalStateSchema,
   timing: SignalTimingSchema,
-  ns: GroupObservationSchema,
-  ew: GroupObservationSchema,
+  ns: GroupObservationSchema.extend({ approaching: z.number().nonnegative().optional(), estimatedArrivalRateVehPerHour: z.number().nonnegative().optional() }),
+  ew: GroupObservationSchema.extend({ approaching: z.number().nonnegative().optional(), estimatedArrivalRateVehPerHour: z.number().nonnegative().optional() }),
+  committedGreenUntilSimMs: z.number().nonnegative().nullable().optional(),
+  referencePlan: z.object({ requestedPhase: z.enum(["NS_GREEN", "EW_GREEN"]), requestedGreenSeconds: z.number(), reason: z.string(), clearanceCostSeconds: z.number() }).optional(),
   occupiedVehicleCount: z.number().int().nonnegative(),
 });
 export type Proposal = z.infer<typeof ProposalSchema>;
 export type Observation = z.infer<typeof ObservationSchema>;
 export const arbitrationInstructions =
-  "Which proposed service plan best addresses responding emergencies, waiting traffic and starvation in this observation? Abstain if neither proposal fits. These are recommendations; a deterministic signal controller enforces clearance and green limits.";
+  "Which proposal better serves the observed traffic over the next service batch? Use the supplied referencePlan, approaching vehicles, arrival rates and waiting times. Prefer a plan that avoids unnecessary clearance losses while serving responding emergencies and preventing long waits. Both directions share the objective of reducing total delay. Similar useful plans are both acceptable; abstain only if neither is suitable. Signal safety is enforced by code.";
 export function freezeObservation(observation: Observation): Observation {
   const value = ObservationSchema.parse(observation);
   Object.freeze(value.signal);
   Object.freeze(value.timing);
   Object.freeze(value.ns);
   Object.freeze(value.ew);
+  if (value.referencePlan) Object.freeze(value.referencePlan);
   return Object.freeze(value);
 }

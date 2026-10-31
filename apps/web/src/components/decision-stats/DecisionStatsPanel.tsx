@@ -52,7 +52,7 @@ export function DecisionStatsPanel() {
           <dt>Average latency</dt><dd>{mean(j.latencySum, j.latencyCount)}</dd>
           <dt>Maximum latency</dt><dd>{j.latencyCount ? `${Math.round(j.latencyMax)} ms` : '—'}</dd>
         </dl>
-        <p className="text-xs text-muted-foreground">High ≥ {policy.highThreshold * 100}%; medium ≥ {policy.mediumThreshold * 100}%. {session.activeTransport?.source === 'mock' ? 'Offline: medium confidence passes only when the deterministic check agrees; agreement compares direction.' : 'Backend: medium confidence is deferred; agreement requires matching direction and duration.'} Missing confidence is unmeasured. Mock latencies and results are synthetic.</p>
+        <p className="text-xs text-muted-foreground">High ≥ {policy.highThreshold * 100}%; medium ≥ {policy.mediumThreshold * 100}%. {session.activeTransport?.source === 'mock' ? 'Offline: medium confidence passes only when the deterministic check agrees; agreement compares direction.' : 'Backend: medium confidence needs matching reference direction and duration within 5 seconds; agreement requires matching direction and duration.'} Missing confidence is unmeasured. Mock latencies and results are synthetic.</p>
       </section>
       <section className="space-y-3">
         <h2 className="font-semibold">Agent comparison</h2>
