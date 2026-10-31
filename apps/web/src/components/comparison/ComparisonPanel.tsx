@@ -13,6 +13,7 @@ import { createRequestId, createSeed } from "@/lib/ids";
 import { formatClock, formatCount, formatRate, formatSeconds } from "@/lib/format";
 import { isTransportError } from "@/transport/IntersectionTransport";
 import { useStore } from "@/state/store";
+import { comparisonOverrides } from "@/state/runSettings";
 
 type Phase = { kind: "idle" } | { kind: "running"; comparison: ComparisonResponse | null } | { kind: "done"; comparison: ComparisonResponse; series: { t: number; fixed: number | null; ai: number | null }[] } | { kind: "error"; message: string };
 
@@ -60,15 +61,17 @@ const queueTotal = (m: TrafficMetrics) => m.waitingVehicleCount;
 export function ComparisonPanel({ scenarioId, seed, scenarios, variant = "rail" }: { scenarioId: ScenarioId; seed: number; scenarios: readonly ScenarioDefinition[]; variant?: "rail" | "page" }) {
   const services = useServices();
   const source = useStore(services.dataSource.store, s => s);
-  const [comparisonSeed, setComparisonSeed] = useState(seed);
+  const settings = useStore(services.runSettings, s => s.settings);
+  const [comparisonSeed, setComparisonSeed] = useState(settings.seed ?? seed);
   const [phase, setPhase] = useState<Phase>({ kind: "idle" });
-  const [durationMs, setDurationMs] = useState(120_000);
+  const [durationMs, setDurationMs] = useState(settings.scenarioOverrides[scenarioId]?.durationMs ?? 120_000);
   const cancelled = useRef(false);
   const displayedScenarioId = (phase.kind === "running" || phase.kind === "done") && phase.comparison ? phase.comparison.scenarioId : scenarioId;
   const scenario = scenarios.find(s => s.id === displayedScenarioId);
+  const parameters = settings.scenarioOverrides[displayedScenarioId] ?? scenario?.defaults;
   // Every scheduled scenario event must fall inside the comparison window.
-  const latestEvent = Math.max(0, ...(scenario?.defaults.scheduledEvents.map(e => e.atSimMs) ?? [0]));
-  const durations = [60_000, 120_000, 300_000].filter(d => d > latestEvent && (!scenario || d <= scenario.defaults.durationMs));
+  const latestEvent = Math.max(-100, ...(parameters?.scheduledEvents.map(e => e.atSimMs) ?? []));
+  const durations = [...new Set([60_000, 120_000, 300_000, ...(parameters ? [parameters.durationMs] : [])])].sort((a, b) => a - b).filter(d => d > latestEvent && (!parameters || d <= parameters.durationMs));
   const effectiveDuration = durations.includes(durationMs) ? durationMs : durations[0] ?? 300_000;
   const existing = phase.kind === "running" || phase.kind === "done" ? phase.comparison : null;
   const demoMode = existing?.demoMode ?? source.catalog?.config.demoMode ?? "mock";
@@ -83,27 +86,30 @@ export function ComparisonPanel({ scenarioId, seed, scenarios, variant = "rail" 
   }, []);
 
   const run = async (resumeId?: string) => {
-    await services.dataSource.refresh();
-    if (cancelled.current) return;
-    const transport = services.dataSource.transport();
-    const freshSeed = createSeed();
+    const freshSeed = settings.seed ?? createSeed();
     setComparisonSeed(freshSeed);
     setPhase({ kind: "running", comparison: null });
     try {
+      const resolved = await services.dataSource.refresh();
+      if (cancelled.current) return;
+      if (resolved.blocked) throw new Error("Backend unavailable");
+      const transport = services.dataSource.transport();
+      const runExecution = resolved.catalog?.config.demoMode === "live" ? "realtime" : "accelerated_mock";
       let comparison = resumeId ? await transport.getComparison(resumeId) : await transport.createComparison({
         requestId: createRequestId("compare"),
         scenarioId: displayedScenarioId,
         seed: freshSeed,
         durationMs: effectiveDuration,
-        execution,
-        speedMultiplier: execution === "accelerated_mock" ? 20 : 1,
+        execution: runExecution,
+        speedMultiplier: runExecution === "accelerated_mock" ? 20 : 1,
+        ...comparisonOverrides(settings, displayedScenarioId, effectiveDuration),
       });
       sessionStorage.setItem(`intersection-comparison-${source.preference}`, comparison.comparisonId);
       setComparisonSeed(comparison.seed);
       while (comparison.status === "running" || comparison.status === "ready") {
         if (cancelled.current) return;
         setPhase({ kind: "running", comparison });
-        await new Promise(resolve => setTimeout(resolve, execution === "realtime" ? 1000 : 250));
+        await new Promise(resolve => setTimeout(resolve, comparison.execution === "realtime" ? 1000 : 250));
         comparison = await transport.getComparison(comparison.comparisonId);
       }
       if (cancelled.current) return;

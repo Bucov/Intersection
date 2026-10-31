@@ -3,6 +3,7 @@ import { useReducedMotion } from "motion/react";
 import type { ControllerMode, ScenarioId } from "@intersection/shared";
 import { useServices } from "@/app/services";
 import { createRequestId } from "@/lib/ids";
+import { sessionOverrides } from "@/state/runSettings";
 
 /** Time for the camera to settle into the operating view before traffic starts. */
 const ARRIVAL_MS = 1100;
@@ -33,7 +34,7 @@ export function useSessionLifecycle(mode: ControllerMode | null, scenarioId: Sce
         mode,
         scenarioId,
         seed,
-        speedMultiplier: 1,
+        ...sessionOverrides(services.runSettings.getState().settings, scenarioId),
         autoStart: false,
       });
       if (!ok || cancelled) return;

@@ -1,6 +1,16 @@
 # Traffic randomness and controller tuning
 
-New simulation visits now choose a browser-generated random 32-bit seed instead of always using 42. A scenario change and a completed run's Run again choose fresh seeds too. Every comparison run draws a fresh seed and displays it. Both sides of that comparison still receive exactly the same demand and vehicle traits: comparing different traffic would make the result unfair. Reset intentionally replays the existing run; an explicit `?seed=42` reproduces that simulation. Scheduled demonstration inputs (initial queues, ambulance placement, surges) still follow the selected scenario.
+New simulation visits choose a browser-generated random 32-bit seed unless a fixed seed is saved in Settings or supplied through `?seed=42`. A scenario change uses the saved seed, or generates a fresh one when no seed is saved. Reset and a completed run's Run again replay the existing run with its seed and configuration. Comparisons also use the saved seed when present; otherwise they draw a fresh one. Both comparison sides receive the same demand and vehicle traits. Scheduled demonstration inputs (initial queues, ambulance placement, surges) still follow the selected scenario.
+
+## Repeat a run from Settings
+
+In **Settings → Simulation & debugging**, enter the seed shown in the simulation controls, select the original scenario, and keep its parameters and data source the same. **Use last run** loads the last simulation's seed, scenario, traffic inputs and signal timing together. Choose **Save settings** to use these defaults on future visits, or **Save & run AI / fixed-time** to start immediately. Seed `0` is valid; a blank seed generates new traffic. **Use random seeds** returns to that behavior.
+
+The expandable groups expose arrival rates, initial queues, initial green, signal timings, vehicle mix, police responding probability, and random surge/congestion settings. Traffic changes are stored per scenario; signal timings apply to all new runs. Scenario-scheduled events are retained, and a duration that excludes them cannot be saved. Configuration is validated against the shared schemas and stored in `intersection.run-settings.v1` in browser local storage. The existing presentation preferences remain separate.
+
+New simulations and paired comparisons send the saved overrides through the existing session/comparison APIs. The Compare page starts from the configured scenario and custom duration; its duration selector can shorten the horizon while keeping all scheduled events. Existing runs retain their original configuration. Agent models, request timing and JEV thresholds remain server-owned; Settings displays the reported confidence policy without offering unsupported controls.
+
+Seeds reproduce generated inputs on the same engine/data source and version, not live inference results. Model decisions, wall-clock latency and manually injected events can differ. For an exact view of a past live run, use its recorded timeline instead of expecting a seed to replay the models.
 
 Vehicle arrivals were already stochastic, with separate seeded streams for demand and traits. The fault was repeatedly supplying the same seed, so the physics/random generator has not been replaced or biased in favour of AI.
 

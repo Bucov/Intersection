@@ -26,6 +26,12 @@ with 502 and logs one line; the browser console shows that single failed request
 Visitors can change the data source in **Settings**: Automatic, Offline demo, or Backend only. Append `?skipIntro`
 to any URL to skip the opening sequence (used by tests).
 
+**Settings → Simulation & debugging** saves a default scenario, an optional fixed seed, starting speed,
+scenario-specific traffic parameters and signal timing overrides for new simulations and comparisons.
+The controls send the existing API's `scenarioParameters` and `signalTiming` fields; the backend remains
+authoritative. **Use last run** restores the actual seed and parameters of the most recent simulation.
+See [repeat-a-run instructions](TRAFFIC_CONTROL_TUNING.md#repeat-a-run-from-settings) for details and reproducibility limits.
+
 ## Architecture in one screen
 
 ```

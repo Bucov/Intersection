@@ -4,6 +4,7 @@ import { SnapshotInterpolator } from "@/components/scene/interpolation";
 import { DataSourceManager } from "@/state/dataSource";
 import { createIntroCarProbe, createIntroStore, type IntroCarProbe, type IntroState } from "@/state/intro";
 import { createPreferencesStore, type Preferences } from "@/state/preferences";
+import { createRunSettingsStore, rememberRun, type RunSettingsState } from "@/state/runSettings";
 import { createReplayStore, SessionHistory, type ReplayState } from "@/state/replay";
 import { createSceneStore, type SceneState } from "@/state/scene";
 import { SessionController } from "@/state/SessionController";
@@ -11,6 +12,7 @@ import type { Store } from "@/state/store";
 
 export interface AppServices {
   preferences: Store<Preferences>;
+  runSettings: Store<RunSettingsState>;
   dataSource: DataSourceManager;
   session: SessionController;
   /** Interpolated view of the active session for the 3D scene. */
@@ -28,6 +30,7 @@ export interface AppServices {
 
 export function createAppServices(): AppServices {
   const preferences = createPreferencesStore();
+  const runSettings = createRunSettingsStore();
   const dataSource = new DataSourceManager(preferences.getState().dataSource, { baseUrl: import.meta.env.VITE_BACKEND_URL ?? "" });
   const session = new SessionController();
   const sessionFeed = new SnapshotInterpolator();
@@ -41,6 +44,9 @@ export function createAppServices(): AppServices {
     const state = session.store.getState();
     // Replay only exists while the session stands still; running, a reset or a new session returns to live.
     const key = state.snapshot ? `${state.snapshot.sessionId}:${state.snapshot.generation}` : null;
+    if (state.snapshot && key !== lastKey) {
+      runSettings.setState(s => ({ ...s, lastRun: rememberRun(state.snapshot!.config) }));
+    }
     if (replay.getState().time !== null && (state.status === "running" || key !== lastKey)) replay.setState({ time: null });
     lastKey = key;
     if (state.snapshot === lastSnapshot) return;
@@ -69,6 +75,7 @@ export function createAppServices(): AppServices {
 
   return {
     preferences,
+    runSettings,
     dataSource,
     session,
     sessionFeed,

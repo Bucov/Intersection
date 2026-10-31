@@ -9,6 +9,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { replayIntro } from "@/state/intro";
 import type { DataSourcePreference, QualityPreference } from "@/state/preferences";
 import { shallowEqual, useStore } from "@/state/store";
+import { SimulationSettings } from "@/components/settings/SimulationSettings";
 
 const SOURCES: { value: DataSourcePreference; label: string; description: string }[] = [
   { value: "auto", label: "Automatic", description: "Use the backend when it answers; otherwise run the offline demo." },
@@ -20,15 +21,6 @@ const QUALITY: { value: QualityPreference; label: string; description: string }[
   { value: "auto", label: "Automatic", description: "Starts high and lowers quality if the frame rate drops." },
   { value: "high", label: "High", description: "Shadows and a sharper image." },
   { value: "low", label: "Low", description: "No shadows, standard pixel density. Best for older laptops." },
-];
-
-const LATER = [
-  "Traffic arrival rates and vehicle mix",
-  "Signal durations: minimum, maximum and fixed green, yellow, all red",
-  "Emergency event probabilities",
-  "How often the agents are asked for proposals",
-  "JEV confidence thresholds",
-  "Visual theme",
 ];
 
 function Choice<T extends string>({ name, value, options, onChange }: { name: string; value: T; options: { value: T; label: string; description: string }[]; onChange: (value: T) => void }) {
@@ -56,7 +48,8 @@ export function SettingsPage() {
   const summary = summarizeConnection(source, meta, null);
 
   return (
-    <PageLayout title="Settings" lead="Presentation preferences for this browser. Simulation parameters will join them once the backend exposes them.">
+    <PageLayout title="Settings" lead="Configure repeatable traffic runs, the data source and presentation for this browser.">
+      <SimulationSettings />
       <PageSection title="Data source" description="Where new sessions come from. The home preview always runs locally.">
         <Choice name="Data source" value={preferences.dataSource} options={SOURCES} onChange={dataSource => services.preferences.setState(p => ({ ...p, dataSource }))} />
         <div className="flex flex-wrap items-center gap-3 rounded-lg border px-3 py-2.5 text-sm">
@@ -91,15 +84,12 @@ export function SettingsPage() {
         </div>
       </PageSection>
 
-      <PageSection title="Coming later" description="Advanced configuration will be added when the backend supports it:">
-        <ul className="flex flex-col gap-2 text-[0.9375rem] text-muted-foreground">
-          {LATER.map(item => (
-            <li key={item} className="flex gap-2.5">
-              <span className="mt-[0.55rem] size-1.5 shrink-0 bg-subtle-foreground" aria-hidden="true" />
-              {item}
-            </li>
-          ))}
-        </ul>
+      <PageSection title="AI policy" description="The server owns model selection, request timing and JEV confidence thresholds. These cannot be changed through the session API.">
+        {source.catalog ? <dl className="grid grid-cols-2 gap-3 text-sm">
+          <dt className="text-muted-foreground">High confidence</dt><dd className="tabular-nums">≥ {source.catalog.config.confidencePolicy.highThreshold * 100}%</dd>
+          <dt className="text-muted-foreground">Medium confidence</dt><dd className="tabular-nums">≥ {source.catalog.config.confidencePolicy.mediumThreshold * 100}%</dd>
+          <dt className="text-muted-foreground">Execution</dt><dd>{source.kind === "mock" ? "Offline demo" : source.catalog.config.demoMode === "live" ? "Live models" : "Backend mock models"}</dd>
+        </dl> : <p className="text-sm text-muted-foreground">Connect to a data source to view its policy.</p>}
       </PageSection>
     </PageLayout>
   );

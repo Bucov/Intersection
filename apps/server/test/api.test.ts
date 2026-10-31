@@ -202,3 +202,32 @@ it("streams full checkpoints, movement, heartbeat, reset and reconnect through a
   expect(checkpoint.sequence).toBe(s.sim.latestSequence);
   again.terminate();
 });
+
+it("applies custom traffic and signal settings and replays a seed, including zero", async () => {
+  const { app, sessions } = await setup();
+  const parameters = {
+    ...C.SCENARIO_CATALOG[0].defaults,
+    durationMs: 20_000,
+    arrivalRatesVehPerHour: { north: 650, south: 0, east: 100, west: 80 },
+  };
+  const timing = { ...C.DEFAULT_SIGNAL_TIMING, fixedGreenMs: 12000 };
+  const make = async (requestId: string) => {
+    const response = await app.inject({ method: "POST", url: "/api/sessions", payload: {
+      ...create, requestId, seed: 0, speedMultiplier: 2,
+      scenarioParameters: parameters, signalTiming: timing,
+    } });
+    expect(response.statusCode).toBe(201);
+    const snapshot = C.SessionResponseSchema.parse(response.json()).snapshot;
+    expect(snapshot.config).toMatchObject({ seed: 0, speedMultiplier: 2, signalTiming: timing, scenario: parameters });
+    return sessions.get(snapshot.sessionId).sim;
+  };
+  const a = await make("custom-a"), b = await make("custom-b");
+  for (const sim of [a, b]) { sim.control("start", 0); sim.advance(150); }
+  const demand = (sim: typeof a) => sim.drain().filter(e => e.type === "simulation.vehicle_event" && e.payload.kind === "requested").map(e => ({ at: e.simulationTimeMs, payload: e.payload }));
+  expect(demand(a)).toEqual(demand(b));
+  expect(a.snapshot().metrics.requestedVehicleCount).toBeGreaterThan(0);
+  expect(a.snapshot().metrics).toEqual(b.snapshot().metrics);
+  a.control("reset", 0);
+  expect(a.snapshot().config).toMatchObject({ seed: 0, signalTiming: timing, scenario: parameters });
+  expect(a.snapshot().simulationTimeMs).toBe(0);
+});

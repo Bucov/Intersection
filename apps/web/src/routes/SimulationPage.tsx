@@ -30,10 +30,11 @@ export function SimulationPage() {
   const reduced = useReducedMotion() ?? false;
   const mode: ControllerMode | null = params.mode === "ai" || params.mode === "traditional" ? params.mode : null;
   const scenarios = useStore(services.dataSource.store, s => s.catalog?.scenarios ?? SCENARIO_CATALOG);
-  const requested = search.get("scenario");
+  const settings = services.runSettings.getState().settings;
+  const requested = search.get("scenario") ?? settings.scenarioId;
   const scenario = scenarios.find(s => s.id === requested && mode !== null && s.supportedModes.includes(mode)) ?? scenarios.find(s => s.id === "normal-traffic") ?? scenarios[0];
   const [randomSeed] = useState(createSeed);
-  const seed = parseSeed(search.get("seed"), randomSeed);
+  const seed = parseSeed(search.get("seed"), settings.seed ?? randomSeed);
   const stage = useSceneStage("simulation");
   const intro = useStore(services.intro, s => s.phase);
   const revealed = intro === "handoff" || intro === "done";

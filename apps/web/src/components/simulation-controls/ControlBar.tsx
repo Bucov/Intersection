@@ -23,6 +23,7 @@ interface ControlBarProps {
 
 export function ControlBar({ mode, scenarioId, seed, scenarios }: ControlBarProps) {
   const services = useServices();
+  const settings = services.runSettings.getState().settings;
   const navigate = useNavigate();
   const state = useStore(services.session.store, s => ({ status: s.status, speed: s.speedMultiplier, demoMode: s.snapshot?.config.demoMode ?? null }), shallowEqual);
   const meta = useStore(services.session.meta, m => ({ busy: m.busy, opening: m.opening }), shallowEqual);
@@ -33,7 +34,7 @@ export function ControlBar({ mode, scenarioId, seed, scenarios }: ControlBarProp
     : state.status === "paused"
       ? { label: "Resume", icon: <Play />, run: () => services.session.control("resume") }
       : state.status === "completed"
-        ? { label: "Run again", icon: <RotateCcw />, run: () => navigate(`/simulate/${mode}?scenario=${scenarioId}&seed=${createSeed()}`, { replace: true }) }
+        ? { label: "Run again", icon: <RotateCcw />, run: () => void services.session.control("reset").then(ok => { if (ok) void services.session.control("start"); }) }
         : { label: "Start", icon: <Play />, run: () => services.session.control("start") };
 
   // Space toggles play/pause for presenters, unless focus is in a form control.
@@ -50,7 +51,7 @@ export function ControlBar({ mode, scenarioId, seed, scenarios }: ControlBarProp
   });
 
   const go = (nextMode: ControllerMode, nextScenario: ScenarioId) =>
-    navigate(`/simulate/${nextMode}?scenario=${nextScenario}&seed=${nextScenario === scenarioId ? seed : createSeed()}`, { replace: true });
+    navigate(`/simulate/${nextMode}?scenario=${nextScenario}&seed=${nextScenario === scenarioId ? seed : settings.seed ?? createSeed()}`, { replace: true });
 
   const current = scenarios.find(s => s.id === scenarioId);
 
@@ -127,6 +128,7 @@ export function ControlBar({ mode, scenarioId, seed, scenarios }: ControlBarProp
       </Select>
 
       <EventMenu />
+      <span className="text-xs tabular-nums text-muted-foreground select-all" title="Reuse this seed with the same scenario and settings to repeat the traffic inputs">Seed {seed}</span>
 
       {state.demoMode === "live" && mode === "ai" && state.speed !== 1 ? (
         <span className="text-xs text-warning">1× is recommended with live models; faster runs can miss decisions.</span>

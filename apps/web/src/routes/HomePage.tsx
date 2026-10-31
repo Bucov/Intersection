@@ -17,12 +17,13 @@ export function HomePage() {
   const stage = useSceneStage("preview");
   const phase = useStore(services.intro, s => s.phase);
   const source = useStore(services.dataSource.store, s => s);
+  const settings = useStore(services.runSettings, s => s.settings);
   const [selected, setSelected] = useState<ControllerMode | null>(null);
   const revealed = phase === "handoff" || phase === "done";
   // After the intro, pages arrive under the square wipe; only the intro's handoff animates them in.
   const [arriving] = useState(phase !== "done");
   const delay = phase === "handoff" ? 0.55 : 0.05;
-  const timing = source.catalog?.config.signalTiming ?? DEFAULT_SIGNAL_TIMING;
+  const timing = settings.signalTiming ?? source.catalog?.config.signalTiming ?? DEFAULT_SIGNAL_TIMING;
   const s = (ms: number) => `${Math.round(ms / 1000)} s`;
 
   // The fixed cycle, phase by phase, then the same squares again, fading: it repeats whatever the queues.
