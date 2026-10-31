@@ -1,34 +1,62 @@
-# Milestone 0 validation
+# Testing Intersection
 
-Run from the monorepo root:
+Install Node.js 22 or newer and run `npm ci` from the repository root first. All commands below run from that same folder.
+
+## Standard checks
 
 ```sh
-npm run build -w @intersection/shared
-npm run typecheck -w @intersection/shared
-npm run test -w @intersection/shared
-npm run typecheck -w @intersection/server
+npm run build
+npm run typecheck
+npm run lint
+npm test
 ```
 
-`npm test` also discovers the shared contract suite. Shared typechecking includes source and tests, including
-compile-time assertions that exported request and response types match the schemas. The server check verifies
-that preserving the starter exports keeps the existing server compilable.
+The test suites cover shared schemas and fixtures, deterministic traffic, signal safety, session APIs, AI coordination with mocks, transports, state reducers and interface components. Standard tests do not require provider keys or make live model calls.
 
-The suite validates every published JSON fixture, all REST success schemas, all domain event discriminants,
-all nine scenario defaults, request defaults, bounds and rejection of unknown request fields. Negative cases
-cover invalid routes/vehicle states, conflicting signal representation, invalid timing, impossible demand
-counts, empty-sample metric semantics, inconsistent snapshot metadata, proposal expiration shape, arbitration
-choice distributions, confidence boundaries, provider failures, comparison isolation metadata and reconnect
-history ordering. Event examples include overlapping mock intervals to exercise the timeline data shape.
+## Browser tests
 
-This milestone does **not** test physical collision avoidance, Poisson sampling, runtime determinism, Fastify
-routes, actual socket reconnection, model concurrency, Mozaik delivery, TypeSafe parsing or safety-gate behavior.
-Those implementations do not exist yet. Schema validation cannot replace their future unit/integration tests.
+Install the test browser once:
 
-No credentials, downloads or external API calls are required for the contract tests once dependencies are
-installed. Compiled output is ignored by Git. The only new dependency is the shared package's explicit Zod
-runtime dependency; Vitest and Node types use the existing workspace tooling.
+```sh
+npm exec -- playwright install chromium
+```
 
-Milestone verification: 62 tests pass through both the workspace test script and root `npm test`; shared
-build/typechecks, server typecheck, and targeted Oxlint checks pass. The existing root `npm run typecheck`
-cannot finish because `@intersection/web` has no `typecheck` script. This predates the contract change;
-frontend scripts were left untouched under file ownership rules. Use the scoped checks above for this milestone.
+Run the browser-only demo checks:
+
+```sh
+npm run test:e2e -w @intersection/web
+```
+
+Run the backend integration checks:
+
+```sh
+npm run test:e2e:backend
+```
+
+Playwright configurations start their required local servers. Linux environments may need browser system dependencies; Playwright reports missing libraries when launching Chromium.
+
+## Optional live-provider check
+
+Configure `apps/server/.env` as described in the [README](../README.md#optional-connect-real-ai-models). The smoke test exercises the selected live providers and JEV and consumes their API quotas. Without explicit opt-in it skips.
+
+macOS/Linux terminal:
+
+```sh
+RUN_LIVE_SMOKE=1 npm run test:live -w @intersection/server
+```
+
+Windows Command Prompt:
+
+```bat
+set RUN_LIVE_SMOKE=1
+npm run test:live -w @intersection/server
+set RUN_LIVE_SMOKE=
+```
+
+The output reports whether a conflict, live arbitration and overlapping completed agent requests were observed. Passing mock tests does not establish provider availability or live-model quality.
+
+## Reproducibility and benchmarks
+
+Use Settings to save a seed and configuration, or restore the last run. The same seed requires the same scenario, parameters, engine/version and data source to reproduce generated traffic. Live decisions and wall-clock timing can vary.
+
+The [traffic methodology](TRAFFIC_CONTROL_TUNING.md) explains the benchmark command, measured inputs and limitations. [Decision Stats](DECISION_STATS.md) defines the decision counters and their denominators.

@@ -12,16 +12,16 @@ New simulations and paired comparisons send the saved overrides through the exis
 
 Seeds reproduce generated inputs on the same engine/data source and version, not live inference results. Model decisions, wall-clock latency and manually injected events can differ. For an exact view of a past live run, use its recorded timeline instead of expecting a seed to replay the models.
 
-Vehicle arrivals were already stochastic, with separate seeded streams for demand and traits. The fault was repeatedly supplying the same seed, so the physics/random generator has not been replaced or biased in favour of AI.
+Vehicle arrivals use separate seeded streams for demand and traits, independent of controller decisions.
 
-## Backend changes
+## Backend control policy
 
-- The observation validator previously removed approaching-vehicle counts and arrival rates. Both now reach the proposal agents and JEV, along with committed green end time and a numerical reference service plan.
+- Approaching-vehicle counts and arrival rates reach the proposal agents and JEV, along with committed green end time and a numerical reference service plan.
 - Agents share a total-delay objective. Their assigned direction is a focus for observation, not an instruction to always request that direction. Instructions explain clearance losses, future arrivals, service-duration semantics, and how to justify a departure from the reference plan.
 - `apps/server/src/ai/trafficPolicy.ts` contains the numerical reference and prompt. The reference divides an approximately 60-second cycle, minus yellow/all-red losses, by current demand rates. It uses observed vehicles to avoid serving an empty approach, prioritises responding emergencies, and considers opposing waits of at least 45 seconds.
-- Backup policy is now identified as `demand-batches-v2`. It uses that plan instead of repeatedly requesting minimum green based only on the oldest wait.
+- Backup policy is identified as `demand-batches-v2`. It uses that plan instead of repeatedly requesting minimum green based only on the oldest wait.
 - The coordinator usually waits until six seconds before a committed green ends before planning again. Pending switches are not overwritten. New ordinary requests respect the committed service end. Responding emergencies can request an earlier transition, still subject to minimum green, yellow/all-red and occupancy checks. Same-direction requests cannot shorten an already committed green.
-- JEV confidence at or above the existing high threshold (0.85 by default) follows the existing path. Medium confidence, from 0.6, is now eligible only if the selected direction matches the current numerical reference and duration is within five seconds. Otherwise it is deferred. Low/missing confidence, abstention, failures and stale results still fall back. This lowers the effective confidence requirement for corroborated plans without treating every ambiguous selection as usable.
+- JEV confidence at or above the existing high threshold (0.85 by default) follows the existing path. Medium confidence, from 0.6, is eligible only if the selected direction matches the current numerical reference and duration is within five seconds. Otherwise it is deferred. Low/missing confidence, abstention, failures and stale results still fall back. This lowers the effective confidence requirement for corroborated plans without treating every ambiguous selection as usable.
 
 The browser-only synthetic AI controller retains its existing decision policy; fresh traffic seeds apply to both data sources. Backend mock-agent fixtures remain fixtures for testing arbitration rather than being silently replaced with an optimised controller.
 
@@ -50,5 +50,3 @@ Means over the five additional seeds:
 | Ambulance priority | 61.6 | 59.6 | 9.06 s | 7.80 s |
 
 The ambulance scenario has fewer completed trips in this finite horizon; responding-emergency signal delay falls from 22.5 s to 0.5 s. The controller does not dominate every metric on every run. Queue, unfinished-wait and throughput measurements should be considered together. Lower fallback frequency is not itself evidence of better traffic flow.
-
-Live JEV documentation could not be fetched during this change; integration syntax was checked against the installed adapter and shared schemas. Live prompt/confidence tuning is pending explicit approval of the proposed experiment budget.

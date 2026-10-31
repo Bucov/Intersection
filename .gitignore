@@ -8,3 +8,11 @@ test-results/
 !.env.example
 *.tsbuildinfo
 .DS_Store
+
+# Local coding-assistant tools and generated design context
+.agents/
+.claude/
+.codex/
+.impeccable/
+skills-lock.json
+.taste-skill/

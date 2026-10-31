@@ -1,19 +1,22 @@
 # Intersection web app
 
-The user-facing side of Intersection: a cinematic intro, a live 3D intersection preview, and a simulation view that
-compares a fixed-time signal with two concurrent AI agents and JEV arbitration. It runs fully offline; with a v1
-backend available it switches to live data automatically.
+For installation, running the project and a tour of its features, start with the [main README](../../README.md).
+
+The frontend uses React, TypeScript, Vite and Three.js through React Three Fiber. It supports an independent browser-only demo and a REST/WebSocket connection to the simulation backend.
+
+- `src/routes`: pages.
+- `src/components`: the scene, panels, controls and charts.
+- `src/state`: application stores, settings, session state and replay history.
+- `src/transport`: browser demo and backend adapters.
+- `e2e`: browser tests.
+
+Run these commands from the repository root:
 
 ```sh
-npm run dev -w @intersection/web         # http://localhost:5173 (builds @intersection/shared first)
+npm run dev:web
 npm run typecheck -w @intersection/web
-npm run test -w @intersection/web        # Vitest: engine, reducer, transports, components
-npm run test:e2e -w @intersection/web    # Playwright, no backend needed
+npm run test -w @intersection/web
+npm run test:e2e -w @intersection/web
 ```
 
-- Integration with the backend: [docs/FRONTEND_INTEGRATION.md](../../docs/FRONTEND_INTEGRATION.md)
-- Product context: [PRODUCT.md](PRODUCT.md)
-- Restyling: colours, faces and the 3D materials are tokens in [src/index.css](src/index.css).
-
-Code map: `src/routes` (pages), `src/components` (scene, panels, controls), `src/state` (stores and the session
-reducer), `src/transport` (offline demo and backend adapters), `e2e` (Playwright).
+See the [API contract](../../docs/API_CONTRACT.md) and [testing guide](../../docs/TESTING.md) for technical details. Interface colours, typography and scene materials use the tokens in `src/index.css`.
