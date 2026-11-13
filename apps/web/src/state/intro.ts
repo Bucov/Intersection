@@ -8,7 +8,7 @@ import { createStore } from "./store";
  * deliberate replay, never on ordinary route changes.
  *
  * - title, byline: type only, the scene is fully masked.
- * - drive: the scene shows the one car through a hole in the mask.
+ * - drive: the room covers the scene except the one car's model.
  * - handoff: the mask opens, the fleet fades in, the site appears.
  */
 export type IntroPhase = "title" | "byline" | "drive" | "handoff" | "done";

@@ -59,6 +59,9 @@ interface MockComparison {
 
 let sessionCounter = 0;
 
+/** Main-thread time one slice of an offline comparison may take before yielding to the page. */
+const SLICE_MS = 12;
+
 /**
  * Offline demo transport. Runs the deterministic mock engine in the browser and
  * exposes it through the same contract as the backend: validated requests,
@@ -301,21 +304,21 @@ export class MockIntersectionTransport implements IntersectionTransport {
     const chunk = () => {
       if (!this.comparisons.has(entry.response.comparisonId)) return;
       const { traditional, ai } = entry;
-      // Work in ~12 ms slices so the page (and the 3D scene) stay responsive.
+      // Work in short slices so the page (and the 3D scene) stay responsive.
       const started = performance.now();
       let done = false;
+      // The budget is checked after every pair of steps, so a slice never runs far past it.
       do {
         // Two steps at a time, each recorded, so the comparison can be watched back in 3D.
-        for (let i = 0; i < 25; i++) {
-          traditional.advance(2);
-          ai.advance(2);
-          entry.recording.traditional.push(traditional.snapshot());
-          entry.recording.ai.push(ai.snapshot());
-        }
+        traditional.advance(2);
+        ai.advance(2);
+        entry.recording.traditional.push(traditional.snapshot());
+        entry.recording.ai.push(ai.snapshot());
+        // Events are not delivered for comparison runs; drop them so the outboxes stay small.
         traditional.drain();
         ai.drain();
         done = traditional.status === "completed" && ai.status === "completed";
-      } while (!done && performance.now() - started < 12);
+      } while (!done && performance.now() - started < SLICE_MS);
       entry.response = {
         ...entry.response,
         status: done ? "completed" : "running",

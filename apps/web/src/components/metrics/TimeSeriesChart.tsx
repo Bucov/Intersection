@@ -1,6 +1,8 @@
-import { useId } from "react";
+import { memo, useId } from "react";
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis, type TooltipContentProps } from "recharts";
+import { BoardFigure, BoardSection } from "@/components/common/Board";
 import { formatClock } from "@/lib/format";
+import { cn } from "@/lib/utils";
 
 export interface ChartSeries {
   key: string;
@@ -18,6 +20,11 @@ interface TimeSeriesChartProps<T extends { t: number }> {
   /** Shown when there is nothing to plot yet. */
   empty?: string;
   height?: number;
+  /**
+   * "panel" (default): compact caption with an inline legend.
+   * "board": the reading-board section of the Statistics tab, latest values set large.
+   */
+  variant?: "panel" | "board";
 }
 
 function ticksFor(min: number, max: number): number[] {
@@ -37,17 +44,18 @@ function LineKey({ color }: { color: string }) {
  * a crosshair tooltip that lists every series (values first), a legend that
  * carries the latest values, and a table view for every value.
  */
-export function TimeSeriesChart<T extends { t: number }>({ title, description, data, series, format, empty = "No samples yet.", height = 140 }: TimeSeriesChartProps<T>) {
+function TimeSeriesChartImpl<T extends { t: number }>({ title, description, data, series, format, empty = "No samples yet.", height = 140, variant = "panel" }: TimeSeriesChartProps<T>) {
   const id = useId();
   const latest = data[data.length - 1] as Record<string, number | null> | undefined;
   const first = data[0]?.t ?? 0;
   const last = data[data.length - 1]?.t ?? 0;
   const tableRows = data.slice(-12).reverse();
+  const board = variant === "board";
 
   const renderTooltip = ({ active, payload, label }: TooltipContentProps) => {
     if (!active || !payload?.length) return null;
     return (
-      <div className="rounded-md border bg-popover px-2.5 py-2 text-xs shadow-md">
+      <div className={cn("border bg-popover px-2.5 py-2 text-xs shadow-md", !board && "rounded-md")}>
         <p className="mb-1 font-mono tabular text-subtle-foreground">{formatClock(Number(label))}</p>
         <ul className="flex flex-col gap-0.5">
           {series.map(s => {
@@ -66,25 +74,9 @@ export function TimeSeriesChart<T extends { t: number }>({ title, description, d
     );
   };
 
-  return (
-    <figure className="flex flex-col gap-2" aria-labelledby={`${id}-title`}>
-      <figcaption className="flex flex-col gap-1">
-        <span id={`${id}-title`} className="text-[0.8125rem] font-medium">{title}</span>
-        {description ? <span className="text-xs leading-snug text-subtle-foreground">{description}</span> : null}
-        {series.length > 1 || latest ? (
-          <span className="flex flex-wrap gap-x-4 gap-y-1 text-xs" aria-label="Legend and latest values">
-            {series.map(s => (
-              <span key={s.key} className="inline-flex items-center gap-1.5">
-                <LineKey color={s.color} />
-                <span className="text-muted-foreground">{s.label}</span>
-                {latest ? <span className="font-mono tabular text-foreground">{latest[s.key] === null || latest[s.key] === undefined ? "—" : format(latest[s.key] as number)}</span> : null}
-              </span>
-            ))}
-          </span>
-        ) : null}
-      </figcaption>
-      {data.length < 2 ? (
-        <p className="flex items-center justify-center rounded-md border border-dashed text-xs text-subtle-foreground" style={{ height }}>{empty}</p>
+  const plot =
+    data.length < 2 ? (
+        <p className={cn("flex items-center justify-center border border-dashed text-xs text-subtle-foreground", !board && "rounded-md")} style={{ height }}>{empty}</p>
       ) : (
         <div style={{ height }} aria-hidden="true">
           <ResponsiveContainer width="100%" height="100%">
@@ -102,7 +94,7 @@ export function TimeSeriesChart<T extends { t: number }>({ title, description, d
                 height={20}
               />
               <YAxis
-                width={38}
+                width={board ? 46 : 38}
                 tickFormatter={value => format(Number(value))}
                 tick={{ fill: "var(--subtle-foreground)", fontSize: 11, fontFamily: "var(--font-mono)" }}
                 tickLine={false}
@@ -130,10 +122,11 @@ export function TimeSeriesChart<T extends { t: number }>({ title, description, d
             </LineChart>
           </ResponsiveContainer>
         </div>
-      )}
-      {data.length ? (
+      );
+  const dataTable =
+    data.length ? (
         <details className="text-xs text-muted-foreground">
-          <summary className="w-fit cursor-pointer rounded-sm text-subtle-foreground hover:text-foreground">Data table</summary>
+          <summary className={cn("w-fit cursor-pointer text-subtle-foreground hover:text-foreground", board ? "text-sm" : "rounded-sm")}>Data table</summary>
           <table className="mt-2 w-full border-collapse font-mono tabular">
             <thead>
               <tr className="text-left text-subtle-foreground">
@@ -155,7 +148,51 @@ export function TimeSeriesChart<T extends { t: number }>({ title, description, d
           </table>
           {data.length > tableRows.length ? <p className="mt-1 text-subtle-foreground">Latest {tableRows.length} of {data.length} samples.</p> : null}
         </details>
-      ) : null}
+      ) : null;
+
+  if (board) {
+    return (
+      <BoardSection title={title} note={description}>
+        <figure className="flex flex-col gap-4" aria-label={title}>
+          <figcaption className="flex flex-wrap gap-x-8 gap-y-3" aria-label="Legend and latest values">
+            {series.map(s => (
+              <BoardFigure
+                key={s.key}
+                size="md"
+                value={latest && latest[s.key] !== null && latest[s.key] !== undefined ? format(latest[s.key] as number) : "—"}
+                label={<span className="inline-flex items-center gap-1.5 text-muted-foreground"><LineKey color={s.color} />{s.label}</span>}
+              />
+            ))}
+          </figcaption>
+          {plot}
+          {dataTable}
+        </figure>
+      </BoardSection>
+    );
+  }
+
+  return (
+    <figure className="flex flex-col gap-2" aria-labelledby={`${id}-title`}>
+      <figcaption className="flex flex-col gap-1">
+        <span id={`${id}-title`} className="text-[0.8125rem] font-medium">{title}</span>
+        {description ? <span className="text-xs leading-snug text-subtle-foreground">{description}</span> : null}
+        {series.length > 1 || latest ? (
+          <span className="flex flex-wrap gap-x-4 gap-y-1 text-xs" aria-label="Legend and latest values">
+            {series.map(s => (
+              <span key={s.key} className="inline-flex items-center gap-1.5">
+                <LineKey color={s.color} />
+                <span className="text-muted-foreground">{s.label}</span>
+                {latest ? <span className="font-mono tabular text-foreground">{latest[s.key] === null || latest[s.key] === undefined ? "—" : format(latest[s.key] as number)}</span> : null}
+              </span>
+            ))}
+          </span>
+        ) : null}
+      </figcaption>
+      {plot}
+      {dataTable}
     </figure>
   );
 }
+
+/** Charts redraw only when their data or configuration changes, not whenever the panel around them does. */
+export const TimeSeriesChart = memo(TimeSeriesChartImpl) as typeof TimeSeriesChartImpl;

@@ -1,21 +1,14 @@
-import type { CSSProperties, ReactNode } from "react";
+import type { ReactNode } from "react";
 import type { ControllerMode } from "@intersection/shared";
 import { useServices } from "@/app/services";
+import { BoardSection as Section } from "@/components/common/Board";
+import { Squares, type Part } from "@/components/common/Squares";
+import { unitFor } from "@/components/common/squareUnits";
 import { ProvenanceBadge } from "@/components/common/ProvenanceBadge";
 import { formatClock, formatSeconds } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { PhaseSegment } from "@/state/session";
 import { shallowEqual, useStore } from "@/state/store";
-
-/** Most squares one side of a comparison may draw before each square stands for more than one unit. */
-const MAX_SQUARES = 120;
-const UNITS = [1, 2, 5, 10, 20, 25, 50, 100, 200, 500, 1000];
-const COLUMNS = 15;
-
-/** One unit per square when it fits, otherwise the smallest round number that keeps the larger side under the cap. */
-function unitFor(max: number): number {
-  return UNITS.find(u => max / u <= MAX_SQUARES) ?? Math.ceil(max / MAX_SQUARES);
-}
 
 /** `"vehicle|vehicles"` picks the form for `n`; a plain label is used as is. */
 function noun(label: string, n: number): string {
@@ -33,59 +26,6 @@ function greenSeconds(phases: PhaseSegment[], now: number): { ns: number; ew: nu
     if (segment.phase === "EW_GREEN") ew += length;
   });
   return { ns: ns / 1000, ew: ew / 1000 };
-}
-
-interface Part {
-  label: string;
-  value: number;
-  /** A `text-*` colour class: what the squares mean. */
-  tone: string;
-  hollow?: boolean;
-}
-
-/**
- * Squares that place themselves one by one. `start` delays the whole run so
- * sections fill in reading order; long runs speed up so none takes much over a second.
- */
-function Squares({ parts, unit, start, align = "start", label }: { parts: Part[]; unit: number; start: number; align?: "start" | "end"; label: string }) {
-  const cells = parts.flatMap(part => Array.from({ length: Math.round(part.value / unit) }, () => part));
-  const step = Math.min(22, 1100 / Math.max(1, cells.length));
-  return (
-    <div
-      role="img"
-      aria-label={label}
-      className="grid w-fit gap-[3px]"
-      style={{ gridTemplateColumns: `repeat(${COLUMNS}, 10px)`, direction: align === "end" ? "rtl" : "ltr" } as CSSProperties}
-    >
-      {cells.length ? (
-        cells.map((part, i) => (
-          <span
-            key={i}
-            className={cn(
-              "size-[10px] animate-[square-in_0.42s_cubic-bezier(0.16,1,0.3,1)_both] motion-reduce:animate-none",
-              part.tone,
-              part.hollow ? "border-[1.5px] border-current" : "bg-current",
-            )}
-            style={{ animationDelay: `${Math.round(start + i * step)}ms` }}
-          />
-        ))
-      ) : (
-        <span className="size-[10px] bg-(--cell)" />
-      )}
-    </div>
-  );
-}
-
-function Section({ title, note, children, className }: { title: string; note?: ReactNode; children: ReactNode; className?: string }) {
-  return (
-    <section className={cn("flex flex-col gap-5 border-t pt-5", className)}>
-      <header className="flex flex-col gap-1">
-        <h3 className="text-lg font-[600] tracking-[-0.02em]">{title}</h3>
-        {note ? <p className="text-[0.8125rem] leading-snug text-subtle-foreground">{note}</p> : null}
-      </header>
-      {children}
-    </section>
-  );
 }
 
 interface Side {

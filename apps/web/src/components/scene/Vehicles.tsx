@@ -22,8 +22,45 @@ const BAR_DARK = new Color(0.14, 0.15, 0.18);
 const BAR_BLUE = new Color(0.45, 0.85, 4.5);
 const BAR_RED = new Color(4.2, 0.35, 0.4);
 
+/** Paint is a pure function of the ID, so it is worked out once per vehicle, not once per frame. */
+const paintCache = new Map<string, Color>();
+const PAINT_CACHE_LIMIT = 4096;
+
 function paintFor(id: string, type: VehicleType): Color {
   if (type === "ambulance" || type === "police") return WHITE;
+  const key = `${type}:${id}`;
+  const cached = paintCache.get(key);
+  if (cached) return cached;
+  // IDs never repeat within a run; dropping the whole cache now and then keeps it bounded.
+  if (paintCache.size >= PAINT_CACHE_LIMIT) paintCache.clear();
+  const paint = computePaint(id, type);
+  paintCache.set(key, paint);
+  return paint;
+}
+
+/**
+ * Write one instance colour only if it differs from what the buffer already holds
+ * (and so from what the GPU already has). Returns whether anything changed.
+ */
+function writeColor(mesh: InstancedMesh, index: number, color: Color): boolean {
+  const attribute = mesh.instanceColor;
+  if (!attribute) {
+    mesh.setColorAt(index, color);
+    return true;
+  }
+  const array = attribute.array;
+  const offset = index * 3;
+  const r = Math.fround(color.r);
+  const g = Math.fround(color.g);
+  const b = Math.fround(color.b);
+  if (array[offset] === r && array[offset + 1] === g && array[offset + 2] === b) return false;
+  array[offset] = r;
+  array[offset + 1] = g;
+  array[offset + 2] = b;
+  return true;
+}
+
+function computePaint(id: string, type: VehicleType): Color {
   let hash = 0;
   for (let i = 0; i < id.length; i++) hash = (hash * 31 + id.charCodeAt(i)) | 0;
   const palette = type === "car" ? CAR_PAINT : type === "van" ? VAN_PAINT : BUS_PAINT;
@@ -54,6 +91,8 @@ export function Vehicles({ shadows }: { shadows: boolean }) {
     quaternion: new Quaternion(),
     up: new Vector3(0, 1, 0),
     counts: { car: 0, van: 0, bus_truck: 0, ambulance: 0, police: 0 } as Record<VehicleType, number>,
+    /** Meshes whose instance colours changed this frame; only these are re-uploaded. */
+    recolored: new Set<InstancedMesh>(),
     lastDebug: 0,
   }), []);
 
@@ -74,6 +113,8 @@ export function Vehicles({ shadows }: { shadows: boolean }) {
     for (const type of TYPES) s.counts[type] = 0;
     let brakeCount = 0;
     let barCount = 0;
+    const recolored = s.recolored;
+    recolored.clear();
     const flashA = Math.floor(clock.elapsedTime * 3.2) % 2 === 0;
 
     for (let i = 0; i < frame.sample.count; i++) {
@@ -91,21 +132,21 @@ export function Vehicles({ shadows }: { shadows: boolean }) {
       const trim = trims.current[v.type];
       if (!body || !trim) continue;
       body.setMatrixAt(index, s.matrix);
-      body.setColorAt(index, paintFor(v.id, v.type));
+      if (writeColor(body, index, paintFor(v.id, v.type))) recolored.add(body);
       trim.setMatrixAt(index, s.matrix);
 
       if (brakes.current && brakeCount < TOTAL) {
         s.local.makeScale(model.width / 1.8, 1, 1).setPosition(0, BRAKE_Y[v.type], -model.nominalLength / 2 - 0.03);
         brakes.current.setMatrixAt(brakeCount, s.local.premultiply(s.matrix));
-        brakes.current.setColorAt(brakeCount, v.braking ? BRAKE_ON : BRAKE_OFF);
+        if (writeColor(brakes.current, brakeCount, v.braking ? BRAKE_ON : BRAKE_OFF)) recolored.add(brakes.current);
         brakeCount++;
       }
       if (model.lightBarY !== null && barsLeft.current && barsRight.current && barCount < EMERGENCY_CAPACITY) {
         s.local.makeTranslation(0, model.lightBarY, model.lightBarZ).premultiply(s.matrix);
         barsLeft.current.setMatrixAt(barCount, s.local);
         barsRight.current.setMatrixAt(barCount, s.local);
-        barsLeft.current.setColorAt(barCount, v.emergency ? (flashA ? BAR_BLUE : BAR_DARK) : BAR_DARK);
-        barsRight.current.setColorAt(barCount, v.emergency ? (flashA ? BAR_DARK : BAR_RED) : BAR_DARK);
+        if (writeColor(barsLeft.current, barCount, v.emergency ? (flashA ? BAR_BLUE : BAR_DARK) : BAR_DARK)) recolored.add(barsLeft.current);
+        if (writeColor(barsRight.current, barCount, v.emergency ? (flashA ? BAR_DARK : BAR_RED) : BAR_DARK)) recolored.add(barsRight.current);
         barCount++;
       }
     }
@@ -115,14 +156,14 @@ export function Vehicles({ shadows }: { shadows: boolean }) {
         if (!mesh) continue;
         mesh.count = s.counts[type];
         mesh.instanceMatrix.needsUpdate = true;
-        if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
+        if (mesh.instanceColor && recolored.has(mesh)) mesh.instanceColor.needsUpdate = true;
       }
     }
     for (const [mesh, count] of [[brakes.current, brakeCount], [barsLeft.current, barCount], [barsRight.current, barCount]] as const) {
       if (!mesh) continue;
       mesh.count = count;
       mesh.instanceMatrix.needsUpdate = true;
-      if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
+      if (mesh.instanceColor && recolored.has(mesh)) mesh.instanceColor.needsUpdate = true;
     }
 
     // Fade the whole fleet while the scene swaps between the preview and a session.
