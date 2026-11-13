@@ -4,6 +4,10 @@
 
 Intersection is a traffic simulation made by Team MAGI, first-year students at the University of Novi Sad, Faculty of Technical Sciences, for the Jigjoy October 2026 hackathon.
 
+
+<img width="1886" height="896" alt="image" src="https://github.com/user-attachments/assets/079ab674-5120-4322-9586-5e045a2ebc2c" />
+
+
 The traditional controller repeats a fixed schedule. The AI controller uses two agents working at the same time to propose signal timings. When their proposals conflict, **JEV**, a TypeSafe decision model, arbitrates through our [Mozaik JEV adapter fork](https://github.com/Bucov/mozaik-Jev-adapter). A deterministic safety layer checks changes before the lights switch.
 
 **You can try the project without API keys or an AI account.** The default setup uses simulated AI responses. Connecting real Gemini, Claude and JEV models is optional.
@@ -188,6 +192,8 @@ Further reading: [API contract](docs/API_CONTRACT.md), [Decision Stats](docs/DEC
 
 Both use a four-way, straight-through traffic simulation. Backend mock mode exercises the agent/adapter integration without real model calls; live mode connects the configured providers. The independent browser-only demo lets visitors explore without a backend.
 
+<img width="1732" height="803" alt="image" src="https://github.com/user-attachments/assets/f3f7c02b-3a98-4349-94ee-dee906e57f78" />
+
 ### A live 3D view and playback controls
 
 Watch cars, vans, buses/trucks and emergency vehicles approach the intersection, queue and pass through the lights. Change the camera between angled and top views, pause/resume the simulation, adjust its speed, or reset it. The Space key toggles play/pause when you are not editing a control. Low rendering quality and reduced-motion support make the interface more usable across devices.
@@ -197,6 +203,7 @@ Watch cars, vans, buses/trucks and emergency vehicles approach the intersection,
 The timeline draws signal phases, concurrent agent requests, JEV arbitration and safety outcomes as rows of squares. It shows how decisions overlap and how long they take. A session strip shows the run's signal history.
 
 Pause to scrub through recorded snapshots and inspect an earlier moment. Resume to return to the live simulation. Rewind is a view of recorded state; it does not rerun past AI calls or permanently branch the simulation.
+<img width="1283" height="322" alt="image" src="https://github.com/user-attachments/assets/9f80c5ff-4617-4ea4-b226-7fa090758b2e" />
 
 ### Scenarios and injected events
 
@@ -207,6 +214,7 @@ The Events menu also lets you introduce emergency vehicles, demand surges, tempo
 ### Decision explanations and statistics
 
 Inspect agent observations and proposals, JEV selections, public rationale, confidence and safety outcomes. Event/transcript views help explain why a plan was retained, changed, rejected or replaced by fallback.
+<img width="1523" height="793" alt="image" src="https://github.com/user-attachments/assets/29a60cf0-fd47-46c3-8628-70661128c885" />
 
 Statistics distinguish proposals from accepted decisions and track agreement, JEV and fallback outcomes. Traffic metrics include queues, completed trips, waiting/travel time, throughput and emergency signal delay. Missing measurements remain unavailable rather than appearing as zero. Charts show how the run develops over time.
 
